@@ -475,6 +475,9 @@ class GameBase:
                         self.say(f"Unknown scene '{self.state.current_scene}'. Returning to the title screen.")
                         self.state = None
                         return
+                    refresh_scene_music = getattr(self, "refresh_scene_music", None)
+                    if callable(refresh_scene_music):
+                        refresh_scene_music()
                     handler()
                 except ResumeLoadedGame:
                     self._compact_hud_last_scene_key = None
@@ -1208,9 +1211,6 @@ class GameBase:
             return
         self.begin_animation_skip_scope()
         try:
-            play_sound_effect = getattr(self, "play_sound_effect", None)
-            if callable(play_sound_effect):
-                play_sound_effect("dice_roll", cooldown=0.08)
             can_preview_in_panel = self.can_render_initiative_panel_animation()
             duration = min(
                 self._dice_animation_max_seconds + 0.2,
@@ -1219,6 +1219,9 @@ class GameBase:
                     self._dice_animation_min_seconds + 0.06 * max(0, len(entries) - 1) + 0.16,
                 ),
             )
+            play_dice_roll_sound = getattr(self, "play_dice_roll_sound", None)
+            if callable(play_dice_roll_sound):
+                play_dice_roll_sound(duration, cooldown=0.08)
             frames = min(
                 max(self._dice_animation_max_frames, 1),
                 max(self._dice_animation_min_frames, int(max(1.0, duration) * max(1.0, self._dice_animation_frame_rate))),
@@ -1277,9 +1280,6 @@ class GameBase:
             return
         self.begin_animation_skip_scope()
         try:
-            play_sound_effect = getattr(self, "play_sound_effect", None)
-            if callable(play_sound_effect):
-                play_sound_effect("dice_roll", cooldown=0.05)
             rerolls = rerolls or []
             effective_modifier = modifier if display_modifier is None else display_modifier
             mode = self.current_dice_animation_mode()
@@ -1307,6 +1307,9 @@ class GameBase:
                     + emphasis,
                 ),
             )
+            play_dice_roll_sound = getattr(self, "play_dice_roll_sound", None)
+            if callable(play_dice_roll_sound):
+                play_dice_roll_sound(duration, cooldown=0.05)
             frames = min(
                 self._dice_animation_max_frames,
                 max(self._dice_animation_min_frames, int(max(1.0, duration) * max(1.0, self._dice_animation_frame_rate))),

@@ -1,0 +1,349 @@
+{
+  "player": {
+    "name": "Riven Ashguard",
+    "race": "Half-Orc",
+    "class_name": "Fighter",
+    "background": "Soldier",
+    "level": 2,
+    "ability_scores": {
+      "STR": 17,
+      "DEX": 12,
+      "CON": 15,
+      "INT": 8,
+      "WIS": 10,
+      "CHA": 13
+    },
+    "skill_proficiencies": [
+      "Athletics",
+      "Insight",
+      "Intimidation",
+      "Perception",
+      "Survival"
+    ],
+    "saving_throw_proficiencies": [
+      "STR",
+      "CON"
+    ],
+    "features": [
+      "action_surge",
+      "menacing",
+      "relentless_endurance",
+      "second_wind"
+    ],
+    "weapon": {
+      "name": "Roadworn Longsword",
+      "damage": "1d8",
+      "ability": "STR",
+      "weapon_type": "longsword",
+      "to_hit_bonus": 0,
+      "damage_bonus": 0,
+      "finesse": false,
+      "ranged": false,
+      "hands_required": 1,
+      "properties": [
+        "versatile"
+      ]
+    },
+    "armor": {
+      "name": "Roadworn Chain Mail",
+      "base_ac": 16,
+      "armor_type": "heavy",
+      "dex_cap": 0,
+      "heavy": true,
+      "stealth_disadvantage": true
+    },
+    "hit_die": 10,
+    "current_hp": 13,
+    "max_hp": 20,
+    "shield": true,
+    "spellcasting_ability": null,
+    "skill_expertise": [],
+    "bonus_proficiencies": [
+      "Land Vehicles",
+      "Gaming Set"
+    ],
+    "resources": {
+      "second_wind": 1,
+      "action_surge": 1
+    },
+    "max_resources": {
+      "second_wind": 1,
+      "action_surge": 1
+    },
+    "inventory": {},
+    "conditions": {},
+    "equipment_bonuses": {
+      "Athletics": 1,
+      "Intimidation": 1
+    },
+    "gear_bonuses": {
+      "AC": 0
+    },
+    "notes": [
+      "Veteran's kit: +1 to Athletics and Intimidation checks.",
+      "A brutal shield-line veteran built to absorb pressure and keep swinging in the thick of a fight.",
+      "Preset build: optimized for faster testing and quick starts."
+    ],
+    "tags": [
+      "hero"
+    ],
+    "equipment_slots": {
+      "head": null,
+      "ring_1": null,
+      "ring_2": null,
+      "neck": null,
+      "chest": "chain_mail_common",
+      "gloves": null,
+      "boots": null,
+      "main_hand": "longsword_common",
+      "off_hand": "shield_common",
+      "cape": null
+    },
+    "archetype": "fighter",
+    "companion_id": "",
+    "disposition": 0,
+    "lore": [],
+    "bond_flags": {},
+    "relationship_bonuses": {},
+    "stable": false,
+    "dead": false,
+    "death_successes": 0,
+    "death_failures": 0,
+    "temp_hp": 0,
+    "xp_value": 0,
+    "gold_value": 0
+  },
+  "companions": [
+    {
+      "name": "Rhogar Valeguard",
+      "race": "Dragonborn",
+      "class_name": "Paladin",
+      "background": "Soldier",
+      "level": 2,
+      "ability_scores": {
+        "STR": 17,
+        "DEX": 10,
+        "CON": 13,
+        "INT": 8,
+        "WIS": 12,
+        "CHA": 15
+      },
+      "skill_proficiencies": [
+        "Athletics",
+        "Insight",
+        "Intimidation",
+        "Persuasion"
+      ],
+      "saving_throw_proficiencies": [
+        "WIS",
+        "CHA"
+      ],
+      "features": [
+        "divine_health",
+        "divine_smite",
+        "draconic_presence",
+        "lay_on_hands"
+      ],
+      "weapon": {
+        "name": "Roadworn Longsword",
+        "damage": "1d8",
+        "ability": "STR",
+        "weapon_type": "longsword",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": [
+          "versatile"
+        ]
+      },
+      "armor": {
+        "name": "Roadworn Chain Mail",
+        "base_ac": 16,
+        "armor_type": "heavy",
+        "dex_cap": 0,
+        "heavy": true,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 10,
+      "current_hp": 18,
+      "max_hp": 18,
+      "shield": true,
+      "spellcasting_ability": "CHA",
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Land Vehicles",
+        "Gaming Set"
+      ],
+      "resources": {
+        "lay_on_hands": 10,
+        "spell_slots_1": 2
+      },
+      "max_resources": {
+        "lay_on_hands": 10,
+        "spell_slots_1": 2
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Athletics": 1,
+        "Intimidation": 1,
+        "CON_save": 1,
+        "WIS_save": 1
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Veteran's kit: +1 to Athletics and Intimidation checks.",
+        "A dragonborn sworn to protect caravans on the road south of Neverwinter.",
+        "A dragonborn oathsworn who treats duty like a living thing that must be fed by action."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "chain_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "longsword_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "paladin",
+      "companion_id": "rhogar_valeguard",
+      "disposition": 0,
+      "lore": [
+        "Rhogar was raised among caravan wardens who believed a sworn road was as sacred as any temple threshold.",
+        "He carries every oath like a visible weight and grows restless whenever words are left unfinished.",
+        "His confidence comes easily, but his forgiveness does not; once broken, his trust has to be rebuilt with deeds."
+      ],
+      "bond_flags": {
+        "talked_topics": []
+      },
+      "relationship_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    }
+  ],
+  "camp_companions": [],
+  "current_act": 1,
+  "current_scene": "blackwake_crossing",
+  "flags": {
+    "act1_started": true,
+    "map_state": {
+      "current_node_id": "blackwake_crossing",
+      "current_dungeon_id": "blackwake_crossing_branch",
+      "current_room_id": "ford_ledger_post",
+      "visited_nodes": [
+        "blackwake_crossing",
+        "neverwinter_briefing",
+        "high_road_ambush",
+        "phandalin_hub"
+      ],
+      "cleared_rooms": [
+        "charred_tollhouse",
+        "millers_ford_flooded_approach",
+        "reedbank_camp",
+        "wagon_snarl"
+      ],
+      "seen_story_beats": [],
+      "node_history": [
+        "neverwinter_briefing"
+      ],
+      "room_history": [
+        "charred_tollhouse",
+        "millers_ford_flooded_approach",
+        "wagon_snarl"
+      ]
+    },
+    "introduced_characters": [
+      "Ashen Brand Runner",
+      "Mira Thann",
+      "Rhogar Valeguard"
+    ],
+    "background_prologue_completed": "Soldier",
+    "briefing_seen": true,
+    "early_companion_recruited": "Rhogar Valeguard",
+    "blackwake_started": true,
+    "blackwake_return_destination": "undecided",
+    "act1_town_fear": 2,
+    "act1_ashen_strength": 3,
+    "act1_survivors_saved": 0,
+    "blackwake_millers_ford_lead": true,
+    "blackwake_tollhouse_investigated": true,
+    "blackwake_ford_flank": true,
+    "blackwake_ford_approach_read": true,
+    "blackwake_route_permits_found": true,
+    "blackwake_forged_papers_found": true,
+    "blackwake_reedbank_searched": true,
+    "blackwake_survivors_saved": 2,
+    "blackwake_teamsters_saved": true
+  },
+  "clues": [
+    "A stolen dispatch confirms the attacks around Phandalin are organized enough to rattle Neverwinter's quartermasters.",
+    "The tollhouse thieves wanted seals, route slates, and ledgers tied to Miller's Ford inspections.",
+    "Forged route permits from Miller's Ford name Blackwake Store Cavern as the next handling point."
+  ],
+  "journal": [
+    "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
+    "Reward from South Barracks Breakout: 50 XP, 8 gp.",
+    "Looted Roadworn Leather Armor x1 from South Barracks Breakout.",
+    "Looted Potion of Healing x1 from South Barracks Breakout.",
+    "Reward from holding the barracks line: 15 XP, 6 gp.",
+    "Clue: A stolen dispatch confirms the attacks around Phandalin are organized enough to rattle Neverwinter's quartermasters.",
+    "Your soldier prologue ends with the trail leading toward Mira Thann's private briefing in Neverwinter.",
+    "Rhogar Valeguard joined the active party.",
+    "Mira Thann sent you south with a writ for Phandalin's steward.",
+    "Quest accepted: Embers Before the Road.",
+    "You turned off toward Blackwake Crossing to trace smoke, forged toll seals, and missing caravans.",
+    "Clue: The tollhouse thieves wanted seals, route slates, and ledgers tied to Miller's Ford inspections.",
+    "Reward from Charred Tollhouse Breakout: 110 XP, 16 gp.",
+    "Looted Frontier Ale x1 from Charred Tollhouse Breakout.",
+    "Looted Travel Biscuits x1 from Charred Tollhouse Breakout.",
+    "Reward from stabilizing the Blackwake tollhouse: 15 XP, 6 gp.",
+    "Clue: Forged route permits from Miller's Ford name Blackwake Store Cavern as the next handling point.",
+    "Reward from Miller's Ford Ledger Post: 110 XP, 16 gp.",
+    "Looted Roadworn Leather Armor x1 from Miller's Ford Ledger Post."
+  ],
+  "quests": {
+    "trace_blackwake_cell": {
+      "quest_id": "trace_blackwake_cell",
+      "status": "active",
+      "notes": [
+        "The road to Phandalin can wait long enough to answer one ugly question: why are caravans vanishing before they even reach the wider High Road?",
+        "Smoke outside Neverwinter points toward Blackwake Crossing before the wider High Road opens."
+      ]
+    }
+  },
+  "completed_acts": [],
+  "xp": 300,
+  "gold": 72,
+  "inventory": {
+    "potion_healing": 4,
+    "bread_round": 4,
+    "travel_biscuits": 5,
+    "dried_fish": 3,
+    "goat_cheese": 2,
+    "frontier_ale": 3,
+    "root_vegetables": 2,
+    "antitoxin_vial": 1,
+    "chain_mail_common": 2,
+    "longsword_common": 2,
+    "shield_common": 2,
+    "leather_armor_common": 2
+  },
+  "short_rests_remaining": 2
+}

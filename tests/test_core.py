@@ -11,6 +11,7 @@ from collections import Counter
 from unittest.mock import patch
 
 import dnd_game.gameplay.base as gameplay_base
+import dnd_game.gameplay.audio_backend as audio_backend
 from dnd_game.content import (
     BACKGROUNDS,
     CLASSES,
@@ -30,7 +31,20 @@ from dnd_game.content import (
 from dnd_game.dice import roll, roll_d20
 from dnd_game.game import Encounter, TextDnDGame
 from dnd_game.gameplay.combat_flow import TurnState
-from dnd_game.gameplay.sound_effects import SFX_ASSET_DIR, SOUND_EFFECT_FILES
+from dnd_game.gameplay.sound_effects import (
+    DICE_ROLL_SOUND_EFFECTS,
+    DICE_ROLL_SOUND_MAX_SECONDS,
+    DICE_ROLL_SOUND_MIN_SECONDS,
+    SFX_ASSET_DIR,
+    SOUND_EFFECT_FILES,
+    closest_dice_roll_sound_effect,
+)
+from dnd_game.gameplay.music import (
+    MUSIC_ASSET_EXTENSIONS,
+    MUSIC_CONTEXT_FOLDERS,
+    SCENE_MUSIC_CONTEXTS,
+    music_files_for_context,
+)
 from dnd_game.gameplay.spell_slots import spell_slot_counts
 from dnd_game.drafts.map_system.runtime import (
     DraftMapState,
@@ -142,21 +156,137 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(900312))
         self.assertFalse(game.music_enabled)
 
+    def test_music_contexts_use_named_subfolder_assets(self) -> None:
+        self.assertEqual(MUSIC_CONTEXT_FOLDERS["boss_combat"], ("Miniboss combat",))
+        self.assertEqual(MUSIC_CONTEXT_FOLDERS["random_encounter"], ("Wilderness exploration",))
+        self.assertEqual(MUSIC_CONTEXT_FOLDERS["city"], ("Town",))
+        self.assertEqual(MUSIC_CONTEXT_FOLDERS["dungeon"], ("Dungeon",))
+        self.assertEqual(MUSIC_CONTEXT_FOLDERS["main_menu"], ("Main menu",))
+        self.assertEqual(MUSIC_CONTEXT_FOLDERS["camp"], ("Camp",))
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["phandalin_hub"], "city")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["tresendar_manor"], "dungeon")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["blackwake_crossing"], "dungeon")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["road_ambush"], "wilderness")
+        for node in ACT1_HYBRID_MAP.nodes.values():
+            if node.enters_dungeon_id is not None:
+                self.assertEqual(SCENE_MUSIC_CONTEXTS[node.scene_key], "dungeon")
+        for node in ACT2_ENEMY_DRIVEN_MAP.nodes.values():
+            if node.enters_dungeon_id is not None:
+                self.assertEqual(SCENE_MUSIC_CONTEXTS[node.scene_key], "dungeon")
+
+        for context in (
+            "main_menu",
+            "camp",
+            "city",
+            "dungeon",
+            "combat",
+            "miniboss_combat",
+            "boss_combat",
+            "random_encounter",
+        ):
+            tracks = music_files_for_context(context)
+            self.assertTrue(tracks, context)
+            self.assertTrue(all(path.suffix.lower() in MUSIC_ASSET_EXTENSIONS for path in tracks))
+
+        self.assertEqual(
+            {path.resolve() for path in music_files_for_context("boss_combat")},
+            {path.resolve() for path in music_files_for_context("miniboss_combat")},
+        )
+        self.assertEqual(
+            {path.resolve() for path in music_files_for_context("random_encounter")},
+            {path.resolve() for path in music_files_for_context("wilderness")},
+        )
+
+    def test_music_backend_uses_mci_when_pygame_is_missing(self) -> None:
+        commands: list[str] = []
+        fake_winmm = SimpleNamespace(
+            mciSendStringW=lambda command, buffer, buffer_size, callback: commands.append(command) or 0,
+        )
+        track = music_files_for_context("main_menu")[0]
+        with (
+            patch.object(audio_backend, "pygame", None),
+            patch.object(audio_backend, "_WINMM", fake_winmm),
+            patch.object(audio_backend, "_MCI_MUSIC_OPEN", False),
+        ):
+            self.assertTrue(audio_backend.music_is_available())
+            self.assertTrue(audio_backend.music_file_is_supported(track))
+            self.assertFalse(audio_backend.music_file_is_supported(Path("track.ogg")))
+            self.assertTrue(audio_backend.play_music(track))
+            audio_backend.stop_music()
+
+        self.assertTrue(any(command.startswith('open "') and "Main menu" in command for command in commands))
+        self.assertTrue(any("type mpegvideo" in command for command in commands))
+        self.assertIn("play dnd_game_music repeat", commands)
+        self.assertIn("stop dnd_game_music", commands)
+        self.assertIn("close dnd_game_music", commands)
+
+    def test_music_settings_enable_with_mci_fallback(self) -> None:
+        commands: list[str] = []
+        fake_winmm = SimpleNamespace(
+            mciSendStringW=lambda command, buffer, buffer_size, callback: commands.append(command) or 0,
+        )
+        with (
+            patch.object(audio_backend, "pygame", None),
+            patch.object(audio_backend, "_WINMM", fake_winmm),
+            patch.object(audio_backend, "_MCI_MUSIC_OPEN", False),
+        ):
+            game = TextDnDGame(input_fn=lambda _: "1", output_fn=print, rng=random.Random(900314), play_music=False)
+            messages: list[str] = []
+            game.say = messages.append
+            game.persist_settings = lambda: None
+            game.set_music_enabled(True)
+
+        self.assertTrue(game._music_supported)
+        self.assertTrue(game._music_assets_ready)
+        self.assertTrue(game.music_enabled)
+        self.assertEqual(messages, ["Music enabled."])
+        self.assertTrue(any(command.startswith('open "') and "Main menu" in command for command in commands))
+        self.assertIn("play dnd_game_music repeat", commands)
+
     def test_sound_effect_library_contains_expected_files(self) -> None:
-        self.assertEqual(len(SOUND_EFFECT_FILES), 11)
-        self.assertEqual(set(SOUND_EFFECT_FILES), {
-            "fight_victory",
-            "dice_roll",
-            "game_over",
-            "skill_success",
-            "skill_fail",
-            "buy_item",
-            "sell_item",
-            "player_attack",
-            "enemy_attack",
-            "player_heal",
-            "enemy_heal",
-        })
+        self.assertEqual(set(SOUND_EFFECT_FILES), {effect.key for effect in DICE_ROLL_SOUND_EFFECTS})
+        self.assertTrue(all(key.startswith("dice_roll_") for key in SOUND_EFFECT_FILES))
+        self.assertTrue(
+            all(
+                DICE_ROLL_SOUND_MIN_SECONDS <= effect.duration_seconds <= DICE_ROLL_SOUND_MAX_SECONDS
+                for effect in DICE_ROLL_SOUND_EFFECTS
+            )
+        )
+
+    def test_dice_roll_sound_selector_uses_closest_duration(self) -> None:
+        self.assertEqual(closest_dice_roll_sound_effect(0.41), "dice_roll_040")
+        self.assertEqual(closest_dice_roll_sound_effect(0.82), "dice_roll_070")
+        self.assertEqual(closest_dice_roll_sound_effect(1.12), "dice_roll_095")
+        self.assertEqual(closest_dice_roll_sound_effect(1.48), "dice_roll_130")
+        self.assertEqual(closest_dice_roll_sound_effect(1.70), "dice_roll_175")
+
+    def test_sound_effect_settings_enable_with_winsound_fallback(self) -> None:
+        fake_winsound = SimpleNamespace(
+            SND_FILENAME=1,
+            SND_ASYNC=2,
+            PlaySound=lambda path, flags: None,
+        )
+        with patch.object(audio_backend, "pygame", None), patch.object(audio_backend, "winsound", fake_winsound):
+            game = TextDnDGame(input_fn=lambda _: "1", output_fn=print, rng=random.Random(900313), play_sfx=False)
+            messages: list[str] = []
+            game.say = messages.append
+            game.set_sound_effects_enabled(True)
+        self.assertTrue(game._sfx_supported)
+        self.assertTrue(game._sfx_assets_ready)
+        self.assertTrue(game.sound_effects_enabled)
+        self.assertEqual(messages, ["Sound effects enabled."])
+
+    def test_sound_effect_backend_uses_winsound_when_pygame_is_missing(self) -> None:
+        calls: list[tuple[str, int]] = []
+        fake_winsound = SimpleNamespace(
+            SND_FILENAME=1,
+            SND_ASYNC=2,
+            PlaySound=lambda path, flags: calls.append((Path(path).name, flags)),
+        )
+        with patch.object(audio_backend, "pygame", None), patch.object(audio_backend, "winsound", fake_winsound):
+            self.assertTrue(audio_backend.sound_effects_are_available())
+            self.assertTrue(audio_backend.play_sound(SFX_ASSET_DIR / "dice_roll_040.wav"))
+        self.assertEqual(calls, [("dice_roll_040.wav", 3)])
 
     def test_generated_sound_effect_manifest_matches_asset_files(self) -> None:
         manifest = json.loads((SFX_ASSET_DIR / "manifest.json").read_text(encoding="utf-8"))
@@ -164,7 +294,14 @@ class CoreTests(unittest.TestCase):
         expected = set(SOUND_EFFECT_FILES.values())
         self.assertEqual(generated, expected)
         self.assertEqual({path.name for path in SFX_ASSET_DIR.glob("*.wav")}, expected)
-        self.assertTrue(all(0.5 <= entry["duration_seconds"] <= 2.0 for entry in manifest["effects"]))
+        self.assertEqual(manifest["roll_duration_window_seconds"]["minimum"], DICE_ROLL_SOUND_MIN_SECONDS)
+        self.assertEqual(manifest["roll_duration_window_seconds"]["maximum"], DICE_ROLL_SOUND_MAX_SECONDS)
+        self.assertTrue(
+            all(
+                DICE_ROLL_SOUND_MIN_SECONDS <= entry["duration_seconds"] <= DICE_ROLL_SOUND_MAX_SECONDS
+                for entry in manifest["effects"]
+            )
+        )
 
     def test_attack_and_heal_sound_routing_matches_actor_side(self) -> None:
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(900312))
@@ -408,7 +545,7 @@ class CoreTests(unittest.TestCase):
         game.play_sound_effect = lambda effect_name, cooldown=0.0: sounds.append(effect_name)
         game.animate_dice_roll(kind="d20", expression="d20", sides=20, rolls=[14], kept=14)
         self.assertEqual(rendered, [False, True])
-        self.assertEqual(sounds, ["dice_roll"])
+        self.assertEqual(sounds, [closest_dice_roll_sound_effect(0.85)])
         self.assertEqual(waits, [(0.28, True), (0.42, True)])
 
     def test_skill_check_plays_success_and_failure_sounds(self) -> None:
@@ -498,6 +635,51 @@ class CoreTests(unittest.TestCase):
         outcome = game.run_encounter(Encounter(title="Spent Ambush", description="The danger is already over.", enemies=[enemy]))
         self.assertEqual(outcome, "victory")
         self.assertEqual(pauses, ["pause", "pause"])
+
+    def test_run_encounter_starts_combat_music_and_restores_scene_music(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        enemy = create_enemy("goblin_skirmisher")
+        enemy.current_hp = 0
+        enemy.dead = True
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90081))
+        game.state = GameState(player=player, current_scene="forge_of_spells")
+        game.pause_for_combat_transition = lambda: None
+        calls: list[tuple[str, object]] = []
+        game.play_encounter_music = lambda encounter: calls.append(
+            ("encounter", game.encounter_music_context(encounter))
+        )
+        game.refresh_scene_music = lambda default_to_menu=False: calls.append(("scene", default_to_menu))
+
+        outcome = game.run_encounter(
+            Encounter(
+                title="Boss: Test Fight",
+                description="The danger is already over.",
+                enemies=[enemy],
+                allow_post_combat_random_encounter=False,
+            )
+        )
+
+        self.assertEqual(outcome, "victory")
+        self.assertEqual(calls, [("encounter", "boss_combat"), ("scene", False)])
+
+    def test_start_new_game_keeps_main_menu_music_context(self) -> None:
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90082))
+        calls: list[tuple[str, bool]] = []
+        game.play_music_for_context = lambda context, restart=False: calls.append((context, restart))
+        game.banner = lambda title: None
+        game.choose = lambda *args, **kwargs: (_ for _ in ()).throw(self._SceneExit())
+
+        with self.assertRaises(self._SceneExit):
+            game.start_new_game()
+
+        self.assertEqual(calls, [("main_menu", False)])
 
     def test_apply_damage_triggers_health_bar_animation_on_hp_loss(self) -> None:
         player = build_character(
@@ -681,12 +863,15 @@ class CoreTests(unittest.TestCase):
                 visited_nodes=set(ACT1_HYBRID_MAP.nodes),
             ),
         )
+        rendered_lines = rendered_map.splitlines()
+        sidebar_column = min(
+            (line.find("Route Key") for line in rendered_lines if line.find("Route Key") != -1),
+            default=None,
+        )
         map_lines = []
-        for line in rendered_map.splitlines():
-            if "Travel Routes:" in line:
-                break
+        for line in rendered_lines:
             if line.startswith("| "):
-                map_lines.append(line)
+                map_lines.append(line[:sidebar_column] if sidebar_column is not None else line)
 
         def token_span(label: str) -> tuple[int, int, int, int]:
             for row_index, line in enumerate(map_lines):
@@ -719,6 +904,35 @@ class CoreTests(unittest.TestCase):
         for row in map_lines[neverwinter_row + 1 : high_road_row]:
             self.assertIn(row[neverwinter_center], {"|", "+"})
         self.assertIn("-", map_lines[high_road_row][high_road_center + 1 : road_choice_center])
+
+    def test_act1_overworld_panel_groups_route_key_and_travel_top_right(self) -> None:
+        rendered_map = build_overworld_panel_text(
+            ACT1_HYBRID_MAP,
+            DraftMapState(
+                current_node_id="neverwinter_briefing",
+                visited_nodes={"neverwinter_briefing"},
+            ),
+        )
+        lines = rendered_map.splitlines()
+
+        def token_position(token: str) -> tuple[int, int]:
+            for row_index, line in enumerate(lines):
+                column = line.find(token)
+                if column != -1:
+                    return row_index, column
+            raise AssertionError(f"{token} was not rendered in the overworld panel")
+
+        neverwinter_row, neverwinter_column = token_position("NEVERWINTER")
+        route_key_row, route_key_column = token_position("Route Key")
+        travel_row, travel_column = token_position("Travel")
+        empty_travel_row, empty_travel_column = token_position("- No unlocked travel from here")
+
+        self.assertLessEqual(route_key_row, neverwinter_row + 1)
+        self.assertGreater(route_key_column, neverwinter_column)
+        self.assertGreater(travel_row, route_key_row)
+        self.assertAlmostEqual(travel_column, route_key_column, delta=2)
+        self.assertGreater(empty_travel_row, travel_row)
+        self.assertGreaterEqual(empty_travel_column, travel_column)
 
     def test_blackwake_map_nodes_and_dungeon_exist(self) -> None:
         self.assertIn("blackwake_crossing", ACT1_HYBRID_MAP.nodes)
@@ -1858,6 +2072,32 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Overworld Route Map", rendered)
         self.assertIn("Old Owl Well", rendered)
 
+    def test_travel_to_act1_dungeon_node_refreshes_dungeon_music(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008511))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={"act1_started": True, "blackwake_started": True},
+        )
+        game.ensure_state_integrity()
+        calls: list[tuple[str, str | None, bool]] = []
+        game.refresh_scene_music = lambda default_to_menu=False: calls.append(
+            (game.state.current_scene, game.scene_music_context(game.state.current_scene), default_to_menu)
+        )
+
+        game.travel_to_act1_node("blackwake_crossing")
+
+        self.assertEqual(game.state.current_scene, "blackwake_crossing")
+        self.assertIn(("blackwake_crossing", "dungeon", False), calls)
+
     def test_act1_overworld_backtrack_returns_to_previous_site_with_context_text(self) -> None:
         player = build_character(
             name="Vale",
@@ -2121,6 +2361,38 @@ class CoreTests(unittest.TestCase):
         self.assertNotEqual(prompt_index, -1)
         self.assertLess(map_index, scene_index)
         self.assertLess(scene_index, prompt_index)
+
+    def test_travel_to_act2_dungeon_node_refreshes_dungeon_music(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90085411))
+        game.state = GameState(
+            player=player,
+            current_act=2,
+            current_scene="act2_expedition_hub",
+            flags={
+                "act2_started": True,
+                "act2_town_stability": 3,
+                "act2_route_control": 2,
+                "act2_whisper_pressure": 2,
+            },
+        )
+        game.ensure_state_integrity()
+        calls: list[tuple[str, str | None, bool]] = []
+        game.refresh_scene_music = lambda default_to_menu=False: calls.append(
+            (game.state.current_scene, game.scene_music_context(game.state.current_scene), default_to_menu)
+        )
+
+        game.travel_to_act2_node("stonehollow_dig")
+
+        self.assertEqual(game.state.current_scene, "stonehollow_dig")
+        self.assertIn(("stonehollow_dig", "dungeon", False), calls)
 
     def test_act2_overworld_backtrack_returns_to_previous_site_with_context_text(self) -> None:
         player = build_character(

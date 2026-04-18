@@ -1,6 +1,14 @@
 # Music Folder
 
-This folder is intentionally kept in place for future user-provided music.
+The game discovers music from these category folders:
 
-The built-in generated soundtrack has been removed from the game. You can add your own
-music files here later and wire them in with your preferred naming or labeling scheme.
+- Main menu/title screen: `Main menu`
+- Camp menu: `Camp`
+- Town and inn scenes: `Town`
+- Road and wilderness scenes: `Wilderness exploration`
+- Dungeon, cave, and manor scenes: `Dungeon`
+- Standard fights: `Combat`
+- Miniboss fights: `Miniboss combat`
+
+Boss fights currently reuse `Miniboss combat`, and post-combat random encounters use
+`Wilderness exploration`. Files can be `.mp3`, `.ogg`, `.wav`, or `.flac`.

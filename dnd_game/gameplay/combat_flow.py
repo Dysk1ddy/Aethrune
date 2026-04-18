@@ -26,7 +26,11 @@ class CombatFlowMixin:
         self._in_combat = True
         heroes: list[Character] = []
         enemies: list[Character] = []
+        play_encounter_music = getattr(self, "play_encounter_music", None)
+        refresh_scene_music = getattr(self, "refresh_scene_music", None)
         try:
+            if callable(play_encounter_music):
+                play_encounter_music(encounter)
             self.banner(encounter.title)
             self.say(encounter.description, typed=True)
             self.pause_for_combat_transition()
@@ -85,6 +89,8 @@ class CombatFlowMixin:
         finally:
             self.clear_after_encounter([*heroes, *enemies])
             self._in_combat = False
+            if callable(refresh_scene_music):
+                refresh_scene_music()
 
     def resolve_encounter_victory(self, encounter: Encounter, enemies: list[Character]) -> str:
         assert self.state is not None

@@ -7,62 +7,93 @@ from . import audio_backend
 
 
 MUSIC_ASSET_DIR = Path(__file__).resolve().parents[1] / "assets" / "music"
+MUSIC_ASSET_EXTENSIONS = frozenset({".flac", ".mp3", ".ogg", ".wav"})
 
-MUSIC_PLAYLISTS: dict[str, tuple[str, ...]] = {
-    "main_menu": ("main_menu.wav",),
-    "character_creation": ("character_creation.wav",),
-    "camp": ("camp.wav",),
-    "city": ("city_01.wav", "city_02.wav"),
-    "inn": ("inn.wav",),
-    "combat": ("combat_01.wav", "combat_02.wav", "combat_03.wav", "combat_04.wav", "combat_05.wav"),
-    "miniboss_combat": ("miniboss_01.wav", "miniboss_02.wav"),
-    "boss_combat": ("boss_combat.wav",),
-    "random_encounter": (
-        "random_encounter_01.wav",
-        "random_encounter_02.wav",
-        "random_encounter_03.wav",
-        "random_encounter_04.wav",
-        "random_encounter_05.wav",
-    ),
+MUSIC_CONTEXT_FOLDERS: dict[str, tuple[str, ...]] = {
+    "main_menu": ("Main menu",),
+    "character_creation": ("Main menu",),
+    "camp": ("Camp",),
+    "city": ("Town",),
+    "inn": ("Town",),
+    "town": ("Town",),
+    "wilderness": ("Wilderness exploration",),
+    "dungeon": ("Dungeon",),
+    "combat": ("Combat",),
+    "miniboss_combat": ("Miniboss combat",),
+    "boss_combat": ("Miniboss combat",),
+    "random_encounter": ("Wilderness exploration",),
 }
 
 SCENE_MUSIC_CONTEXTS: dict[str, str] = {
-    "background_prologue": "random_encounter",
+    "background_prologue": "wilderness",
     "neverwinter_briefing": "city",
-    "road_ambush": "random_encounter",
+    "blackwake_crossing": "dungeon",
+    "road_decision_post_blackwake": "wilderness",
+    "road_ambush": "wilderness",
     "phandalin_hub": "city",
-    "old_owl_well": "random_encounter",
-    "wyvern_tor": "random_encounter",
-    "ashfall_watch": "random_encounter",
-    "tresendar_manor": "random_encounter",
-    "emberhall_cellars": "random_encounter",
-    "act1_complete": "main_menu",
+    "old_owl_well": "dungeon",
+    "wyvern_tor": "dungeon",
+    "cinderfall_ruins": "dungeon",
+    "ashfall_watch": "dungeon",
+    "tresendar_manor": "dungeon",
+    "emberhall_cellars": "dungeon",
+    "act1_complete": "city",
+    "act2_claims_council": "city",
+    "act2_expedition_hub": "city",
+    "conyberry_agatha": "dungeon",
+    "neverwinter_wood_survey_camp": "dungeon",
+    "stonehollow_dig": "dungeon",
+    "act2_midpoint_convergence": "dungeon",
+    "broken_prospect": "dungeon",
+    "south_adit": "dungeon",
+    "wave_echo_outer_galleries": "dungeon",
+    "black_lake_causeway": "dungeon",
+    "forge_of_spells": "dungeon",
+    "act2_scaffold_complete": "city",
 }
+
+
+def music_files_for_context(context: str, asset_dir: Path = MUSIC_ASSET_DIR) -> list[Path]:
+    tracks: list[Path] = []
+    seen: set[Path] = set()
+    for folder_name in MUSIC_CONTEXT_FOLDERS.get(context, ()):
+        folder = asset_dir / folder_name
+        if not folder.exists():
+            continue
+        for path in sorted(folder.rglob("*"), key=lambda item: str(item).lower()):
+            if not path.is_file() or path.suffix.lower() not in MUSIC_ASSET_EXTENSIONS:
+                continue
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            tracks.append(path)
+    return tracks
 
 
 class MusicMixin:
     def initialize_music_system(self, play_music: bool | None = None) -> None:
         wants_music = self._interactive_output if play_music is None else play_music
         self._music_enabled_preference = bool(wants_music)
-        self.music_enabled = bool(wants_music and self.output_fn is print)
+        self.music_enabled = False
         self._music_context: str | None = None
         self._music_track_name: str | None = None
         self._last_music_track_by_context: dict[str, str] = {}
         self._music_asset_dir = MUSIC_ASSET_DIR
-        self._music_supported = audio_backend.pygame_is_available()
-        self._music_assets_ready = self._music_supported and all(
-            (self._music_asset_dir / filename).exists()
-            for filenames in MUSIC_PLAYLISTS.values()
-            for filename in filenames
+        self._music_supported = audio_backend.music_is_available()
+        self._music_assets_ready = any(
+            self.music_files_for_context(context)
+            for context in MUSIC_CONTEXT_FOLDERS
         )
-        if not self._music_assets_ready:
-            self.music_enabled = False
+        self.music_enabled = bool(
+            wants_music and self.output_fn is print and self._music_supported and self._music_assets_ready
+        )
 
     def music_files_for_context(self, context: str) -> list[Path]:
         return [
-            self._music_asset_dir / filename
-            for filename in MUSIC_PLAYLISTS.get(context, ())
-            if (self._music_asset_dir / filename).exists()
+            path
+            for path in music_files_for_context(context, self._music_asset_dir)
+            if audio_backend.music_file_is_supported(path)
         ]
 
     def choose_music_file(self, context: str) -> Path | None:
@@ -101,17 +132,17 @@ class MusicMixin:
     def set_music_enabled(self, enabled: bool) -> None:
         self._music_enabled_preference = bool(enabled)
         persist_settings = getattr(self, "persist_settings", None)
-        if enabled and not self._music_assets_ready:
-            self.music_enabled = False
-            if callable(persist_settings):
-                persist_settings()
-            self.say("Music assets are not available yet.")
-            return
         if enabled and not self._music_supported:
             self.music_enabled = False
             if callable(persist_settings):
                 persist_settings()
             self.say("Music playback is not supported in this build.")
+            return
+        if enabled and not self._music_assets_ready:
+            self.music_enabled = False
+            if callable(persist_settings):
+                persist_settings()
+            self.say("Music assets are not available yet.")
             return
         self.music_enabled = bool(enabled and self.output_fn is print and self._music_supported)
         if callable(persist_settings):
@@ -132,8 +163,11 @@ class MusicMixin:
         return SCENE_MUSIC_CONTEXTS.get(scene_name)
 
     def refresh_scene_music(self, *, default_to_menu: bool = False) -> None:
-        scene_name = self.state.current_scene if self.state is not None else None
-        context = self.scene_music_context(scene_name)
+        if getattr(self, "_random_encounter_active", False):
+            context = "random_encounter"
+        else:
+            scene_name = self.state.current_scene if self.state is not None else None
+            context = self.scene_music_context(scene_name)
         if context is None and default_to_menu:
             context = "main_menu"
         if context is None:

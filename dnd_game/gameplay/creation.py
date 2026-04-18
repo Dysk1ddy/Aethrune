@@ -19,7 +19,7 @@ class CharacterCreationMixin:
     def start_new_game(self) -> None:
         play_music_for_context = getattr(self, "play_music_for_context", None)
         if callable(play_music_for_context):
-            play_music_for_context("character_creation", restart=True)
+            play_music_for_context("main_menu")
         self.banner("Character Creation")
         mode = self.choose(
             "Choose how you want to start.",

@@ -1,0 +1,160 @@
+{
+  "player": {
+    "name": "Riven Ashguard",
+    "race": "Half-Orc",
+    "class_name": "Fighter",
+    "background": "Soldier",
+    "level": 1,
+    "ability_scores": {
+      "STR": 17,
+      "DEX": 12,
+      "CON": 15,
+      "INT": 8,
+      "WIS": 10,
+      "CHA": 13
+    },
+    "skill_proficiencies": [
+      "Athletics",
+      "Intimidation",
+      "Perception",
+      "Survival"
+    ],
+    "saving_throw_proficiencies": [
+      "STR",
+      "CON"
+    ],
+    "features": [
+      "menacing",
+      "relentless_endurance",
+      "second_wind"
+    ],
+    "weapon": {
+      "name": "Roadworn Longsword",
+      "damage": "1d8",
+      "ability": "STR",
+      "weapon_type": "longsword",
+      "to_hit_bonus": 0,
+      "damage_bonus": 0,
+      "finesse": false,
+      "ranged": false,
+      "hands_required": 1,
+      "properties": [
+        "versatile"
+      ]
+    },
+    "armor": {
+      "name": "Roadworn Chain Mail",
+      "base_ac": 16,
+      "armor_type": "heavy",
+      "dex_cap": 0,
+      "heavy": true,
+      "stealth_disadvantage": true
+    },
+    "hit_die": 10,
+    "current_hp": 1,
+    "max_hp": 12,
+    "shield": true,
+    "spellcasting_ability": null,
+    "skill_expertise": [],
+    "bonus_proficiencies": [
+      "Land Vehicles",
+      "Gaming Set"
+    ],
+    "resources": {
+      "second_wind": 1
+    },
+    "max_resources": {
+      "second_wind": 1
+    },
+    "inventory": {},
+    "conditions": {},
+    "equipment_bonuses": {
+      "Athletics": 1,
+      "Intimidation": 1
+    },
+    "gear_bonuses": {
+      "AC": 0
+    },
+    "notes": [
+      "Veteran's kit: +1 to Athletics and Intimidation checks.",
+      "A brutal shield-line veteran built to absorb pressure and keep swinging in the thick of a fight.",
+      "Preset build: optimized for faster testing and quick starts."
+    ],
+    "tags": [
+      "hero"
+    ],
+    "equipment_slots": {
+      "head": null,
+      "ring_1": null,
+      "ring_2": null,
+      "neck": null,
+      "chest": "chain_mail_common",
+      "gloves": null,
+      "boots": null,
+      "main_hand": "longsword_common",
+      "off_hand": "shield_common",
+      "cape": null
+    },
+    "archetype": "fighter",
+    "companion_id": "",
+    "disposition": 0,
+    "lore": [],
+    "bond_flags": {},
+    "relationship_bonuses": {},
+    "stable": false,
+    "dead": false,
+    "death_successes": 0,
+    "death_failures": 0,
+    "temp_hp": 0,
+    "xp_value": 0,
+    "gold_value": 0
+  },
+  "companions": [],
+  "camp_companions": [],
+  "current_act": 1,
+  "current_scene": "background_prologue",
+  "flags": {
+    "act1_started": true,
+    "background_prologue_pending": "Soldier",
+    "map_state": {
+      "current_node_id": "neverwinter_briefing",
+      "current_dungeon_id": null,
+      "current_room_id": null,
+      "visited_nodes": [],
+      "cleared_rooms": [],
+      "seen_story_beats": [],
+      "node_history": [],
+      "room_history": []
+    },
+    "introduced_characters": [
+      "Ashen Brand Runner"
+    ]
+  },
+  "clues": [],
+  "journal": [
+    "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
+    "Reward from South Barracks Breakout: 50 XP, 8 gp.",
+    "Looted Roadworn Leather Armor x1 from South Barracks Breakout.",
+    "Looted Potion of Healing x1 from South Barracks Breakout."
+  ],
+  "quests": {},
+  "completed_acts": [],
+  "xp": 50,
+  "gold": 28,
+  "inventory": {
+    "potion_healing": 3,
+    "bread_round": 4,
+    "travel_biscuits": 4,
+    "dried_fish": 3,
+    "goat_cheese": 2,
+    "frontier_ale": 2,
+    "root_vegetables": 2,
+    "antitoxin_vial": 1,
+    "chain_mail_common": 1,
+    "longsword_common": 1,
+    "shield_common": 1,
+    "leather_armor_common": 1
+  },
+  "short_rests_remaining": 2
+}

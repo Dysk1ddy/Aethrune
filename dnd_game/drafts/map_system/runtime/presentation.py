@@ -225,9 +225,10 @@ def _unknown_travel_count(blueprint: HybridMapBlueprint, state: DraftMapState) -
 
 
 _OVERWORLD_NODE_PATTERN = re.compile(r"\{([^}]+)\}")
-_OVERWORLD_X_SPACING = 24
-_OVERWORLD_Y_SPACING = 4
+_OVERWORLD_X_SPACING = 20
+_OVERWORLD_Y_SPACING = 2
 _OVERWORLD_PADDING = 2
+_OVERWORLD_SIDEBAR_WIDTH = 30
 
 
 def _render_overworld_template_line(blueprint: HybridMapBlueprint, state: DraftMapState, row: str) -> str:
@@ -370,6 +371,89 @@ def _coordinate_overworld_card_lines_rich(blueprint: HybridMapBlueprint, state: 
         end = min(len(rich_lines[center_y]), start + len(token))
         rich_lines[center_y].stylize(_node_style(blueprint.nodes[node_id], state), start, end)
     return rich_lines
+
+
+def _sidebar_wrap(line: str, *, width: int = _OVERWORLD_SIDEBAR_WIDTH) -> list[str]:
+    if len(line) <= width:
+        return [line]
+    words = line.split()
+    wrapped: list[str] = []
+    current = ""
+    for word in words:
+        candidate = word if not current else f"{current} {word}"
+        if len(candidate) <= width:
+            current = candidate
+            continue
+        if current:
+            wrapped.append(current)
+        current = word
+    if current:
+        wrapped.append(current)
+    return wrapped or [line[:width]]
+
+
+def _overworld_edge_label(edge, target: TravelNode) -> str:
+    if target.title not in edge.label and target.title.lower() in edge.label.lower():
+        return f"{edge.label} ({target.title})"
+    return edge.label
+
+
+def _overworld_travel_lines(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[str]:
+    edges = available_travel_edges(blueprint, state)
+    known_edges = [edge for edge in edges if _node_is_known(blueprint.nodes[edge.to_node_id], state)]
+    unknown_edge_count = _unknown_travel_count(blueprint, state)
+    lines: list[str] = []
+    if known_edges:
+        for edge in known_edges:
+            label = _overworld_edge_label(edge, blueprint.nodes[edge.to_node_id])
+            for index, wrapped in enumerate(_sidebar_wrap(label, width=_OVERWORLD_SIDEBAR_WIDTH - 2)):
+                lines.append(f"- {wrapped}" if index == 0 else f"  {wrapped}")
+    if unknown_edge_count:
+        text = f"{unknown_edge_count} unexplored route(s) branch from here"
+        for index, wrapped in enumerate(_sidebar_wrap(text, width=_OVERWORLD_SIDEBAR_WIDTH - 2)):
+            lines.append(f"- {wrapped}" if index == 0 else f"  {wrapped}")
+    if not lines:
+        lines.append("- No unlocked travel from here")
+    return lines
+
+
+def _overworld_location_lines(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[str]:
+    current_node = blueprint.nodes.get(state.current_node_id)
+    known_nodes = [node for node in blueprint.nodes.values() if _node_is_known(node, state)]
+    hidden_count = len(blueprint.nodes) - len(known_nodes)
+    lines = [f"Current: {current_node.title if current_node is not None else 'Unknown'}"]
+    lines.append(f"Known: {len(known_nodes)}/{len(blueprint.nodes)}")
+    if hidden_count > 0:
+        lines.append(f"Hidden: {hidden_count}")
+    return [wrapped for line in lines for wrapped in _sidebar_wrap(line)]
+
+
+def _overworld_sidebar_lines(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[str]:
+    lines = [
+        "Route Key",
+        "---------",
+        "( NAME ) Current",
+        "[ NAME ] Explored",
+        "[ ????? ] Hidden",
+        "",
+        "Travel",
+        "------",
+    ]
+    lines.extend(_overworld_travel_lines(blueprint, state))
+    lines.extend(["", "Location", "--------"])
+    lines.extend(_overworld_location_lines(blueprint, state))
+    return lines
+
+
+def _combine_overworld_map_and_sidebar(map_lines: list[str], sidebar_lines: list[str]) -> list[str]:
+    map_width = max((len(line) for line in map_lines), default=0)
+    row_count = max(len(map_lines), len(sidebar_lines))
+    combined: list[str] = []
+    for index in range(row_count):
+        map_line = map_lines[index] if index < len(map_lines) else ""
+        sidebar_line = sidebar_lines[index] if index < len(sidebar_lines) else ""
+        combined.append(f"{map_line.ljust(map_width)}    {sidebar_line}".rstrip())
+    return combined
 
 
 def _overworld_node_levels(blueprint: HybridMapBlueprint) -> list[list[TravelNode]]:
@@ -518,86 +602,36 @@ def build_hud_panel(
 
 
 def build_overworld_panel_text(blueprint: HybridMapBlueprint, state: DraftMapState) -> str:
-    lines = _overworld_card_lines(blueprint, state)
-    edges = available_travel_edges(blueprint, state)
-    known_edges = [edge for edge in edges if _node_is_known(blueprint.nodes[edge.to_node_id], state)]
-    unknown_edge_count = _unknown_travel_count(blueprint, state)
-    lines.append("")
-    lines.append("Travel Routes:")
-    if known_edges:
-        lines.extend(f"- {edge.label}" for edge in known_edges)
-    if unknown_edge_count:
-        lines.append(f"- {unknown_edge_count} unexplored route(s) branch from here")
-    if not known_edges and not unknown_edge_count:
-        lines.append("- No unlocked travel from here")
-    lines.append("")
-    lines.append("Known Places:")
-    known_nodes = [node for node in blueprint.nodes.values() if _node_is_known(node, state)]
-    for node in known_nodes:
-        lines.append(f"- {node.title}: {_node_status(node, state)}")
-    hidden_count = len(blueprint.nodes) - len(known_nodes)
-    if hidden_count > 0:
-        lines.append(f"- {hidden_count} destination(s) remain unknown")
-    lines.append("")
-    lines.append("Legend: (NAME) current, [NAME] explored, [?] unknown")
-    return _box_panel("Overworld Route Map", lines, width=78)
+    map_lines = _overworld_card_lines(blueprint, state)
+    sidebar_lines = _overworld_sidebar_lines(blueprint, state)
+    lines = _combine_overworld_map_and_sidebar(map_lines, sidebar_lines)
+    return _box_panel("Overworld Route Map", lines, width=96)
 
 
 def build_overworld_panel(blueprint: HybridMapBlueprint, state: DraftMapState) -> Panel:
-    content = Group(*_overworld_card_lines_rich(blueprint, state))
+    map_content = Align.center(Group(*_overworld_card_lines_rich(blueprint, state)))
 
-    edges = available_travel_edges(blueprint, state)
-
-    meta = Table.grid(expand=True, padding=(0, 1))
-    meta.add_column(ratio=2)
-    meta.add_column(ratio=2)
-
-    travel = Table.grid()
-    travel.add_column()
-    known_edges = [edge for edge in edges if _node_is_known(blueprint.nodes[edge.to_node_id], state)]
-    unknown_edge_count = _unknown_travel_count(blueprint, state)
-    if known_edges:
-        for edge in known_edges:
-            travel.add_row(Text(f"- {edge.label}", style="green"))
-    if unknown_edge_count:
-        travel.add_row(Text(f"- {unknown_edge_count} unexplored route(s) branch from here", style="yellow"))
-    if not known_edges and not unknown_edge_count:
-        travel.add_row(Text("- No unlocked travel from here", style="dim"))
-
-    locations = Table.grid(expand=True)
-    locations.add_column(ratio=3)
-    locations.add_column(ratio=2)
-    known_nodes = [node for node in blueprint.nodes.values() if _node_is_known(node, state)]
-    for node in known_nodes:
-        status = _node_status(node, state)
-        status_style = "bright_cyan" if status == "Current" else "green"
-        locations.add_row(
-            Text(node.title, style="white"),
-            Text(status, style=status_style),
-        )
-    hidden_count = len(blueprint.nodes) - len(known_nodes)
-    if hidden_count > 0:
-        locations.add_row(
-            Text(f"{hidden_count} unknown destination(s)", style="dim"),
-            Text("Hidden", style="dim"),
-        )
-
-    meta.add_row(
+    route_key = Text.assemble(
+        ("( NAME ) ", "bold black on bright_cyan"),
+        ("Current\n", "white"),
+        ("[ NAME ] ", "bold green"),
+        ("Explored\n", "white"),
+        ("[ ????? ] ", "dim"),
+        ("Hidden", "white"),
+    )
+    travel = Text("\n".join(_overworld_travel_lines(blueprint, state)), style="green")
+    location = Text("\n".join(_overworld_location_lines(blueprint, state)), style="white")
+    sidebar = Group(
+        Panel(route_key, title="Route Key", border_style="cyan", box=box.SIMPLE),
         Panel(travel, title="Travel", border_style="green", box=box.SIMPLE),
-        Panel(locations, title="Route Key", border_style="cyan", box=box.SIMPLE),
+        Panel(location, title="Location", border_style="magenta", box=box.SIMPLE),
     )
 
-    legend = Text.assemble(
-        ("(NAME) ", "bold black on bright_cyan"),
-        ("current   ", "white"),
-        ("[NAME] ", "bold green"),
-        ("explored   ", "white"),
-        ("[????] ", "dim"),
-        ("unknown", "white"),
-    )
-
-    group = Group(content, meta, Align.center(legend))
-    return Panel(group, title="Overworld Route Map", border_style="green", box=box.ROUNDED, padding=(0, 1))
+    layout = Table.grid(expand=True, padding=(0, 2))
+    layout.add_column(ratio=5)
+    layout.add_column(width=_OVERWORLD_SIDEBAR_WIDTH + 4)
+    layout.add_row(map_content, sidebar)
+    return Panel(layout, title="Overworld Route Map", border_style="green", box=box.ROUNDED, padding=(0, 1))
 
 
 def _room_symbol(dungeon: DungeonMap, room_id: str, state: DraftMapState) -> str:

@@ -9,13 +9,15 @@ import random
 import wave
 
 
-SAMPLE_RATE = 22050
-MASTER_GAIN = 0.9
+SAMPLE_RATE = 44_100
+MASTER_GAIN = 0.92
 SFX_DIR = Path(__file__).resolve().parents[1] / "dnd_game" / "assets" / "sfx"
 README_PATH = SFX_DIR / "README.md"
 MANIFEST_PATH = SFX_DIR / "manifest.json"
+DICE_ROLL_MIN_SECONDS = 0.40
+DICE_ROLL_MAX_SECONDS = 1.75
 NOISE_RNG = random.Random(4242)
-NOISE_TABLE = [NOISE_RNG.uniform(-1.0, 1.0) for _ in range(32768)]
+NOISE_TABLE = [NOISE_RNG.uniform(-1.0, 1.0) for _ in range(65_536)]
 NOISE_MASK = len(NOISE_TABLE) - 1
 
 
@@ -25,21 +27,51 @@ class SoundEffectSpec:
     filename: str
     title: str
     duration_seconds: float
+    seed: int
     description: str
 
 
 SOUND_EFFECT_SPECS: tuple[SoundEffectSpec, ...] = (
-    SoundEffectSpec("fight_victory", "fight_victory.wav", "Triumph Stinger", 1.45, "Bright rising fanfare for winning a fight."),
-    SoundEffectSpec("dice_roll", "dice_roll.wav", "Bone Dice Rattle", 1.05, "A rattling dice tumble with a firm final stop."),
-    SoundEffectSpec("game_over", "game_over.wav", "Fallen Banner", 1.9, "A dark descending sting for defeat and game over."),
-    SoundEffectSpec("skill_success", "skill_success.wav", "Surefooted Success", 0.8, "A confident upward chime for a passed skill check."),
-    SoundEffectSpec("skill_fail", "skill_fail.wav", "Misstep", 0.85, "A short sinking sting for a failed skill check."),
-    SoundEffectSpec("buy_item", "buy_item.wav", "Coin Purse", 0.75, "A bright coin-and-ledger purchase cue."),
-    SoundEffectSpec("sell_item", "sell_item.wav", "Merchant Sale", 0.7, "A lower coin clink for a completed sale."),
-    SoundEffectSpec("player_attack", "player_attack.wav", "Heroic Slash", 0.55, "A sharp heroic weapon swing impact."),
-    SoundEffectSpec("enemy_attack", "enemy_attack.wav", "Hostile Strike", 0.62, "A rougher hostile hit with more weight."),
-    SoundEffectSpec("player_heal", "player_heal.wav", "Restorative Light", 1.1, "A warm magical swell for player-side healing."),
-    SoundEffectSpec("enemy_heal", "enemy_heal.wav", "Unsettling Renewal", 1.1, "A colder eerie swell for enemy healing."),
+    SoundEffectSpec(
+        "dice_roll_040",
+        "dice_roll_040.wav",
+        "Quick Dice Tap",
+        0.40,
+        401,
+        "A tight, quick dice tap for minimal rolls.",
+    ),
+    SoundEffectSpec(
+        "dice_roll_070",
+        "dice_roll_070.wav",
+        "Short Dice Skitter",
+        0.70,
+        702,
+        "A short tabletop dice skitter with a small final stop.",
+    ),
+    SoundEffectSpec(
+        "dice_roll_095",
+        "dice_roll_095.wav",
+        "Dice Rattle",
+        0.95,
+        953,
+        "A compact rattle of hard dice across wood.",
+    ),
+    SoundEffectSpec(
+        "dice_roll_130",
+        "dice_roll_130.wav",
+        "Long Dice Tumble",
+        1.30,
+        1304,
+        "A longer tumbling roll with staggered bounces.",
+    ),
+    SoundEffectSpec(
+        "dice_roll_175",
+        "dice_roll_175.wav",
+        "Extended Dice Roll",
+        1.75,
+        1755,
+        "An extended dice roll that settles at the long animation limit.",
+    ),
 )
 
 
@@ -63,148 +95,158 @@ def add_tone(
     frequency: float,
     amplitude: float,
     waveform: str = "sine",
-    attack_ratio: float = 0.02,
-    release_ratio: float = 0.2,
-    vibrato_hz: float = 0.0,
+    attack_ratio: float = 0.01,
+    release_ratio: float = 0.55,
     pitch_fall: float = 0.0,
 ) -> None:
     start = int(start_seconds * SAMPLE_RATE)
     total = int(duration_seconds * SAMPLE_RATE)
     phase = 0.0
-    vibrato_phase = 0.0
     for index in range(total):
         destination = start + index
         if destination >= len(buffer):
             break
         time_seconds = index / SAMPLE_RATE
         env = envelope(index, total, attack_ratio, release_ratio)
-        current_frequency = max(20.0, frequency - (pitch_fall * time_seconds))
-        if vibrato_hz:
-            vibrato_phase += vibrato_hz / SAMPLE_RATE
-            current_frequency *= 1.0 + 0.01 * math.sin(2.0 * math.pi * vibrato_phase)
+        current_frequency = max(35.0, frequency - pitch_fall * time_seconds)
         phase += current_frequency / SAMPLE_RATE
-        if waveform == "sine":
-            value = math.sin(2.0 * math.pi * phase)
-        elif waveform == "triangle":
+        if waveform == "triangle":
             value = 1.0 - 4.0 * abs((phase % 1.0) - 0.5)
-        elif waveform == "saw":
-            value = 2.0 * (phase % 1.0) - 1.0
+        elif waveform == "square":
+            value = 1.0 if math.sin(2.0 * math.pi * phase) >= 0.0 else -1.0
         else:
-            value = 1.0 if math.sin(2.0 * math.pi * phase) >= 0 else -1.0
+            value = math.sin(2.0 * math.pi * phase)
         buffer[destination] += env * value * amplitude
 
 
-def add_noise(
+def add_noise_burst(
     buffer: array,
     *,
     start_seconds: float,
     duration_seconds: float,
     amplitude: float,
-    attack_ratio: float = 0.01,
-    release_ratio: float = 0.2,
-    color: float = 0.0,
+    cursor_seed: int,
+    attack_ratio: float = 0.02,
+    release_ratio: float = 0.75,
+    high_pass: float = 0.72,
 ) -> None:
     start = int(start_seconds * SAMPLE_RATE)
     total = int(duration_seconds * SAMPLE_RATE)
-    cursor = int(start_seconds * SAMPLE_RATE * 7) & NOISE_MASK
+    cursor = cursor_seed & NOISE_MASK
     previous = 0.0
     for index in range(total):
         destination = start + index
         if destination >= len(buffer):
             break
+        cursor = (cursor + 53) & NOISE_MASK
+        raw = NOISE_TABLE[cursor]
+        value = raw - previous * high_pass
+        previous = raw
         env = envelope(index, total, attack_ratio, release_ratio)
-        cursor = (cursor + 29) & NOISE_MASK
-        value = NOISE_TABLE[cursor]
-        if color:
-            previous = previous * color + value * (1.0 - color)
-            value = previous
-        buffer[destination] += env * value * amplitude
+        buffer[destination] += value * env * amplitude
 
 
-def add_chime_cluster(buffer: array, *, start_seconds: float, root_hz: float, major: bool = True, amplitude: float = 0.2) -> None:
-    third = 1.25 if major else 1.2
-    for offset, interval in enumerate((1.0, third, 1.5)):
+def add_impact(
+    buffer: array,
+    *,
+    start_seconds: float,
+    amplitude: float,
+    rng: random.Random,
+    heavy: bool = False,
+) -> None:
+    click_duration = rng.uniform(0.010, 0.024) if not heavy else rng.uniform(0.022, 0.042)
+    ring_duration = rng.uniform(0.045, 0.095) if not heavy else rng.uniform(0.075, 0.145)
+    cursor_seed = int(start_seconds * SAMPLE_RATE * 19) ^ rng.randrange(1 << 16)
+    add_noise_burst(
+        buffer,
+        start_seconds=start_seconds,
+        duration_seconds=click_duration,
+        amplitude=amplitude * (0.85 if heavy else 1.0),
+        cursor_seed=cursor_seed,
+        attack_ratio=0.006,
+        release_ratio=0.86,
+        high_pass=0.82,
+    )
+    add_tone(
+        buffer,
+        start_seconds=start_seconds + rng.uniform(0.000, 0.004),
+        duration_seconds=ring_duration,
+        frequency=rng.uniform(820.0, 1850.0),
+        amplitude=amplitude * rng.uniform(0.30, 0.48),
+        waveform="triangle",
+        attack_ratio=0.006,
+        release_ratio=0.78,
+        pitch_fall=rng.uniform(380.0, 900.0),
+    )
+    add_tone(
+        buffer,
+        start_seconds=start_seconds + rng.uniform(0.002, 0.008),
+        duration_seconds=ring_duration * rng.uniform(0.42, 0.72),
+        frequency=rng.uniform(1500.0, 2800.0),
+        amplitude=amplitude * rng.uniform(0.12, 0.22),
+        waveform="sine",
+        attack_ratio=0.01,
+        release_ratio=0.66,
+        pitch_fall=rng.uniform(700.0, 1400.0),
+    )
+    if heavy:
         add_tone(
             buffer,
-            start_seconds=start_seconds + (offset * 0.05),
-            duration_seconds=0.35,
-            frequency=root_hz * interval,
-            amplitude=amplitude - (offset * 0.03),
+            start_seconds=start_seconds,
+            duration_seconds=rng.uniform(0.07, 0.13),
+            frequency=rng.uniform(135.0, 220.0),
+            amplitude=amplitude * 0.34,
             waveform="sine",
-            attack_ratio=0.01,
-            release_ratio=0.55,
-            vibrato_hz=5.0,
+            attack_ratio=0.006,
+            release_ratio=0.70,
+            pitch_fall=45.0,
         )
 
 
-def render_effect(spec: SoundEffectSpec) -> dict[str, object]:
-    total_samples = int(spec.duration_seconds * SAMPLE_RATE)
+def impact_times(duration_seconds: float, rng: random.Random) -> list[float]:
+    count = max(4, int(5 + duration_seconds * 10.0))
+    latest_rattle = max(0.12, duration_seconds - 0.12)
+    times: list[float] = []
+    for index in range(count):
+        progress = index / max(1, count - 1)
+        eased = 1.0 - (1.0 - progress) ** 1.75
+        jitter = rng.uniform(-0.030, 0.030) * (1.0 - progress * 0.45)
+        times.append(min(latest_rattle, max(0.015, 0.025 + eased * (latest_rattle - 0.035) + jitter)))
+    final_stop = max(0.06, duration_seconds - 0.075)
+    times.extend([max(0.02, final_stop - rng.uniform(0.045, 0.070)), final_stop])
+    return sorted(set(round(value, 4) for value in times if value < duration_seconds - 0.012))
+
+
+def render_dice_roll(spec: SoundEffectSpec) -> dict[str, object]:
+    total_samples = int(round(spec.duration_seconds * SAMPLE_RATE))
     buffer = array("f", [0.0]) * total_samples
-
-    if spec.key == "dice_roll":
-        rng = random.Random(1200)
-        for index in range(10):
-            start = 0.03 + index * 0.07
-            pitch = 720 - index * 38 + rng.uniform(-25, 25)
-            add_noise(buffer, start_seconds=start, duration_seconds=0.05, amplitude=0.13, color=0.25)
-            add_tone(buffer, start_seconds=start, duration_seconds=0.06, frequency=pitch, amplitude=0.12, waveform="triangle", attack_ratio=0.01, release_ratio=0.5, pitch_fall=180)
-        add_noise(buffer, start_seconds=0.78, duration_seconds=0.11, amplitude=0.11, color=0.1)
-        add_tone(buffer, start_seconds=0.77, duration_seconds=0.14, frequency=180, amplitude=0.2, waveform="sine", release_ratio=0.7)
-
-    elif spec.key == "fight_victory":
-        for index, frequency in enumerate((392, 494, 587, 784)):
-            add_tone(buffer, start_seconds=0.05 + index * 0.12, duration_seconds=0.34, frequency=frequency, amplitude=0.22, waveform="triangle", release_ratio=0.45)
-        add_chime_cluster(buffer, start_seconds=0.55, root_hz=523, major=True, amplitude=0.19)
-        add_chime_cluster(buffer, start_seconds=0.82, root_hz=659, major=True, amplitude=0.17)
-
-    elif spec.key == "game_over":
-        for index, frequency in enumerate((392, 330, 262, 196)):
-            add_tone(buffer, start_seconds=0.08 + index * 0.28, duration_seconds=0.48, frequency=frequency, amplitude=0.21, waveform="saw", release_ratio=0.52, vibrato_hz=2.0, pitch_fall=20)
-        add_noise(buffer, start_seconds=0.15, duration_seconds=1.4, amplitude=0.08, color=0.86)
-        add_tone(buffer, start_seconds=0.18, duration_seconds=1.35, frequency=82, amplitude=0.16, waveform="sine", release_ratio=0.4)
-
-    elif spec.key == "skill_success":
-        add_tone(buffer, start_seconds=0.02, duration_seconds=0.18, frequency=523, amplitude=0.18, waveform="triangle", release_ratio=0.45)
-        add_tone(buffer, start_seconds=0.12, duration_seconds=0.18, frequency=659, amplitude=0.2, waveform="triangle", release_ratio=0.45)
-        add_chime_cluster(buffer, start_seconds=0.24, root_hz=784, major=True, amplitude=0.16)
-
-    elif spec.key == "skill_fail":
-        add_tone(buffer, start_seconds=0.03, duration_seconds=0.2, frequency=330, amplitude=0.16, waveform="saw", release_ratio=0.35, pitch_fall=50)
-        add_tone(buffer, start_seconds=0.16, duration_seconds=0.28, frequency=247, amplitude=0.18, waveform="saw", release_ratio=0.45, pitch_fall=70)
-        add_noise(buffer, start_seconds=0.12, duration_seconds=0.25, amplitude=0.05, color=0.4)
-
-    elif spec.key == "buy_item":
-        add_tone(buffer, start_seconds=0.05, duration_seconds=0.11, frequency=1100, amplitude=0.15, waveform="sine", release_ratio=0.65)
-        add_tone(buffer, start_seconds=0.1, duration_seconds=0.1, frequency=1450, amplitude=0.12, waveform="sine", release_ratio=0.6)
-        add_tone(buffer, start_seconds=0.2, duration_seconds=0.1, frequency=1320, amplitude=0.11, waveform="sine", release_ratio=0.6)
-        add_noise(buffer, start_seconds=0.04, duration_seconds=0.08, amplitude=0.03)
-
-    elif spec.key == "sell_item":
-        add_tone(buffer, start_seconds=0.05, duration_seconds=0.12, frequency=760, amplitude=0.14, waveform="triangle", release_ratio=0.55)
-        add_tone(buffer, start_seconds=0.18, duration_seconds=0.12, frequency=640, amplitude=0.12, waveform="triangle", release_ratio=0.55)
-        add_noise(buffer, start_seconds=0.04, duration_seconds=0.08, amplitude=0.035, color=0.2)
-
-    elif spec.key == "player_attack":
-        add_noise(buffer, start_seconds=0.02, duration_seconds=0.16, amplitude=0.1, color=0.08)
-        add_tone(buffer, start_seconds=0.01, duration_seconds=0.18, frequency=920, amplitude=0.12, waveform="saw", release_ratio=0.55, pitch_fall=900)
-        add_tone(buffer, start_seconds=0.16, duration_seconds=0.12, frequency=220, amplitude=0.15, waveform="sine", release_ratio=0.5, pitch_fall=140)
-
-    elif spec.key == "enemy_attack":
-        add_noise(buffer, start_seconds=0.02, duration_seconds=0.2, amplitude=0.12, color=0.03)
-        add_tone(buffer, start_seconds=0.01, duration_seconds=0.22, frequency=540, amplitude=0.15, waveform="saw", release_ratio=0.52, pitch_fall=620)
-        add_tone(buffer, start_seconds=0.18, duration_seconds=0.16, frequency=120, amplitude=0.16, waveform="sine", release_ratio=0.55, pitch_fall=60)
-
-    elif spec.key == "player_heal":
-        for index, frequency in enumerate((349, 440, 523, 659)):
-            add_tone(buffer, start_seconds=0.08 + index * 0.12, duration_seconds=0.5, frequency=frequency, amplitude=0.12, waveform="sine", attack_ratio=0.08, release_ratio=0.5, vibrato_hz=4.0)
-        add_chime_cluster(buffer, start_seconds=0.52, root_hz=523, major=True, amplitude=0.16)
-
-    elif spec.key == "enemy_heal":
-        for index, frequency in enumerate((220, 277, 330, 415)):
-            add_tone(buffer, start_seconds=0.06 + index * 0.11, duration_seconds=0.56, frequency=frequency, amplitude=0.13, waveform="triangle", attack_ratio=0.08, release_ratio=0.54, vibrato_hz=2.0)
-        add_noise(buffer, start_seconds=0.12, duration_seconds=0.72, amplitude=0.04, color=0.9)
-        add_chime_cluster(buffer, start_seconds=0.5, root_hz=330, major=False, amplitude=0.14)
-
+    rng = random.Random(spec.seed)
+    times = impact_times(spec.duration_seconds, rng)
+    for index, start in enumerate(times):
+        progress = start / max(spec.duration_seconds, 0.001)
+        final_cluster = index >= len(times) - 2
+        amplitude = rng.uniform(0.20, 0.34) * (1.0 - progress * 0.36)
+        if final_cluster:
+            amplitude *= 1.32
+        add_impact(buffer, start_seconds=start, amplitude=amplitude, rng=rng, heavy=final_cluster)
+        if rng.random() < 0.42 and start + 0.020 < spec.duration_seconds:
+            add_impact(
+                buffer,
+                start_seconds=start + rng.uniform(0.012, 0.035),
+                amplitude=amplitude * rng.uniform(0.34, 0.52),
+                rng=rng,
+                heavy=False,
+            )
+    add_noise_burst(
+        buffer,
+        start_seconds=0.0,
+        duration_seconds=max(0.08, spec.duration_seconds - 0.05),
+        amplitude=0.018,
+        cursor_seed=spec.seed * 13,
+        attack_ratio=0.10,
+        release_ratio=0.92,
+        high_pass=0.62,
+    )
     peak = max(max(buffer, default=0.0), -min(buffer, default=0.0), 1.0)
     scale = min(MASTER_GAIN / peak, MASTER_GAIN)
     frames = bytearray()
@@ -227,8 +269,21 @@ def render_effect(spec: SoundEffectSpec) -> dict[str, object]:
     }
 
 
+def remove_existing_sound_effect_files() -> None:
+    for path in SFX_DIR.glob("*.wav"):
+        path.unlink()
+
+
 def write_manifest(entries: list[dict[str, object]]) -> None:
-    manifest = {"sample_rate": SAMPLE_RATE, "generator": "tools/generate_sound_effects.py", "effects": entries}
+    manifest = {
+        "sample_rate": SAMPLE_RATE,
+        "generator": "tools/generate_sound_effects.py",
+        "roll_duration_window_seconds": {
+            "minimum": DICE_ROLL_MIN_SECONDS,
+            "maximum": DICE_ROLL_MAX_SECONDS,
+        },
+        "effects": entries,
+    }
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
@@ -236,9 +291,11 @@ def write_readme(entries: list[dict[str, object]]) -> None:
     lines = [
         "# Generated Sound Effects",
         "",
-        "These WAV files are short procedural sound effects for gameplay events.",
+        "These WAV files are procedural dice-roll sound effects for gameplay rolls.",
+        "Other gameplay sound effects are intentionally absent until they are recreated separately.",
         "",
         f"- Sample rate: `{SAMPLE_RATE} Hz` mono PCM",
+        f"- Dice roll duration window: `{DICE_ROLL_MIN_SECONDS:.2f}s` to `{DICE_ROLL_MAX_SECONDS:.2f}s`",
         f"- Effect count: `{len(entries)}`",
         "",
         "## Effects",
@@ -252,10 +309,11 @@ def write_readme(entries: list[dict[str, object]]) -> None:
 
 def main() -> None:
     SFX_DIR.mkdir(parents=True, exist_ok=True)
-    entries = [render_effect(spec) for spec in SOUND_EFFECT_SPECS]
+    remove_existing_sound_effect_files()
+    entries = [render_dice_roll(spec) for spec in SOUND_EFFECT_SPECS]
     write_manifest(entries)
     write_readme(entries)
-    print(f"Generated {len(entries)} sound effects in {SFX_DIR}")
+    print(f"Generated {len(entries)} dice-roll sound effects in {SFX_DIR}")
 
 
 if __name__ == "__main__":

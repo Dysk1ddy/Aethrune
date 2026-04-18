@@ -809,6 +809,11 @@ class MapSystemMixin:
         if text:
             self.say(text)
 
+    def _refresh_map_scene_music(self) -> None:
+        refresh_scene_music = getattr(self, "refresh_scene_music", None)
+        if callable(refresh_scene_music):
+            refresh_scene_music()
+
     def _act1_current_node_id_for_history(self, payload: dict[str, Any]) -> str:
         assert self.state is not None
         scene_node_id = ACT1_SCENE_TO_NODE_ID.get(self.state.current_scene)
@@ -841,6 +846,7 @@ class MapSystemMixin:
         self.state.current_scene = node.scene_key
         self._clear_map_view_cache()
         self._compact_hud_last_scene_key = None
+        self._refresh_map_scene_music()
         self._show_act1_overworld_transition_feedback(transition_text)
 
     def return_to_phandalin(self, text: str) -> None:
@@ -1039,6 +1045,7 @@ class MapSystemMixin:
         self.state.current_scene = node.scene_key
         self._clear_map_view_cache("act2_overworld", "act2_dungeon")
         self._compact_hud_last_scene_key = None
+        self._refresh_map_scene_music()
         self._show_act2_overworld_transition_feedback(transition_text)
 
     def set_current_act2_map_room(self, room_id: str, *, announce: bool = False, movement_text: str = "") -> None:
