@@ -71,6 +71,7 @@ class StoryTownHubMixin:
                     self.reward_party(xp=10, reason="reading Phandalin's mood on arrival")
                 else:
                     self.say("The town's fear is real, but too tangled and contradictory for one quick read to untangle.")
+                self.run_dialogue_input("phandalin_arrival_insight")
             elif choice == 2:
                 self.player_speaker("Let them know Neverwinter sent help.")
                 success = self.skill_check(self.state.player, "Persuasion", 12, context="to steady the town's nerves")
@@ -80,6 +81,7 @@ class StoryTownHubMixin:
                     self.say("A grateful merchant presses a few coins into your hand for road expenses.")
                 else:
                     self.say("Your words land, but suspicion clings harder than hope in a town this strained.")
+                self.run_dialogue_input("phandalin_arrival_persuasion")
             else:
                 self.player_action("Show me the tracks, barricades, and weak points first.")
                 success = self.skill_check(self.state.player, "Investigation", 12, context="to assess the town's defenses")
@@ -89,6 +91,7 @@ class StoryTownHubMixin:
                     self.reward_party(xp=10, reason="surveying Phandalin's defenses")
                 else:
                     self.say("Too many wagon ruts and bootprints overlap for a clean read before the trail goes cold.")
+                self.run_dialogue_input("phandalin_arrival_investigation")
         elif self.state.flags.get("ashfall_watch_cleared") and not self.state.flags.get("phandalin_after_watch_seen"):
             self.say(
                 "When you return from Ashfall Watch, Phandalin feels changed in all the small ways that matter. "
@@ -231,6 +234,7 @@ class StoryTownHubMixin:
                     )
                 if self.state.flags.get("blackwake_sereth_fate") == "escaped":
                     self.speaker("Tessa Harrow", "And if Sereth Vane is still breathing, I want that name in every watchman's ear by sundown.")
+                self.run_dialogue_input("steward_blackwake")
             elif selection_key == "vow":
                 self.state.flags["steward_vow_made"] = True
                 self.player_speaker("I'll break their grip on Phandalin.")
@@ -238,6 +242,7 @@ class StoryTownHubMixin:
                     "Tessa Harrow",
                     "Then give me a result I can build a safer week on, and Phandalin will remember your name for the right reason.",
                 )
+                self.run_dialogue_input("steward_vow")
             else:
                 self.player_action("You leave Tessa to her work and move on.")
                 return
@@ -365,6 +370,7 @@ class StoryTownHubMixin:
                 elif selection_key == "recruit_bryn":
                     self.state.flags["inn_recruit_bryn_attempted"] = True
                     self.player_speaker("Take a share of the contract and ride with me.")
+                    self.run_dialogue_input("stonehill_recruit_bryn")
                     success = self.skill_check(self.state.player, "Persuasion", 12, context="to convince Bryn the risk is worth it")
                     if success:
                         self.recruit_companion(create_bryn_underbough())
@@ -377,6 +383,7 @@ class StoryTownHubMixin:
                 elif selection_key == "recruit_bryn_second":
                     self.state.flags["inn_recruit_bryn_second_attempted"] = True
                     self.player_speaker("You don't need luck. You need someone who listens. Tell me what you're waiting to hear.")
+                    self.run_dialogue_input("stonehill_recruit_bryn_second")
                     success = self.skill_check(self.state.player, "Insight", 12, context="to read Bryn's hesitation and answer it plainly")
                     if success:
                         self.recruit_companion(create_bryn_underbough())

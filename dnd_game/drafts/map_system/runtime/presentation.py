@@ -354,7 +354,7 @@ def _coordinate_overworld_card_lines(blueprint: HybridMapBlueprint, state: Draft
             if 0 <= column < width:
                 canvas[center_y][column] = char
 
-    return ["".join(row).rstrip() for row in canvas]
+    return ["".join(row) for row in canvas]
 
 
 def _coordinate_overworld_card_lines_rich(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[Text]:
@@ -362,7 +362,9 @@ def _coordinate_overworld_card_lines_rich(blueprint: HybridMapBlueprint, state: 
     if not lines:
         return []
     centers = _overworld_position_centers(blueprint)
-    rich_lines = [Text(line, style="dim") for line in lines]
+    rich_lines = [
+        Text(line, style="dim", no_wrap=True, overflow="crop") for line in lines
+    ]
     for node_id, (center_x, center_y) in centers.items():
         if center_y >= len(rich_lines):
             continue
@@ -452,7 +454,10 @@ def _combine_overworld_map_and_sidebar(map_lines: list[str], sidebar_lines: list
     for index in range(row_count):
         map_line = map_lines[index] if index < len(map_lines) else ""
         sidebar_line = sidebar_lines[index] if index < len(sidebar_lines) else ""
-        combined.append(f"{map_line.ljust(map_width)}    {sidebar_line}".rstrip())
+        if sidebar_line:
+            combined.append(f"{map_line.ljust(map_width)}    {sidebar_line}")
+        else:
+            combined.append(map_line.ljust(map_width))
     return combined
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from ..content import BACKGROUNDS, CLASSES, RACES, build_character
 from ..items import get_item
+from ..data.story.camp_banter import CAMP_BANTERS
 from ..data.story.companions import COMPANION_PROFILES
 from ..ui.colors import rich_style_name
 from ..ui.rich_render import Columns, Group, Panel, Table, box
@@ -57,7 +58,8 @@ class CampMixin:
             if self.state.camp_companions
             else self.rich_text("No companions are resting at camp right now.", "light_aqua", dim=True)
         )
-        options = Group(
+        has_banter = bool(self.available_camp_banters())
+        option_lines = [
             self.rich_text("1. Party and roster", "light_green"),
             self.rich_text("2. Supplies and equipment", "light_green"),
             self.rich_text("3. Rest and recovery", "light_green"),
@@ -65,7 +67,10 @@ class CampMixin:
             self.rich_text("5. View journal", "light_green"),
             self.rich_text("6. Speak to the magic mirror", "light_green"),
             self.rich_text("7. Break camp", "light_green"),
-        )
+        ]
+        if has_banter:
+            option_lines.append(self.rich_text("8. Listen around the campfire", "light_green"))
+        options = Group(*option_lines)
         panels: list[object] = [
             Panel(
                 status,
@@ -142,6 +147,8 @@ class CampMixin:
                     "Speak to the magic mirror (100 gp)",
                     "Break camp",
                 ]
+                if self.available_camp_banters():
+                    options.append("Listen around the campfire")
                 choice = self.choose(
                     "How do you spend this stop at camp?",
                     options,
@@ -159,9 +166,11 @@ class CampMixin:
                     self.show_journal()
                 elif choice == 6:
                     self.visit_magic_mirror()
-                else:
+                elif choice == 7:
                     self.say("The campfire is banked, straps are tightened, and the road calls again.")
                     return
+                else:
+                    self.listen_around_campfire()
         finally:
             if callable(refresh_scene_music):
                 refresh_scene_music()
@@ -380,6 +389,213 @@ class CampMixin:
             return False
 
         return True
+
+    def camp_banter_seen_flag(self, banter: dict[str, object]) -> str:
+        return str(banter.get("seen_flag") or f"{banter['id']}_seen")
+
+    def camp_companion_by_id(self, companion_id: str):
+        assert self.state is not None
+        for companion in self.state.all_companions():
+            if companion.companion_id == companion_id and not companion.dead:
+                return companion
+        return None
+
+    def camp_companion_name(self, companion_id: str) -> str:
+        companion = self.camp_companion_by_id(companion_id)
+        if companion is not None:
+            return companion.name
+        profile = COMPANION_PROFILES.get(companion_id, {})
+        return str(profile.get("name", companion_id.replace("_", " ").title()))
+
+    def camp_condition_is_available(self, entry: dict[str, object]) -> bool:
+        assert self.state is not None
+
+        required_flags = entry.get("requires_flags", ())
+        if isinstance(required_flags, str):
+            required_flags = (required_flags,)
+        if any(not self.state.flags.get(str(flag)) for flag in required_flags):
+            return False
+
+        any_flags = entry.get("requires_any_flags", ())
+        if isinstance(any_flags, str):
+            any_flags = (any_flags,)
+        if any_flags and not any(self.state.flags.get(str(flag)) for flag in any_flags):
+            return False
+
+        blocked_flags = entry.get("blocked_flags", ())
+        if isinstance(blocked_flags, str):
+            blocked_flags = (blocked_flags,)
+        if any(self.state.flags.get(str(flag)) for flag in blocked_flags):
+            return False
+
+        for flag, expected in dict(entry.get("requires_flag_values", {})).items():
+            if self.state.flags.get(str(flag)) != expected:
+                return False
+
+        for flag, allowed_values in dict(entry.get("requires_any_flag_values", {})).items():
+            values = allowed_values if isinstance(allowed_values, (list, tuple, set)) else (allowed_values,)
+            if self.state.flags.get(str(flag)) not in values:
+                return False
+
+        for flag, minimum in dict(entry.get("min_flags", {})).items():
+            try:
+                if int(self.state.flags.get(str(flag), 0) or 0) < int(minimum):
+                    return False
+            except (TypeError, ValueError):
+                return False
+
+        for flag, maximum in dict(entry.get("max_flags", {})).items():
+            try:
+                if int(self.state.flags.get(str(flag), 0) or 0) > int(maximum):
+                    return False
+            except (TypeError, ValueError):
+                return False
+
+        return True
+
+    def camp_banter_is_available(self, banter: dict[str, object]) -> bool:
+        assert self.state is not None
+        if self.state.flags.get(self.camp_banter_seen_flag(banter)):
+            return False
+        if not self.camp_condition_is_available(banter):
+            return False
+        for companion_id in list(banter.get("participants", ())):
+            if self.camp_companion_by_id(str(companion_id)) is None:
+                return False
+        return True
+
+    def available_camp_banters(self) -> list[dict[str, object]]:
+        available = [banter for banter in CAMP_BANTERS if self.camp_banter_is_available(banter)]
+        return sorted(available, key=lambda banter: (-int(banter.get("priority", 0)), str(banter.get("id", ""))))
+
+    def camp_banter_option_label(self, banter: dict[str, object]) -> str:
+        participant_names = [self.camp_companion_name(str(companion_id)) for companion_id in banter.get("participants", ())]
+        return f"{banter['title']} ({', '.join(participant_names)})"
+
+    def listen_around_campfire(self) -> None:
+        available = self.available_camp_banters()
+        if not available:
+            self.say("The campfire is companionable tonight, but no new conversation rises above the crackle.")
+            return
+        if len(available) == 1:
+            self.run_camp_banter(available[0])
+            return
+        options = [self.camp_banter_option_label(banter) for banter in available]
+        options.append("Back")
+        choice = self.choose("Which campfire conversation do you follow?", options, allow_meta=False)
+        if choice == len(options):
+            return
+        self.run_camp_banter(available[choice - 1])
+
+    def run_camp_banter(self, banter: dict[str, object]) -> None:
+        assert self.state is not None
+        if not self.camp_banter_is_available(banter):
+            self.say("That campfire conversation is not available right now.")
+            return
+        self.banner(str(banter["title"]))
+        intro = str(banter.get("intro", "")).strip()
+        if intro:
+            self.say(intro)
+        for line in list(banter.get("lines", ())):
+            if isinstance(line, tuple):
+                speaker_id, text = line
+                self.speaker(self.camp_companion_name(str(speaker_id)), str(text))
+                continue
+            if not isinstance(line, dict) or not self.camp_condition_is_available(line):
+                continue
+            text = str(line.get("text", "")).strip()
+            if not text:
+                continue
+            speaker_id = str(line.get("speaker", "")).strip()
+            if speaker_id:
+                self.speaker(self.camp_companion_name(speaker_id), text)
+            else:
+                self.say(text)
+        seen_flag = self.camp_banter_seen_flag(banter)
+        self.state.flags[seen_flag] = True
+        for companion_id in list(banter.get("participants", ())):
+            companion = self.camp_companion_by_id(str(companion_id))
+            if companion is None:
+                continue
+            seen = companion.bond_flags.setdefault("camp_banters", [])
+            if banter["id"] not in seen:
+                seen.append(str(banter["id"]))
+        self.apply_camp_banter_effects(banter)
+
+    def apply_camp_banter_effects(self, banter: dict[str, object]) -> None:
+        refresh_act3 = False
+        for effect in list(banter.get("effects", ())):
+            if not isinstance(effect, dict) or not self.camp_condition_is_available(effect):
+                continue
+            self.apply_camp_banter_effect(effect)
+            if "act3_reveal_resistance_bonus" in dict(effect.get("flag_increments", {})):
+                refresh_act3 = True
+        if refresh_act3 and callable(getattr(self, "act3_refresh_post_reveal_state", None)):
+            self.act3_refresh_post_reveal_state()
+
+    def apply_camp_banter_effect(self, effect: dict[str, object]) -> None:
+        assert self.state is not None
+        for flag in list(effect.get("set_flags", ())):
+            self.state.flags[str(flag)] = True
+        for flag, delta in dict(effect.get("flag_increments", {})).items():
+            current = self.state.flags.get(str(flag), 0)
+            if isinstance(current, bool):
+                current = int(current)
+            try:
+                updated = int(current or 0) + int(delta)
+            except (TypeError, ValueError):
+                updated = int(delta)
+            if str(flag) in {"ninth_ledger_pressure", "act3_reveal_resistance_bonus"}:
+                updated = max(0, min(5, updated))
+            self.state.flags[str(flag)] = updated
+            self.say(f"{self.camp_flag_label(str(flag))} is now {updated}.")
+        for companion_id, delta in dict(effect.get("companion_deltas", {})).items():
+            companion = self.camp_companion_by_id(str(companion_id))
+            if companion is not None:
+                self.adjust_companion_disposition(companion, int(delta), "campfire conversation")
+        for metric_key, delta in dict(effect.get("metric_deltas", {})).items():
+            self.apply_camp_banter_metric_delta(str(metric_key), int(delta))
+        for status, duration in dict(effect.get("player_statuses", {})).items():
+            self.apply_status(self.state.player, str(status), int(duration), source="campfire resolve")
+        for companion_id, lore_entry in dict(effect.get("companion_lore", {})).items():
+            companion = self.camp_companion_by_id(str(companion_id))
+            if companion is not None and lore_entry not in companion.lore:
+                companion.lore.append(str(lore_entry))
+        for clue in list(effect.get("clues", ())):
+            self.add_clue(str(clue))
+        journal = str(effect.get("journal", "")).strip()
+        if journal:
+            self.add_journal(journal)
+
+    def camp_flag_label(self, flag: str) -> str:
+        labels = {
+            "act3_companion_testimony_count": "Companion testimony",
+            "act3_mercy_or_contradiction_count": "Mercy and contradiction",
+            "act3_reveal_resistance_bonus": "Ledger resistance",
+            "act2_bonus_whisper_pressure": "Act II bonus whisper pressure",
+        }
+        return labels.get(flag, flag.replace("_", " ").title())
+
+    def apply_camp_banter_metric_delta(self, metric_key: str, delta: int) -> None:
+        assert self.state is not None
+        if not delta:
+            return
+        if metric_key.startswith("act2_") and callable(getattr(self, "act2_shift_metric", None)):
+            self.act2_shift_metric(metric_key, delta, "campfire conversation")
+            return
+        if metric_key in getattr(self, "ACT1_METRIC_NAMES", {}):
+            current = self.act1_metric_value(metric_key)
+            updated = self.act1_adjust_metric(metric_key, delta)
+            if updated == current:
+                return
+            direction = "rises" if updated > current else "falls"
+            label = self.ACT1_METRIC_NAMES.get(metric_key, metric_key.replace("_", " ").title())
+            metric_labels = getattr(self, "ACT1_METRIC_LABELS", {}).get(metric_key)
+            if metric_labels:
+                bounded = max(0, min(updated, len(metric_labels) - 1))
+                self.say(f"{label} {direction} to {metric_labels[bounded]} (campfire conversation).")
+            else:
+                self.say(f"{label} {direction} to {updated} (campfire conversation).")
 
     def talk_to_companion(self) -> None:
         assert self.state is not None

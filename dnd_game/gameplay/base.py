@@ -88,6 +88,9 @@ class GameBase:
     }
     SCENE_LABELS = {
         "background_prologue": "Prologue",
+        "wayside_luck_shrine": "Wayside Luck Shrine",
+        "greywake_triage_yard": "Greywake Yard",
+        "greywake_road_breakout": "Greywake Breakout",
         "neverwinter_briefing": "Neverwinter",
         "road_ambush": "High Road",
         "high_road_liars_circle": "Liar's Circle",
@@ -117,6 +120,9 @@ class GameBase:
     }
     SCENE_OBJECTIVES = {
         "background_prologue": "Finish your origin story and answer the road's first test.",
+        "wayside_luck_shrine": "Meet Elira Dawnmantle and steady the first wounded travelers.",
+        "greywake_triage_yard": "Stabilize Greywake Yard before the road pressure breaks open.",
+        "greywake_road_breakout": "Protect the wounded or the proof when the Ashen Brand attacks.",
         "neverwinter_briefing": "Hear Mira Thann out and take the road south.",
         "blackwake_crossing": "Trace the Blackwake supply cell before committing to the High Road.",
         "road_decision_post_blackwake": "Choose whether to report back to Neverwinter or press south after Blackwake.",
@@ -308,6 +314,9 @@ class GameBase:
         self._at_title_screen = False
         self._scene_handlers = {
             "background_prologue": self.scene_background_prologue,
+            "wayside_luck_shrine": self.scene_wayside_luck_shrine,
+            "greywake_triage_yard": self.scene_greywake_triage_yard,
+            "greywake_road_breakout": self.scene_greywake_road_breakout,
             "neverwinter_briefing": self.scene_neverwinter_briefing,
             "blackwake_crossing": self.scene_blackwake_crossing,
             "road_decision_post_blackwake": self.scene_road_decision_post_blackwake,

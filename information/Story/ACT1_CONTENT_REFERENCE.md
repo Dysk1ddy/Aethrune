@@ -6,7 +6,7 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 
 ## Act 1 Scope
 
-- Opening arc: background prologue -> Neverwinter briefing -> High Road ambush -> Phandalin hub
+- Opening arc: background prologue -> Wayside Luck Shrine -> Greywake Triage Yard -> Greywake Road Breakout -> Neverwinter briefing -> High Road ambush -> Phandalin hub
 - Branching middle route: `Old Owl Well` and `Wyvern Tor` can be tackled in either order, with a hidden optional strike into `Cinderfall Ruins`
 - Convergence points: Stonehill war-room event, Ashfall Watch assault, Phandalin lantern vigil
 - Late route: `Tresendar Manor` -> `Emberhall Cellars`
@@ -19,31 +19,36 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 
 ## Expanded Act 1 Route
 
-1. Neverwinter setup, briefing, contract-house social hub, and one background-specific opening encounter or shortcut
-2. High Road ambush and Tolan recruitment point, with optional post-ambush side branches into `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones`
-3. Phandalin arrival, inn / shrine / shop / steward loops, orchard / exchange hubs, and a possible early `Cinderfall` reveal on a strong `Insight` read
+1. Background-specific opening encounter or shortcut, then shared pre-Neverwinter Elira/Greywake sequence:
+   Wayside Luck Shrine -> Greywake Triage Yard -> Greywake Road Breakout
+2. Neverwinter setup, briefing, contract-house social hub, and optional Mira-assigned road companion
+3. High Road ambush and Tolan recruitment point, with optional post-ambush side branches into `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones`
+4. Phandalin arrival, inn / shrine / shop / steward loops, orchard / exchange hubs, and a possible early `Cinderfall` reveal on a strong `Insight` read
    - Edermath Orchard can also reveal Daran's old adventurer's cache: a `Stealth` DC 12 route to recover `edermath_cache_compass`, or a watcher encounter on failure.
-4. Old Owl Well route:
+5. Old Owl Well route:
    dig-ring fight -> salt cart or supply trench branch -> Vaelith Marr miniboss
-5. Wyvern Tor route:
+6. Wyvern Tor route:
    outer shelf fight -> drover hollow or shrine ledge branch -> Brughor Skullcleaver miniboss
-6. Optional `Cinderfall Ruins` route if the hidden relay is uncovered:
+7. Optional `Cinderfall Ruins` route if the hidden relay is uncovered:
    collapsed gate -> ash chapel or broken storehouse -> ember relay node
-7. Stonehill war-room fixed event once both major side routes are cleared
-8. Ashfall Watch route:
+8. Stonehill war-room fixed event once both major side routes are cleared
+9. Ashfall Watch route:
    gate fight -> prisoner yard / signal event -> lower barracks fight -> Rukhar miniboss
-9. Lantern vigil fixed event back in Phandalin
-10. Tresendar Manor route:
+10. Lantern vigil fixed event back in Phandalin
+11. Tresendar Manor route:
    cellar intake fight -> cistern event -> Cistern Eye roleplay boss / fight
    - Cistern Eye routes: kill it, trade a memory/truth/companion secret, bargain repeatedly, or deceive it.
    - Bargain and Deception routes can reveal Cinderfall relay context and Wave Echo / Forge foreshadowing before Emberhall.
    - The risky routes apply sanity-style combat pressure, `Whispered Through`, and companion trust costs.
-11. Emberhall finale:
+12. Emberhall finale:
    antechamber fight -> chained clerk / ledger event -> Varyn boss fight
 
 ## Drafted Future Inserts
 
 - `information/Story/HIGH_ROAD_LIARS_CIRCLE_PUZZLE_DRAFT.md`: optional post-ambush High Road wilderness branch built around four lying statues, with `Liar's Blessing` or `Liar's Curse` social-skill consequences.
+- `information/Story/ACT1_PRE_NEVERWINTER_ELIRA_DRAFT.md`: implemented shared pre-Neverwinter opening insert that introduces Elira as the first companion candidate, gives her two early recruitment chances before the second major combat, and preserves the Phandalin shrine fallback.
+- `information/Story/MIRA_NEVERWINTER_DIALOGUE_DRAFT.md`: implemented expanded Mira Thann question dialogue for the first Neverwinter briefing, conditional Greywake/Elira/Blackwake responses, and return-to-Neverwinter debriefs after Phandalin-side progress.
+- `information/Story/COMPANION_CAMP_BANTER_DRAFT.md`: implemented companion-to-companion camp banter registry, Act 1 and Act 2 branching dialogue, gameplay and relationship consequences, and Act 3 secret-architect guardrails for keeping the second villain hidden until the planned midpoint reveal.
 
 ## Companion Reference
 
@@ -53,7 +58,7 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 | Rhogar Valeguard | Dragonborn Paladin | oathsworn caravan guardian | optional contract companion in Neverwinter before the road | Great: `+1 damage`; Exceptional: `+1 AC` |
 | Tolan Ironshield | Dwarf Fighter | shield-wall caravan veteran | joins after Roadside Ambush or later from the inn | Great: `+1 AC`; Exceptional: `+1 CON saves` |
 | Bryn Underbough | Halfling Rogue | trail scout and rumor-reader | recruited at Stonehill Inn on Persuasion success | Great: `+1 Stealth`, `+1 initiative`; Exceptional: `+1 Perception` |
-| Elira Dawnmantle | Human Cleric | shrine healer and faith anchor | recruited at the shrine, easier if the player helped her first | Great: `+1 healing`; Exceptional: `+1 WIS saves` |
+| Elira Dawnmantle | Human Cleric | shrine healer and faith anchor | first met at Wayside Luck Shrine, recruitable there or at Greywake before the second shared combat; if missed, recruited at Phandalin's shrine | Great: `+1 healing`; Exceptional: `+1 WIS saves` |
 
 ### Scene support hooks
 
@@ -237,12 +242,37 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 
 ## Early Story Recruitment And Encounter Notes
 
+### Pre-Neverwinter Elira and Greywake sequence
+
+- Background prologues now converge at `Wayside Luck Shrine` before Mira Thann's briefing.
+- Elira Dawnmantle is introduced as the first companion candidate.
+- First Elira recruitment chance:
+  - Wayside Luck Shrine after helping with poison, prayer, road marks, or triage flow.
+  - Helping Elira makes recruitment automatic or much easier.
+- Second Elira recruitment chance:
+  - Greywake Triage Yard before the Greywake Road Breakout.
+  - Stabilizing the wounded line lowers the recruitment DC.
+- Greywake Triage Yard is the systemic escalation:
+  - the intake board and manifest sort travelers into `treat`, `hold`, and `lost` before the wagons arrive
+  - Elira frames the second recruitment chance as leaving triage to stop the hand moving those outcome marks
+  - successful Insight, Medicine, or Persuasion routes create a concrete evidence kind for Mira: marked manifest, matched triage tags, or yard witnesses
+- Greywake Road Breakout is the shared second major combat:
+  - Ashen Brand cutters try to steal or burn an outcome-marked manifest.
+  - Preserving the manifest can set `system_profile_seeded` and `varyn_route_pattern_seen`.
+  - If Elira is recruited, she can bless the player before the fight.
+  - If Elira is not recruited, she protects the wounded line and later appears at Phandalin's Shrine of Tymora.
+
 ### Neverwinter briefing
 
 - The player can choose:
   - Kaelis Starling
   - Rhogar Valeguard
-  - no early companion
+- Elira may already be in the party before this choice; Mira's road companion can still be assigned afterward if party space allows.
+- If the player carries Greywake proof into the briefing, Mira reacts directly: the evidence proves the Ashen Brand is coordinating outcomes, not merely causing damage.
+  - Early Elira recruitment prompts Mira to note that the road is already worse than her reports.
+  - A preserved manifest is treated as a schedule, not a forged report.
+  - A burned manifest shifts the plan to witness testimony.
+  - Protected wounded become angry, living witnesses.
 - Oren Vale's contract house now acts as the city-side inn and social pressure valve before departure:
   - Oren Vale keeps the room, the witnesses, and the upstairs private arrangements
   - Sabra Kestrel grants `False Manifest Circuit`
@@ -297,9 +327,10 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 
 ### Shrine
 
-- Elira can be recruited after shrine interactions
-- If the player already helped her, recruitment skips the Persuasion check
-- Otherwise the recruitment check is Persuasion DC `12`
+- If Elira was not recruited at Wayside or Greywake, she appears at Phandalin's Shrine of Tymora.
+- Early failed recruitment attempts do not lock her out.
+- If `elira_phandalin_fallback_pending` is set, asking her to join in Phandalin recruits her without another skill gate.
+- If the player has no early Elira fallback and has not helped her, the normal recruitment check remains Persuasion DC `8`.
 
 ## Post-Combat Random Encounter Chains
 
@@ -317,6 +348,17 @@ These flags show up repeatedly in Act 1 flow and are useful when debugging saves
 
 - `background_prologue_pending`
 - `act1_started`
+- `wayside_luck_shrine_seen`
+- `elira_first_contact`
+- `elira_wayside_recruit_attempted`
+- `elira_pre_neverwinter_recruited`
+- `greywake_triage_yard_seen`
+- `elira_greywake_recruit_attempted`
+- `elira_greywake_recruited`
+- `greywake_breakout_resolved`
+- `greywake_manifest_preserved`
+- `elira_phandalin_fallback_pending`
+- `elira_phandalin_recruited`
 - `early_companion_recruited`
 - `road_approach_chosen`
 - `tolan_waiting_at_inn`

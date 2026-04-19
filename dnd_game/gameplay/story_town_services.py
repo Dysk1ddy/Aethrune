@@ -9,10 +9,17 @@ class StoryTownServicesMixin:
         self.banner("Shrine of Tymora")
         if self.has_companion("Elira Dawnmantle") and self.state.flags.get("elira_neverwinter_recruited"):
             if not self.state.flags.get("shrine_seen"):
+                bell_echo = (
+                    " A green road-ribbon hangs from the altar bell, bright as the promise Elira tied to the cracked luck bell "
+                    "on the northern road."
+                    if self.state.flags.get("wayside_luck_bell_promised")
+                    else ""
+                )
                 self.say(
                     "Phandalin's little luck shrine is open, but Elira's field kit is not waiting beside the altar. "
-                    "The acolytes are working from the triage notes she sent ahead from Neverwinter, and the wounded keep "
-                    "pointing south toward the same ash-bitter blades.",
+                    "The acolytes are working from the triage notes she sent ahead from the northern road, and the wounded keep "
+                    "pointing south toward the same ash-bitter blades."
+                    + bell_echo,
                     typed=True,
                 )
                 self.state.flags["shrine_seen"] = True
@@ -23,10 +30,28 @@ class StoryTownServicesMixin:
                 self.say("The shrine bells move in the wind while Elira stays with the company, where the next wound is likeliest to happen.")
             return
         if not self.state.flags.get("shrine_seen"):
-            if self.state.flags.get("neverwinter_elira_met"):
+            if self.state.flags.get("elira_phandalin_fallback_pending"):
+                bell_echo = (
+                    " A rain-stiff green road-ribbon from the cracked luck bell is tied beside her field kit."
+                    if self.state.flags.get("wayside_luck_bell_seen")
+                    else ""
+                )
                 self.say(
                     "A modest shrine stands open to the road, all wind bells, votive flame, and hurried footsteps. "
-                    "Elira looks up from a miner's ash-dark wound and recognizes you from Neverwinter without letting her hands slow.",
+                    "Elira looks up from a miner's ash-dark wound with the tired recognition of someone who already met you where the road first started bleeding."
+                    + bell_echo,
+                    typed=True,
+                )
+            elif self.state.flags.get("neverwinter_elira_met"):
+                bell_echo = (
+                    " A green road-ribbon from the cracked luck bell has been knotted beside the votive flame."
+                    if self.state.flags.get("wayside_luck_bell_seen")
+                    else ""
+                )
+                self.say(
+                    "A modest shrine stands open to the road, all wind bells, votive flame, and hurried footsteps. "
+                    "Elira looks up from a miner's ash-dark wound and recognizes you from Neverwinter without letting her hands slow."
+                    + bell_echo,
                     typed=True,
                 )
             else:
@@ -49,9 +74,9 @@ class StoryTownServicesMixin:
                 options.append(
                     (
                         "recruit",
-                        self.quoted_option("PERSUASION", "Come with me. Phandalin needs you in the field.")
-                        if not self.state.flags.get("elira_helped")
-                        else "\"Come with me. Phandalin needs you in the field.\"",
+                        "\"Come with me. Phandalin needs you in the field.\""
+                        if self.state.flags.get("elira_helped") or self.state.flags.get("elira_phandalin_fallback_pending")
+                        else self.quoted_option("PERSUASION", "Come with me. Phandalin needs you in the field."),
                     )
                 )
             leave_text = (
@@ -94,8 +119,10 @@ class StoryTownServicesMixin:
             elif selection_key == "recruit":
                 self.state.flags["shrine_recruit_attempted"] = True
                 self.player_speaker("Come with me. Phandalin needs you in the field.")
-                if self.state.flags.get("elira_helped"):
+                if self.state.flags.get("elira_helped") or self.state.flags.get("elira_phandalin_fallback_pending"):
                     self.recruit_companion(create_elira_dawnmantle())
+                    self.state.flags["elira_phandalin_recruited"] = True
+                    self.state.flags.pop("elira_phandalin_fallback_pending", None)
                     self.speaker("Elira Dawnmantle", "Then I will walk with you. The road needs more than prayers.")
                 else:
                     success = self.skill_check(self.state.player, "Persuasion", 8, context="to ask Elira into danger")
@@ -154,6 +181,7 @@ class StoryTownServicesMixin:
                         "Barthen",
                         "Break the watchtower and you'll do more for this town than selling one more sack of flour ever could.",
                     )
+                self.run_dialogue_input("barthen_shortage")
             elif selection_key == "shop":
                 self.player_action("You start checking the shelves for food, salves, and travel goods.")
                 self.manage_inventory(merchant_id="barthen_provisions", merchant_name="Barthen")
@@ -205,6 +233,7 @@ class StoryTownServicesMixin:
                         "Linene Graywind",
                         "Break Ashfall Watch and I'll know by the look of the next caravan that rolls through the gate.",
                     )
+                self.run_dialogue_input("lionshield_trade")
             elif selection_key == "shop":
                 self.player_action("You spread out the party's spare gear and start haggling with Linene.")
                 self.manage_inventory(merchant_id="linene_graywind", merchant_name="Linene Graywind")

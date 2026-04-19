@@ -507,15 +507,39 @@ class MapSystemMixin:
 
     def _backfill_act1_visited_nodes(self, payload: dict[str, Any], current_node_id: str) -> None:
         assert self.state is not None
+        opening_path = (
+            "wayside_luck_shrine",
+            "greywake_triage_yard",
+            "greywake_road_breakout",
+            "neverwinter_briefing",
+        )
+        if current_node_id == "wayside_luck_shrine":
+            self._remember_act1_nodes(payload, "wayside_luck_shrine")
+            return
+        if current_node_id == "greywake_triage_yard":
+            self._remember_act1_nodes(
+                payload,
+                "wayside_luck_shrine",
+                "greywake_triage_yard",
+            )
+            return
+        if current_node_id == "greywake_road_breakout":
+            self._remember_act1_nodes(
+                payload,
+                "wayside_luck_shrine",
+                "greywake_triage_yard",
+                "greywake_road_breakout",
+            )
+            return
         if current_node_id == "neverwinter_briefing":
-            self._remember_act1_nodes(payload, "neverwinter_briefing")
+            self._remember_act1_nodes(payload, *opening_path)
             return
         if current_node_id == "high_road_ambush":
-            self._remember_act1_nodes(payload, "neverwinter_briefing", "high_road_ambush")
+            self._remember_act1_nodes(payload, *opening_path, "high_road_ambush")
             return
 
-        # Reaching any Phandalin-era node means the briefing and road ambush already happened.
-        self._remember_act1_nodes(payload, "neverwinter_briefing", "high_road_ambush", "phandalin_hub")
+        # Reaching any Phandalin-era node means the opening road, briefing, and ambush already happened.
+        self._remember_act1_nodes(payload, *opening_path, "high_road_ambush", "phandalin_hub")
 
         later_than_branches = {"ashfall_watch", "tresendar_manor", "emberhall_cellars"}
         later_than_ashfall = {"tresendar_manor", "emberhall_cellars"}
@@ -557,7 +581,11 @@ class MapSystemMixin:
     def _seed_act1_overworld_history(self, payload: dict[str, Any], current_node_id: str) -> None:
         if payload["node_history"]:
             return
-        if current_node_id == "high_road_ambush":
+        if current_node_id == "greywake_triage_yard":
+            payload["node_history"] = ["wayside_luck_shrine"]
+        elif current_node_id == "greywake_road_breakout":
+            payload["node_history"] = ["wayside_luck_shrine", "greywake_triage_yard"]
+        elif current_node_id == "high_road_ambush":
             payload["node_history"] = ["neverwinter_briefing"]
         elif current_node_id == "phandalin_hub":
             payload["node_history"] = ["neverwinter_briefing", "high_road_ambush"]

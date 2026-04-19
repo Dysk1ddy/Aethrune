@@ -793,6 +793,7 @@ class StoryAct2ScaffoldMixin:
                 "Bryn Underbough",
                 "Every room with ledgers and lanterns ends up being about exits eventually. Best decide whose you trust."
             )
+        self.run_dialogue_input("act2_claims_council_opening", max_entries=2)
         if self.state.flags.get("quest_reward_jerek_road_knot"):
             self.speaker(
                 "Linene Graywind",
@@ -880,6 +881,7 @@ class StoryAct2ScaffoldMixin:
                     1,
                     "Elira's standing in town lets the cautious plan sound like confidence instead of fear",
                 )
+        self.run_dialogue_input(f"act2_sponsor_{self.state.flags['act2_sponsor']}")
         read_choice = self.scenario_choice(
             "Before the first teams leave, what do you insist on reading clearly?",
             [
@@ -1002,34 +1004,43 @@ class StoryAct2ScaffoldMixin:
             choice = self.scenario_choice("Where do you push next?", [text for _, text in options], allow_meta=False)
             selection_key, _ = options[choice - 1]
             if selection_key == "agatha":
+                self.run_dialogue_input("act2_hub_agatha")
                 self.travel_to_act2_node("conyberry_agatha")
                 return
             if selection_key == "wood":
+                self.run_dialogue_input("act2_hub_wood")
                 self.travel_to_act2_node("neverwinter_wood_survey_camp")
                 return
             if selection_key == "stonehollow":
+                self.run_dialogue_input("act2_hub_stonehollow")
                 self.travel_to_act2_node("stonehollow_dig")
                 return
             if selection_key == "midpoint":
+                self.run_dialogue_input("act2_hub_midpoint")
                 self.travel_to_act2_node("act2_midpoint_convergence")
                 return
             if selection_key == "broken_prospect":
                 if not self.confirm_act2_late_route_priority("broken_prospect"):
                     continue
+                self.run_dialogue_input("act2_hub_broken_prospect")
                 self.travel_to_act2_node("broken_prospect")
                 return
             if selection_key == "south_adit":
                 if not self.confirm_act2_late_route_priority("south_adit"):
                     continue
+                self.run_dialogue_input("act2_hub_south_adit")
                 self.travel_to_act2_node("south_adit")
                 return
             if selection_key == "outer":
+                self.run_dialogue_input("act2_hub_outer")
                 self.travel_to_act2_node("wave_echo_outer_galleries")
                 return
             if selection_key == "causeway":
+                self.run_dialogue_input("act2_hub_causeway")
                 self.travel_to_act2_node("black_lake_causeway")
                 return
             if selection_key == "forge":
+                self.run_dialogue_input("act2_hub_forge")
                 self.travel_to_act2_node("forge_of_spells")
                 return
             if selection_key == "complete":
@@ -1396,6 +1407,7 @@ class StoryAct2ScaffoldMixin:
         if self.act2_company_has("Elira Dawnmantle"):
             dc -= 1
             self.say("Elira's presence keeps the approach from sounding like another living theft of the dead.")
+        self.run_dialogue_input("act2_conyberry_entry")
         choice = self.scenario_choice(
             "How do you approach the banshee's truth?",
             [
@@ -1472,6 +1484,7 @@ class StoryAct2ScaffoldMixin:
             self.say(
                 "Because you let this line wait until after sabotage night, the saboteurs are no longer just cutting posts. They are cleaning up witnesses and burning the traces that tied them to Phandalin's riot."
             )
+        self.run_dialogue_input("act2_wood_entry")
         enemies = [create_enemy("expedition_reaver"), create_enemy("cult_lookout")]
         if delayed:
             enemies.append(self.act2_pick_enemy(("cult_lookout", "gutter_zealot", "thunderroot_mound")))
@@ -1568,6 +1581,7 @@ class StoryAct2ScaffoldMixin:
             self.say(
                 "Coming here late means the place has had longer to collapse inward on both bodies and evidence. The lower notes are not all going to be recoverable now."
             )
+        self.run_dialogue_input("act2_stonehollow_entry")
         enemies = [create_enemy("ochre_slime"), create_enemy("grimlock_tunneler")]
         if delayed:
             enemies.append(self.act2_pick_enemy(("spectral_foreman", "hookclaw_burrower")))
@@ -1697,6 +1711,7 @@ class StoryAct2ScaffoldMixin:
                 1,
                 source="walking blind into the riot without Agatha's full warning",
             )
+        self.run_dialogue_input("act2_midpoint_counsel", max_entries=2)
         choice = self.scenario_choice(
             "What do you protect first when the sabotage breaks wide open?",
             [
@@ -1915,6 +1930,7 @@ class StoryAct2ScaffoldMixin:
             self.say(
                 "Broken Prospect going first bought your side a cleaner route, but the adit has had longer to become a place of missing names and emptied cells."
             )
+        self.run_dialogue_input("act2_south_adit_entry")
         enemies = [create_enemy("starblighted_miner"), create_enemy("choir_adept")]
         if delayed:
             enemies.append(self.act2_pick_enemy(("cult_lookout", "oathbroken_revenant")))
@@ -2095,6 +2111,7 @@ class StoryAct2ScaffoldMixin:
             "This is the last clean threshold before the Forge of Spells, and the Quiet Choir knows it.",
             typed=True,
         )
+        self.run_dialogue_input("act2_black_lake_entry", max_entries=2)
         high_pressure = self.act2_metric_value("act2_whisper_pressure") >= 4
         bad_route = self.act2_metric_value("act2_route_control") <= 2
         strong_gear = self.act2_party_has_strong_route_gear()
@@ -2193,6 +2210,7 @@ class StoryAct2ScaffoldMixin:
         self.speaker("Sister Caldra Voss", "The Forge does not create. It clarifies.")
         self.speaker("Sister Caldra Voss", "Every vow has an echo. Every echo has an owner.")
         self.speaker("Sister Caldra Voss", "The world is loud because it fears being counted.")
+        self.run_dialogue_input("act2_forge_entry", max_entries=2)
         choice = self.scenario_choice(
             "How do you open the final confrontation?",
             [

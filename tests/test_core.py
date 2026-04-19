@@ -62,6 +62,7 @@ from dnd_game.drafts.map_system.runtime import (
     NumericFlagRequirement,
     Requirement,
     build_dungeon_panel,
+    build_overworld_panel,
     build_overworld_panel_text,
     requirement_met,
     room_exit_directions,
@@ -1320,6 +1321,9 @@ class CoreTests(unittest.TestCase):
         map_state = game.state.flags["map_state"]
         self.assertEqual(map_state["current_node_id"], "phandalin_hub")
         self.assertIsNone(map_state["current_dungeon_id"])
+        self.assertIn("wayside_luck_shrine", map_state["visited_nodes"])
+        self.assertIn("greywake_triage_yard", map_state["visited_nodes"])
+        self.assertIn("greywake_road_breakout", map_state["visited_nodes"])
         self.assertIn("neverwinter_briefing", map_state["visited_nodes"])
         self.assertIn("high_road_ambush", map_state["visited_nodes"])
         self.assertIn("phandalin_hub", map_state["visited_nodes"])
@@ -1332,6 +1336,9 @@ class CoreTests(unittest.TestCase):
                 visited_nodes=set(map_state["visited_nodes"]),
             ),
         )
+        self.assertIn("WAYSIDE", rendered_map)
+        self.assertIn("GREYWAKE", rendered_map)
+        self.assertIn("BREAKOUT", rendered_map)
         self.assertIn("NEVERWINTER", rendered_map)
         self.assertIn("HIGH ROAD", rendered_map)
         self.assertIn("(  PHANDALIN  )", rendered_map)
@@ -1390,12 +1397,21 @@ class CoreTests(unittest.TestCase):
                 if label_column == -1:
                     continue
                 left = max(line.rfind("[", 0, label_column), line.rfind("(", 0, label_column))
-                right_candidates = [index for index in (line.find("]", label_column), line.find(")", label_column)) if index != -1]
+                right_candidates = [
+                    index
+                    for index in (line.find("]", label_column), line.find(")", label_column))
+                    if index != -1
+                ]
                 assert right_candidates
                 right = min(right_candidates)
                 return row_index, left, right, (left + right) // 2
             raise AssertionError(f"{label} was not rendered in the overworld map")
 
+        self.assertEqual(len({len(line) for line in map_lines}), 1)
+
+        wayside_row, _, _, wayside_center = token_span("WAYSIDE")
+        greywake_row, _, _, greywake_center = token_span("GREYWAKE")
+        breakout_row, _, _, breakout_center = token_span("BREAKOUT")
         neverwinter_row, neverwinter_left, neverwinter_right, neverwinter_center = token_span("NEVERWINTER")
         high_road_row, _, _, high_road_center = token_span("HIGH ROAD")
         phandalin_row, _, _, phandalin_center = token_span("PHANDALIN")
@@ -1408,6 +1424,12 @@ class CoreTests(unittest.TestCase):
                 token_widths.append(len(match.group(0)))
         self.assertEqual(set(token_widths), {neverwinter_right - neverwinter_left + 1})
 
+        self.assertEqual(wayside_center, greywake_center)
+        self.assertEqual(greywake_center, breakout_center)
+        self.assertEqual(breakout_center, neverwinter_center)
+        self.assertLess(wayside_row, greywake_row)
+        self.assertLess(greywake_row, breakout_row)
+        self.assertLess(breakout_row, neverwinter_row)
         self.assertEqual(neverwinter_center, high_road_center)
         self.assertEqual(high_road_center, phandalin_center)
         self.assertGreater(blackwake_center, neverwinter_center)
@@ -1415,6 +1437,57 @@ class CoreTests(unittest.TestCase):
         for row in map_lines[neverwinter_row + 1 : high_road_row]:
             self.assertIn(row[neverwinter_center], {"|", "+"})
         self.assertIn("-", map_lines[high_road_row][high_road_center + 1 : road_choice_center])
+
+    @unittest.skipUnless(RICH_AVAILABLE, "Rich rendering is optional")
+    def test_rich_act1_overworld_map_preserves_fixed_grid_alignment(self) -> None:
+        state = DraftMapState(
+            current_node_id="neverwinter_briefing",
+            visited_nodes=set(ACT1_HYBRID_MAP.nodes),
+            flags={
+                "act1_started",
+                "wayside_luck_shrine_seen",
+                "greywake_triage_yard_seen",
+                "greywake_breakout_resolved",
+                "road_ambush_cleared",
+                "phandalin_arrived",
+            },
+        )
+        rendered_lines = [
+            strip_ansi(line)
+            for line in render_rich_lines(build_overworld_panel(ACT1_HYBRID_MAP, state), width=140)
+        ]
+
+        def token_center(label: str) -> tuple[int, int]:
+            for row_index, line in enumerate(rendered_lines):
+                label_column = line.find(label)
+                if label_column == -1:
+                    continue
+                left = max(line.rfind("[", 0, label_column), line.rfind("(", 0, label_column))
+                right_candidates = [index for index in (line.find("]", label_column), line.find(")", label_column)) if index != -1]
+                assert right_candidates
+                return row_index, (left + min(right_candidates)) // 2
+            raise AssertionError(f"{label} was not rendered in the rich overworld map")
+
+        self.assertEqual(len({len(line) for line in rendered_lines}), 1)
+        wayside_row, wayside_center = token_center("WAYSIDE")
+        greywake_row, greywake_center = token_center("GREYWAKE")
+        breakout_row, breakout_center = token_center("BREAKOUT")
+        neverwinter_row, neverwinter_center = token_center("NEVERWINTER")
+        high_road_row, high_road_center = token_center("HIGH ROAD")
+        phandalin_row, phandalin_center = token_center("PHANDALIN")
+        _, blackwake_center = token_center("BLACKWAKE")
+
+        self.assertEqual(wayside_center, greywake_center)
+        self.assertEqual(greywake_center, breakout_center)
+        self.assertEqual(breakout_center, neverwinter_center)
+        self.assertEqual(neverwinter_center, high_road_center)
+        self.assertEqual(high_road_center, phandalin_center)
+        self.assertLess(wayside_row, greywake_row)
+        self.assertLess(greywake_row, breakout_row)
+        self.assertLess(breakout_row, neverwinter_row)
+        self.assertLess(neverwinter_row, high_road_row)
+        self.assertLess(high_road_row, phandalin_row)
+        self.assertGreater(blackwake_center, neverwinter_center)
 
     def test_act1_overworld_panel_groups_route_key_and_travel_top_right(self) -> None:
         rendered_map = build_overworld_panel_text(
@@ -5428,10 +5501,13 @@ class CoreTests(unittest.TestCase):
                 "1", "1",  # fighter skills
                 "1",  # confirm character
                 "1",  # soldier prologue choice
+                "4",  # keep the wayside shrine moving
+                "2",  # let Elira stay with the wounded for now
+                "3",  # steady Greywake Yard
+                "2",  # let Elira keep the line breathing
+                "2",  # seize the manifest runner
                 "7",  # take the writ
                 "1",  # recruit Kaelis on departure
-                "4",  # keep the Tymora shrine moving
-                "2",  # let Elira finish her work and meet later
                 "1",  # inspect the milehouse writs
                 "1",  # silence the signal cairn
                 "1",  # take the direct road at the route fork
@@ -5442,7 +5518,14 @@ class CoreTests(unittest.TestCase):
         self.assertIsNotNone(game.state)
         self.assertEqual(game.state.current_scene, "background_prologue")
         game.run_encounter = lambda encounter: "victory"
+        game.skill_check = lambda actor, skill, dc, context: True
         game.scene_background_prologue()
+        self.assertEqual(game.state.current_scene, "wayside_luck_shrine")
+        game.scene_wayside_luck_shrine()
+        self.assertEqual(game.state.current_scene, "greywake_triage_yard")
+        game.scene_greywake_triage_yard()
+        self.assertEqual(game.state.current_scene, "greywake_road_breakout")
+        game.scene_greywake_road_breakout()
         self.assertEqual(game.state.current_scene, "neverwinter_briefing")
         game.scene_neverwinter_briefing()
         self.assertEqual(game.state.current_scene, "road_ambush")
@@ -5461,10 +5544,13 @@ class CoreTests(unittest.TestCase):
                 "1", "1",
                 "1",
                 "1",  # soldier prologue choice
+                "4",  # keep the wayside shrine moving
+                "2",  # let Elira stay with the wounded for now
+                "3",  # steady Greywake Yard
+                "2",  # let Elira keep the line breathing
+                "2",  # seize the manifest runner
                 "7",  # take the writ
                 "1",  # recruit Kaelis on departure
-                "4",  # keep the Tymora shrine moving
-                "2",  # let Elira finish her work and meet later
                 "1",  # inspect the milehouse writs
                 "1",  # silence the signal cairn
                 "1",  # take the direct road at the route fork
@@ -5473,7 +5559,11 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=lambda _: None, rng=random.Random(8))
         game.start_new_game()
         game.run_encounter = lambda encounter: "victory"
+        game.skill_check = lambda actor, skill, dc, context: True
         game.scene_background_prologue()
+        game.scene_wayside_luck_shrine()
+        game.scene_greywake_triage_yard()
+        game.scene_greywake_road_breakout()
         game.scene_neverwinter_briefing()
         self.assertEqual(game.state.current_scene, "road_ambush")
         self.assertTrue(any(companion.name == "Kaelis Starling" for companion in game.state.companions))
@@ -5993,7 +6083,7 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Preset abilities:", rendered)
         self.assertIn("Starting point:", rendered)
 
-    def test_background_prologues_converge_to_neverwinter_briefing(self) -> None:
+    def test_background_prologues_converge_to_wayside_luck_shrine(self) -> None:
         for background in BACKGROUNDS:
             with self.subTest(background=background):
                 player = build_character(
@@ -6009,7 +6099,7 @@ class CoreTests(unittest.TestCase):
                 game.skill_check = lambda actor, skill, dc, context: True
                 game.run_encounter = lambda encounter: "victory"
                 game.scene_background_prologue()
-                self.assertEqual(game.state.current_scene, "neverwinter_briefing")
+                self.assertEqual(game.state.current_scene, "wayside_luck_shrine")
                 self.assertEqual(game.state.flags["background_prologue_completed"], background)
                 self.assertTrue(game.state.flags["system_profile_seeded"])
 
@@ -6361,6 +6451,247 @@ class CoreTests(unittest.TestCase):
         self.assertIn("What happened at the crossing?", rendered)
         self.assertIn("That is not banditry. That is logistics with a knife.", rendered)
         self.assertIn("blackwake_crossing", second_companion.bond_flags["talked_topics"])
+
+    def test_campfire_banter_applies_relationship_lore_and_consequences(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        elira = create_elira_dawnmantle()
+        tolan = create_tolan_ironshield()
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(9204))
+        game.state = GameState(
+            player=player,
+            companions=[elira, tolan],
+            current_scene="camp",
+            flags={
+                "greywake_triage_yard_seen": True,
+                "greywake_manifest_preserved": True,
+                "greywake_wounded_stabilized": True,
+                "act1_town_fear": 2,
+                "act1_ashen_strength": 3,
+                "act1_survivors_saved": 0,
+            },
+        )
+        banter = next(
+            entry for entry in game.available_camp_banters() if entry["id"] == "camp_banter_elira_tolan_greywake"
+        )
+        game.run_camp_banter(banter)
+        rendered = self.plain_output(log)
+        self.assertIn("The Wounded Line", rendered)
+        self.assertIn("Names sorted into outcomes. Tymora hates a loaded die.", rendered)
+        self.assertTrue(game.state.flags["camp_banter_elira_tolan_greywake_seen"])
+        self.assertTrue(game.state.flags["camp_greywake_testimony_threaded"])
+        self.assertTrue(game.state.flags["camp_greywake_manifest_read_as_schedule"])
+        self.assertEqual(elira.disposition, 1)
+        self.assertEqual(tolan.disposition, 1)
+        self.assertEqual(game.state.flags["act1_town_fear"], 1)
+        self.assertEqual(player.conditions.get("blessed"), 1)
+        self.assertIn("camp_banter_elira_tolan_greywake", elira.bond_flags["camp_banters"])
+        self.assertTrue(any("witness protection" in entry for entry in elira.lore))
+        self.assertIn(
+            "Elira and Tolan agree Greywake was a pre-sorted outcome system, not ordinary panic or battlefield accident.",
+            game.state.clues,
+        )
+        self.assertFalse(
+            any(entry["id"] == "camp_banter_elira_tolan_greywake" for entry in game.available_camp_banters())
+        )
+
+    def test_dialogue_inputs_require_active_companions_and_mark_seen(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        tolan = create_tolan_ironshield()
+        bryn = create_bryn_underbough()
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(92041))
+        game.state = GameState(
+            player=player,
+            companions=[tolan],
+            camp_companions=[bryn],
+            current_scene="phandalin_hub",
+        )
+
+        self.assertEqual(game.run_dialogue_input("barthen_shortage"), 1)
+        self.assertEqual(game.run_dialogue_input("barthen_shortage"), 0)
+
+        rendered = self.plain_output(log)
+        self.assertIn("Empty shelves are a siege by another name.", rendered)
+        self.assertNotIn("Roads fail quietly first.", rendered)
+        self.assertTrue(game.state.flags["dialogue_input_tolan_barthen_shortage_seen"])
+        self.assertIn("dialogue_input_tolan_barthen_shortage", tolan.bond_flags["dialogue_inputs"])
+        self.assertNotIn("dialogue_inputs", bryn.bond_flags)
+
+    def test_barthen_shortage_runs_active_companion_input(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(92042))
+        game.state = GameState(
+            player=player,
+            companions=[create_tolan_ironshield()],
+            current_scene="phandalin_hub",
+        )
+
+        def choose_barthen(prompt: str, options: list[str], **kwargs) -> int:
+            if any("run short" in strip_ansi(option) for option in options):
+                return self.option_index_containing(options, "run short")
+            return self.option_index_containing(options, "Leave the provision house")
+
+        game.scenario_choice = choose_barthen  # type: ignore[method-assign]
+
+        game.visit_barthen_provisions()
+
+        rendered = self.plain_output(log)
+        self.assertIn("Food that keeps, bandages, lamp oil", rendered)
+        self.assertIn("Empty shelves are a siege by another name.", rendered)
+        self.assertTrue(game.state.flags["barthen_shortage_asked"])
+        self.assertTrue(game.has_quest("restore_barthen_supplies"))
+
+    def test_act2_claims_council_runs_opening_and_sponsor_inputs(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        answers = iter(["1", "1"])
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(92043))
+        game.state = GameState(
+            player=player,
+            companions=[create_rhogar_valeguard(), create_tolan_ironshield(), create_bryn_underbough()],
+            current_act=2,
+            current_scene="act2_claims_council",
+            flags={"act2_started": True, "act2_town_stability": 3, "act2_route_control": 3, "act2_whisper_pressure": 2},
+        )
+        game.skill_check = lambda actor, skill, dc, context: False  # type: ignore[method-assign]
+
+        game.scene_act2_claims_council()
+
+        rendered = self.plain_output(log)
+        self.assertIn("If this room wants a claim, make it name who the claim protects.", rendered)
+        self.assertIn("Maps are useful. So are hands to carry the wounded", rendered)
+        self.assertIn("Halia will move fast. Fast gets answers.", rendered)
+        self.assertEqual(game.state.flags["act2_sponsor"], "exchange")
+        self.assertEqual(game.state.current_scene, "act2_expedition_hub")
+
+    def test_act2_forge_dialogue_inputs_emit_top_priorities(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(92044))
+        game.state = GameState(
+            player=player,
+            companions=[create_irielle_ashwake(), create_nim_ardentglass(), create_elira_dawnmantle()],
+            current_act=2,
+            current_scene="forge_of_spells",
+        )
+
+        self.assertEqual(game.run_dialogue_input("act2_forge_entry", max_entries=2), 2)
+
+        rendered = self.plain_output(log)
+        self.assertIn("Do not let her speak uninterrupted.", rendered)
+        self.assertIn("The Forge was made to shape possibility.", rendered)
+        self.assertNotIn("If she calls suffering clarity", rendered)
+
+    def test_camp_menu_keeps_break_camp_at_seven_when_banter_is_available(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        answers = iter(["7"])
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(9205))
+        game.state = GameState(
+            player=player,
+            companions=[create_elira_dawnmantle(), create_tolan_ironshield()],
+            current_scene="camp",
+            flags={"greywake_triage_yard_seen": True, "greywake_wounded_stabilized": True},
+        )
+        game.open_camp_menu()
+        rendered = self.plain_output(log)
+        self.assertIn("Listen around the campfire", rendered)
+        self.assertIn("The campfire is banked", rendered)
+        self.assertFalse(game.state.flags.get("camp_banter_elira_tolan_greywake_seen", False))
+
+    def test_act3_camp_banter_hides_malzurath_until_reveal(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+
+        hidden_log: list[str] = []
+        hidden_game = TextDnDGame(input_fn=lambda _: "1", output_fn=hidden_log.append, rng=random.Random(9206))
+        hidden_game.state = GameState(
+            player=player,
+            companions=[create_bryn_underbough(), create_elira_dawnmantle()],
+            current_scene="camp",
+            current_act=3,
+            flags={"act3_started": True, "varyn_route_displaced": True},
+        )
+        hidden_banter = next(
+            entry
+            for entry in hidden_game.available_camp_banters()
+            if entry["id"] == "camp_banter_bryn_elira_route_displacement"
+        )
+        hidden_game.run_camp_banter(hidden_banter)
+        hidden_rendered = self.plain_output(hidden_log)
+        self.assertIn("Roads should not have intentions.", hidden_rendered)
+        self.assertNotIn("Malzurath", hidden_rendered)
+        self.assertFalse(hidden_game.state.flags.get("act3_companion_testimony_count"))
+
+        revealed_log: list[str] = []
+        revealed_game = TextDnDGame(input_fn=lambda _: "1", output_fn=revealed_log.append, rng=random.Random(9207))
+        revealed_game.state = GameState(
+            player=player,
+            companions=[create_bryn_underbough(), create_elira_dawnmantle()],
+            current_scene="camp",
+            current_act=3,
+            flags={"act3_started": True, "varyn_route_displaced": True, "malzurath_revealed": True},
+        )
+        revealed_banter = next(
+            entry
+            for entry in revealed_game.available_camp_banters()
+            if entry["id"] == "camp_banter_bryn_elira_route_displacement"
+        )
+        revealed_game.run_camp_banter(revealed_banter)
+        revealed_rendered = self.plain_output(revealed_log)
+        self.assertIn("Malzurath sorts meaning.", revealed_rendered)
+        self.assertEqual(revealed_game.state.flags["act3_companion_testimony_count"], 1)
+        self.assertEqual(revealed_game.state.flags["act3_mercy_or_contradiction_count"], 1)
 
     def test_terrible_relationship_causes_companion_to_leave(self) -> None:
         player = build_character(
@@ -8583,6 +8914,463 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["elira_helped"])
         self.assertEqual(len(game.state.party_members()), 3)
 
+    def test_wayside_luck_shrine_can_recruit_elira_as_first_companion(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        answers = iter(["1", "1"])
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(90110))
+        game.state = GameState(player=player, current_scene="wayside_luck_shrine")
+        game.skill_check = lambda actor, skill, dc, context: True  # type: ignore[method-assign]
+
+        game.scene_wayside_luck_shrine()
+
+        elira = game.find_companion("Elira Dawnmantle")
+        self.assertTrue(game.has_companion("Elira Dawnmantle"))
+        self.assertIsNotNone(elira)
+        self.assertEqual(elira.disposition, 1)
+        self.assertTrue(game.state.flags["elira_first_contact"])
+        self.assertEqual(game.state.flags["elira_first_read"], "triage_competence")
+        self.assertTrue(game.state.flags["wayside_luck_bell_seen"])
+        self.assertEqual(game.state.flags["wayside_aid_route"], "wounded")
+        self.assertEqual(game.state.flags["elira_initial_trust_reason"], "warm_trust")
+        self.assertTrue(game.state.flags["elira_first_companion"])
+        self.assertTrue(game.state.flags["elira_pre_neverwinter_recruited"])
+        self.assertTrue(game.state.flags["elira_neverwinter_recruited"])
+        self.assertTrue(game.state.flags["wayside_luck_bell_promised"])
+        self.assertNotIn("early_companion_recruited", game.state.flags)
+        self.assertEqual(game.state.current_scene, "greywake_triage_yard")
+        rendered = self.plain_output(log)
+        self.assertIn("cracked luck bell", rendered)
+        self.assertIn("You have seen triage before", rendered)
+        self.assertIn("Elira ties the cracked luck bell once", rendered)
+
+    def test_wayside_elira_first_read_reflects_background_or_class(self) -> None:
+        cases = [
+            ("Acolyte", "Cleric", ["Medicine", "Religion"], "faith_action", "faith can move your hands"),
+            ("Soldier", "Fighter", ["Athletics", "Survival"], "triage_competence", "You have seen triage before"),
+            ("Criminal", "Rogue", ["Stealth", "Persuasion"], "unwatched_mercy", "No one important is watching"),
+            ("Sage", "Wizard", ["Arcana", "Investigation"], "knowledge_vs_saving", "do not mistake knowing it for saving him"),
+        ]
+        for background, class_name, skills, expected_read, expected_text in cases:
+            with self.subTest(background=background, class_name=class_name):
+                player = build_character(
+                    name="Velkor",
+                    race="Human",
+                    class_name=class_name,
+                    background=background,
+                    base_ability_scores={"STR": 12, "DEX": 13, "CON": 14, "INT": 15, "WIS": 11, "CHA": 10},
+                    class_skill_choices=skills,
+                )
+                answers = iter(["4", "2"])
+                log: list[str] = []
+                game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(901101))
+                game.state = GameState(player=player, current_scene="wayside_luck_shrine")
+
+                def fail_skill_check(actor, skill: str, dc: int, context: str) -> bool:
+                    raise AssertionError("Skipping aid and declining recruitment should not roll checks")
+
+                game.skill_check = fail_skill_check  # type: ignore[method-assign]
+
+                game.scene_wayside_luck_shrine()
+
+                self.assertEqual(game.state.flags["elira_first_read"], expected_read)
+                self.assertEqual(game.state.flags["wayside_aid_route"], "none")
+                self.assertEqual(game.state.flags["elira_initial_trust_reason"], "reserved_kindness")
+                self.assertIn(expected_text, self.plain_output(log))
+
+    def test_greywake_triage_yard_offers_second_elira_recruitment_chance(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        answers = iter(["2", "1"])
+        checks: list[tuple[str, int, str]] = []
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(90111))
+        game.state = GameState(
+            player=player,
+            current_scene="greywake_triage_yard",
+            flags={"elira_first_contact": True, "elira_wayside_recruit_failed": True},
+        )
+
+        def capture_check(actor, skill: str, dc: int, context: str) -> bool:
+            checks.append((skill, dc, context))
+            return True
+
+        game.skill_check = capture_check  # type: ignore[method-assign]
+
+        game.scene_greywake_triage_yard()
+
+        self.assertTrue(game.has_companion("Elira Dawnmantle"))
+        self.assertTrue(game.state.flags["greywake_outcome_sorting_seen"])
+        self.assertTrue(game.state.flags["greywake_wounded_stabilized"])
+        self.assertTrue(game.state.flags["greywake_outcome_tags_matched_wounds"])
+        self.assertTrue(game.state.flags["greywake_attack_imminent"])
+        self.assertTrue(game.state.flags["system_profile_seeded"])
+        self.assertEqual(game.state.flags["greywake_mira_evidence_kind"], "matched_triage_tags")
+        self.assertTrue(game.state.flags["elira_greywake_recruited"])
+        self.assertEqual(game.state.current_scene, "greywake_road_breakout")
+        self.assertEqual(
+            checks,
+            [
+                ("Medicine", 9, "to stabilize the Greywake wounded line"),
+                ("Persuasion", 6, "to convince Elira to join before Greywake breaks"),
+            ],
+        )
+        rendered = self.plain_output(log)
+        self.assertIn("prewritten triage tags", rendered)
+        self.assertIn("This is not a ledger mistake", rendered)
+        self.assertIn("first arrow cuts the quarantine line", rendered)
+
+    def test_greywake_road_breakout_preserves_manifest_and_reaches_neverwinter(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        encounters: list[Encounter] = []
+        game = TextDnDGame(input_fn=lambda _: "2", output_fn=lambda _: None, rng=random.Random(90112))
+        game.state = GameState(
+            player=player,
+            companions=[create_elira_dawnmantle()],
+            current_scene="greywake_road_breakout",
+            flags={"greywake_yard_steadied": True},
+        )
+        game.skill_check = lambda actor, skill, dc, context: True  # type: ignore[method-assign]
+        game.run_encounter = lambda encounter: encounters.append(encounter) or "victory"  # type: ignore[method-assign]
+
+        game.scene_greywake_road_breakout()
+
+        self.assertTrue(game.state.flags["greywake_breakout_resolved"])
+        self.assertTrue(game.state.flags["greywake_manifest_preserved"])
+        self.assertTrue(game.state.flags["system_profile_seeded"])
+        self.assertTrue(game.state.flags["varyn_route_pattern_seen"])
+        self.assertEqual(game.state.flags["greywake_mira_evidence_kind"], "marked_manifest")
+        self.assertEqual(game.state.current_scene, "neverwinter_briefing")
+        self.assertEqual([encounter.title for encounter in encounters], ["Greywake Road Breakout"])
+
+    def test_neverwinter_briefing_reacts_to_greywake_outcome_manifest(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        answers = iter(["6"])
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(90114))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "greywake_breakout_resolved": True,
+                "greywake_manifest_preserved": True,
+                "greywake_wounded_line_guarded": True,
+                "elira_greywake_recruited": True,
+                "greywake_mira_evidence_kind": "marked_manifest",
+            },
+            companions=[create_elira_dawnmantle()],
+        )
+        game.scene_identity_options = lambda scene_key: []
+        game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["greywake_mira_reacted"])
+        self.assertIn("You found Dawnmantle before I could send anyone for her", rendered)
+        self.assertIn("This is not a forged report. This is a schedule.", rendered)
+        self.assertIn("People will talk because they lived long enough to be angry.", rendered)
+        self.assertTrue(any("pre-sorting road casualties" in clue for clue in game.state.clues))
+        self.assertTrue(any("survivors can testify" in clue for clue in game.state.clues))
+        self.assertTrue(any("coordinating losses" in entry for entry in game.state.journal))
+
+    def test_neverwinter_briefing_reacts_to_burned_greywake_manifest(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        answers = iter(["6"])
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(90115))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "greywake_manifest_destroyed": True,
+                "greywake_mira_evidence_kind": "burned_manifest_corner",
+            },
+        )
+        game.scene_identity_options = lambda scene_key: []
+        game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["greywake_mira_reacted"])
+        self.assertIn("Then we work from witnesses. Less clean, but sometimes harder to kill.", rendered)
+        self.assertTrue(any("witness testimony" in clue for clue in game.state.clues))
+
+    def test_neverwinter_briefing_greywake_question_uses_preserved_manifest_details(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(90116))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "briefing_seen": True,
+                "greywake_outcome_sorting_seen": True,
+                "greywake_manifest_preserved": True,
+                "greywake_wounded_line_guarded": True,
+                "greywake_yard_steadied": True,
+            },
+        )
+        game.scene_identity_options = lambda scene_key: []
+        game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
+
+        def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
+            if any("What do you make of Greywake" in option for option in options):
+                return self.option_index_containing(options, "What do you make of Greywake")
+            return self.option_index_containing(options, "Take the writ")
+
+        game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["mira_q_greywake_initial"])
+        self.assertIn("orders wearing ink", rendered)
+        self.assertIn("With the manifest intact", rendered)
+        self.assertIn("preserved memory under pressure", rendered)
+        self.assertIn("public witnesses", rendered)
+
+    def test_neverwinter_briefing_elira_question_reflects_prior_trust(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Cleric",
+            background="Acolyte",
+            base_ability_scores={"STR": 10, "DEX": 12, "CON": 13, "INT": 11, "WIS": 15, "CHA": 14},
+            class_skill_choices=["Medicine", "Persuasion"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(90117))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "briefing_seen": True,
+                "elira_first_contact": True,
+                "elira_initial_trust_reason": "spiritual_kinship",
+                "elira_phandalin_fallback_pending": True,
+            },
+        )
+        game.scene_identity_options = lambda scene_key: []
+        game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
+
+        def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
+            if any("You know Elira Dawnmantle" in option for option in options):
+                return self.option_index_containing(options, "You know Elira Dawnmantle")
+            return self.option_index_containing(options, "Take the writ")
+
+        game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["mira_q_elira_initial"])
+        self.assertIn("find her at the shrine", rendered)
+        self.assertIn("Faith that keeps people alive is useful", rendered)
+        self.assertIn("With a life, yes", rendered)
+
+    def test_neverwinter_briefing_elira_question_lets_present_elira_answer(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(901171))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "briefing_seen": True,
+                "elira_first_contact": True,
+                "elira_greywake_recruited": True,
+            },
+            companions=[create_elira_dawnmantle()],
+        )
+        game.scene_identity_options = lambda scene_key: []
+        game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
+
+        def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
+            if any("You know Elira Dawnmantle" in option for option in options):
+                return self.option_index_containing(options, "You know Elira Dawnmantle")
+            return self.option_index_containing(options, "Take the writ")
+
+        game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["mira_q_elira_initial"])
+        self.assertIn("Harmless is what people call you", rendered)
+        self.assertIn("The wounded are people first", rendered)
+        self.assertIn("Trust me with breath, blood, and bad odds", rendered)
+        self.assertIn("With a life, yes", rendered)
+        self.assertNotIn("find her at the shrine", rendered)
+
+    def test_neverwinter_return_after_phandalin_uses_return_debrief(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(90118))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "briefing_seen": True,
+                "phandalin_arrived": True,
+                "steward_seen": True,
+                "steward_vow_made": True,
+                "blackwake_completed": True,
+                "blackwake_resolution": "evidence",
+            },
+        )
+
+        def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
+            if any("Phandalin is worse" in option for option in options):
+                return self.option_index_containing(options, "Phandalin is worse")
+            return self.option_index_containing(options, "Return to Phandalin")
+
+        game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["mira_return_intro_phandalin_return"])
+        self.assertTrue(game.state.flags["mira_q_phandalin_return"])
+        self.assertIn("town pressure is not collateral", rendered)
+        self.assertIn("Tessa Harrow usually sounds tired", rendered)
+        self.assertIn("You made her a vow", rendered)
+        self.assertIn("The Blackwake ledgers will make the merchants angrier", rendered)
+        self.assertEqual(game.state.current_scene, "phandalin_hub")
+
+    def test_neverwinter_return_after_act1_reports_varyn_displacement(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(90119))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            flags={
+                "briefing_seen": True,
+                "phandalin_arrived": True,
+                "varyn_body_defeated_act1": True,
+                "varyn_route_displaced": True,
+                "act1_victory_tier": "fractured_victory",
+                "emberhall_impossible_exit_seen": True,
+            },
+        )
+
+        def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
+            if any("Varyn is beaten" in option for option in options):
+                return self.option_index_containing(options, "Varyn is beaten")
+            return self.option_index_containing(options, "Return to Phandalin")
+
+        game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
+
+        game.scene_neverwinter_briefing()
+
+        rendered = self.plain_output(log)
+        self.assertTrue(game.state.flags["mira_return_intro_post_act1_return"])
+        self.assertTrue(game.state.flags["mira_q_act1_after_report"])
+        self.assertIn("Beaten, yes. Finished, I am less sure.", rendered)
+        self.assertIn("Routes that fold wrong", rendered)
+        self.assertIn("Phandalin will spend months learning what the word cost", rendered)
+        self.assertIn("the exit that should not have worked", rendered)
+
+    def test_phandalin_shrine_recruits_elira_after_failed_early_attempts(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "4", output_fn=log.append, rng=random.Random(90113))
+        game.state = GameState(
+            player=player,
+            current_scene="phandalin_hub",
+            flags={
+                "elira_first_contact": True,
+                "elira_wayside_recruit_failed": True,
+                "elira_greywake_recruit_failed": True,
+                "elira_phandalin_fallback_pending": True,
+                "wayside_luck_bell_seen": True,
+            },
+        )
+
+        def fail_skill_check(actor, skill: str, dc: int, context: str) -> bool:
+            raise AssertionError("Fallback Elira recruitment should not require another skill check")
+
+        game.skill_check = fail_skill_check  # type: ignore[method-assign]
+
+        game.visit_shrine()
+
+        self.assertTrue(game.has_companion("Elira Dawnmantle"))
+        self.assertTrue(game.state.flags["elira_phandalin_recruited"])
+        self.assertNotIn("elira_phandalin_fallback_pending", game.state.flags)
+        rendered = self.plain_output(log).replace("\n", " ")
+        self.assertIn("green road-ribbon from the cracked luck bell", rendered)
+
     def test_neverwinter_tymora_shrine_elira_checks_are_dc_8(self) -> None:
         check_cases = [
             ("1", "2", "Medicine", "to slow the ash-bitter poison"),
@@ -8713,13 +9501,14 @@ class CoreTests(unittest.TestCase):
             player=player,
             companions=[create_elira_dawnmantle()],
             current_scene="phandalin_hub",
-            flags={"elira_neverwinter_recruited": True},
+            flags={"elira_neverwinter_recruited": True, "wayside_luck_bell_promised": True},
         )
 
         game.visit_shrine()
 
-        rendered = self.plain_output(log)
+        rendered = self.plain_output(log).replace("\n", " ")
         self.assertIn("Elira's field kit is not waiting", rendered)
+        self.assertIn("promise Elira tied to the cracked luck bell", rendered)
         self.assertNotIn("Choose what you say to Elira.", rendered)
 
     def test_help_command_lists_global_commands(self) -> None:

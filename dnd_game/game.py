@@ -7,6 +7,7 @@ from .gameplay.combat_resolution import CombatResolutionMixin
 from .gameplay.companions import CompanionSystemMixin
 from .gameplay.creation import CharacterCreationMixin
 from .gameplay.creation_point_buy import PointBuyCreationMixin
+from .gameplay.dialogue_inputs import DialogueInputMixin
 from .gameplay.encounter import Encounter
 from .gameplay.interaction_actions import InteractionActionsMixin
 from .gameplay.inventory_core import InventoryCoreMixin
@@ -32,6 +33,7 @@ from .gameplay.story_town_services import StoryTownServicesMixin
 class TextDnDGame(
     CampMixin,
     CompanionSystemMixin,
+    DialogueInputMixin,
     InteractionActionsMixin,
     MapSystemMixin,
     StoryAct1ExpandedMixin,
