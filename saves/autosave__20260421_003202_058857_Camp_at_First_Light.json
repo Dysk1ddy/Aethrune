@@ -1,22 +1,20 @@
 {
   "player": {
-    "name": "Riven Ashguard",
-    "race": "Half-Orc",
-    "class_name": "Fighter",
-    "background": "Soldier",
+    "name": "Brakka Stonewake",
+    "race": "Goliath",
+    "class_name": "Barbarian",
+    "background": "Outlander",
     "level": 1,
     "ability_scores": {
       "STR": 17,
-      "DEX": 12,
+      "DEX": 13,
       "CON": 15,
       "INT": 8,
-      "WIS": 10,
-      "CHA": 13
+      "WIS": 12,
+      "CHA": 10
     },
     "skill_proficiencies": [
       "Athletics",
-      "Intimidation",
-      "Perception",
       "Survival"
     ],
     "saving_throw_proficiencies": [
@@ -24,60 +22,52 @@
       "CON"
     ],
     "features": [
-      "menacing",
-      "relentless_endurance",
-      "second_wind"
+      "rage",
+      "stone_endurance",
+      "unarmored_defense_barbarian"
     ],
     "weapon": {
-      "name": "Roadworn Longsword",
-      "damage": "1d8",
+      "name": "Roadworn Greatsword",
+      "damage": "2d6",
       "ability": "STR",
-      "weapon_type": "longsword",
+      "weapon_type": "greatsword",
       "to_hit_bonus": 0,
       "damage_bonus": 0,
       "finesse": false,
       "ranged": false,
-      "hands_required": 1,
+      "hands_required": 2,
       "properties": [
-        "versatile"
+        "heavy",
+        "two-handed"
       ]
     },
-    "armor": {
-      "name": "Roadworn Chain Mail",
-      "base_ac": 16,
-      "armor_type": "heavy",
-      "dex_cap": 0,
-      "heavy": true,
-      "stealth_disadvantage": true
-    },
-    "hit_die": 10,
+    "armor": null,
+    "hit_die": 12,
     "current_hp": 9,
-    "max_hp": 12,
-    "shield": true,
+    "max_hp": 14,
+    "shield": false,
     "spellcasting_ability": null,
     "skill_expertise": [],
     "bonus_proficiencies": [
-      "Land Vehicles",
-      "Gaming Set"
+      "Herbalism Kit",
+      "One Musical Instrument"
     ],
     "resources": {
-      "second_wind": 1
+      "rage": 2
     },
     "max_resources": {
-      "second_wind": 1
+      "rage": 2
     },
     "inventory": {},
     "conditions": {},
     "equipment_bonuses": {
-      "Athletics": 1,
-      "Intimidation": 1
+      "Nature": 1,
+      "Survival": 1
     },
-    "gear_bonuses": {
-      "AC": 0
-    },
+    "gear_bonuses": {},
     "notes": [
-      "Veteran's kit: +1 to Athletics and Intimidation checks.",
-      "A brutal shield-line veteran built to absorb pressure and keep swinging in the thick of a fight.",
+      "Forager's kit: +1 to Nature and Survival checks.",
+      "A hard-charging bruiser tuned for high Strength, strong staying power, and fast frontline testing.",
       "Preset build: optimized for faster testing and quick starts."
     ],
     "tags": [
@@ -88,14 +78,14 @@
       "ring_1": null,
       "ring_2": null,
       "neck": null,
-      "chest": "chain_mail_common",
+      "chest": null,
       "gloves": null,
       "boots": null,
-      "main_hand": "longsword_common",
-      "off_hand": "shield_common",
+      "main_hand": "greatsword_common",
+      "off_hand": null,
       "cape": null
     },
-    "archetype": "fighter",
+    "archetype": "barbarian",
     "companion_id": "",
     "disposition": 0,
     "lore": [],
@@ -118,9 +108,9 @@
   "current_scene": "background_prologue",
   "flags": {
     "act1_started": true,
-    "background_prologue_pending": "Soldier",
+    "background_prologue_pending": "Outlander",
     "map_state": {
-      "current_node_id": "neverwinter_briefing",
+      "current_node_id": "wayside_luck_shrine",
       "current_dungeon_id": null,
       "current_room_id": null,
       "visited_nodes": [],
@@ -128,35 +118,28 @@
       "seen_story_beats": [],
       "node_history": [],
       "room_history": []
-    },
-    "introduced_characters": [
-      "Ashen Brand Runner"
-    ]
+    }
   },
   "clues": [],
   "journal": [
-    "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
+    "Your outlander's opening starts with the frontier itself sounding the warning before city officials ever get around to naming the threat.",
     "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
-    "Reward from South Barracks Breakout: 50 XP, 8 gp.",
-    "Looted Frontier Ale x1 from South Barracks Breakout.",
-    "Looted Potion of Healing x1 from South Barracks Breakout."
+    "Reward from Camp at First Light: 125 XP, 5 gp."
   ],
   "quests": {},
   "completed_acts": [],
-  "xp": 50,
-  "gold": 28,
+  "xp": 125,
+  "gold": 25,
   "inventory": {
-    "potion_healing": 3,
+    "potion_healing": 2,
     "bread_round": 4,
     "travel_biscuits": 4,
     "dried_fish": 3,
     "goat_cheese": 2,
-    "frontier_ale": 3,
+    "frontier_ale": 2,
     "root_vegetables": 2,
     "antitoxin_vial": 1,
-    "chain_mail_common": 1,
-    "longsword_common": 1,
-    "shield_common": 1
+    "greatsword_common": 1
   },
   "short_rests_remaining": 2
 }

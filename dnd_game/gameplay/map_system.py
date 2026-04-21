@@ -1446,17 +1446,28 @@ class MapSystemMixin:
         self.maybe_run_act1_companion_conflict()
 
         while True:
-            options: list[tuple[str, str]] = [
-                ("steward", self.action_option("Report to Steward Tessa Harrow")),
-                ("inn", self.action_option("Visit the Stonehill Inn")),
-                ("shrine", self.action_option("Stop by the shrine of Tymora")),
-                ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
-                ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
-                ("orchard", self.action_option("Walk the old walls of Edermath Orchard")),
-                ("exchange", self.action_option("Step into the Miner's Exchange")),
-                ("camp", self.action_option("Return to camp")),
-                ("rest", self.action_option("Take a short rest")),
-            ]
+            options: list[tuple[str, str]] = []
+            if self.has_steward_interactions():
+                options.append(("steward", self.action_option("Report to Steward Tessa Harrow")))
+            options.append(("inn", self.action_option("Visit the Stonehill Inn")))
+            if self.has_shrine_interactions():
+                options.append(("shrine", self.action_option("Stop by the shrine of Tymora")))
+            options.extend(
+                [
+                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
+                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
+                ]
+            )
+            if self.has_edermath_orchard_interactions():
+                options.append(("orchard", self.action_option("Walk the old walls of Edermath Orchard")))
+            if self.has_miners_exchange_interactions():
+                options.append(("exchange", self.action_option("Step into the Miner's Exchange")))
+            options.extend(
+                [
+                    ("camp", self.action_option("Return to camp")),
+                    ("rest", self.action_option("Take a short rest")),
+                ]
+            )
             if not self.state.flags.get("old_owl_well_cleared"):
                 label = self.action_option("Investigate Old Owl Well")
                 if not self.can_visit_old_owl_well():
@@ -4782,6 +4793,524 @@ class MapSystemMixin:
         )
         self.complete_map_room(dungeon, room.room_id)
 
+    def is_old_owl_vaelith_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") == "Miniboss: Vaelith Marr"
+            and self.state is not None
+            and self.state.current_scene == "old_owl_well"
+        )
+
+    def is_varyn_sable_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") == "Boss: Varyn Sable"
+            and self.state is not None
+            and self.state.current_scene == "emberhall_cellars"
+        )
+
+    def is_ashfall_alarm_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") in {"Ashfall Gate", "Ashfall Lower Barracks"}
+            and self.state is not None
+            and self.state.current_scene == "ashfall_watch"
+        )
+
+    def is_ashfall_barracks_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") == "Ashfall Lower Barracks"
+            and self.state is not None
+            and self.state.current_scene == "ashfall_watch"
+        )
+
+    def is_rukhar_cinderfang_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") == "Miniboss: Rukhar Cinderfang"
+            and self.state is not None
+            and self.state.current_scene == "ashfall_watch"
+        )
+
+    def is_tresendar_cistern_eye_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") == "The Cistern Eye"
+            and self.state is not None
+            and self.state.current_scene == "tresendar_manor"
+        )
+
+    def is_tresendar_cellar_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") == "Tresendar Cellars"
+            and self.state is not None
+            and self.state.current_scene == "tresendar_manor"
+        )
+
+    def is_tresendar_manor_encounter(self, encounter) -> bool:
+        return (
+            getattr(encounter, "title", "") in {"Tresendar Cellars", "The Cistern Eye"}
+            and self.state is not None
+            and self.state.current_scene == "tresendar_manor"
+        )
+
+    def find_enemy_by_archetype(self, enemies, archetype: str) -> Any | None:
+        return next((enemy for enemy in enemies if getattr(enemy, "archetype", "") == archetype), None)
+
+    def find_vaelith_marr(self, enemies) -> Any | None:
+        return self.find_enemy_by_archetype(enemies, "vaelith_marr")
+
+    def find_varyn_sable(self, enemies) -> Any | None:
+        return self.find_enemy_by_archetype(enemies, "varyn")
+
+    def find_rukhar_cinderfang(self, enemies) -> Any | None:
+        return self.find_enemy_by_archetype(enemies, "rukhar")
+
+    def find_cistern_eye(self, enemies) -> Any | None:
+        return next(
+            (
+                enemy
+                for enemy in enemies
+                if getattr(enemy, "archetype", "") == "nothic" and ("Cistern Eye" in getattr(enemy, "name", ""))
+            ),
+            None,
+        )
+
+    def vaelith_gravecall_is_suppressed(self, vaelith) -> bool:
+        return any(self.has_status(vaelith, status) for status in ("reeling", "frightened", "stunned"))
+
+    def on_encounter_round_start(self, encounter, heroes, enemies, initiative, round_number: int) -> None:
+        self.handle_old_owl_vaelith_gravecall(encounter, heroes, enemies, initiative, round_number)
+        self.handle_varyn_spell_clock(encounter, heroes, enemies, round_number)
+        self.handle_ashfall_alarm_clock(encounter, enemies, initiative, round_number)
+        self.handle_ashfall_barracks_shield_line(encounter, enemies)
+        self.handle_rukhar_command_aura(encounter, enemies, round_number)
+        self.handle_tresendar_cellar_alarm_chain(encounter, enemies, initiative, round_number)
+        self.handle_tresendar_manor_collapse_timer(encounter, heroes, enemies, round_number)
+        self.handle_cistern_eye_secret_tax(encounter, heroes, enemies, round_number)
+        self.handle_cistern_eye_secret_hunger(encounter, heroes, enemies, round_number)
+
+    def handle_old_owl_vaelith_gravecall(self, encounter, heroes, enemies, initiative, round_number: int) -> None:
+        if not self.is_old_owl_vaelith_encounter(encounter):
+            return
+        vaelith = self.find_vaelith_marr(enemies)
+        if vaelith is None or not vaelith.is_conscious():
+            return
+        if self.vaelith_gravecall_is_suppressed(vaelith):
+            return
+
+        gravecall = int(vaelith.bond_flags.get("gravecall_counter", 0)) + 1
+        vaelith.bond_flags["gravecall_counter"] = gravecall
+        if gravecall == 1:
+            self.say("Vaelith starts a gravecall under the words of the fight, and the well answers with a slow scrape below.")
+        elif gravecall == 2 and not vaelith.bond_flags.get("gravecall_support_raised"):
+            vaelith.bond_flags["gravecall_support_raised"] = True
+            support = create_enemy("skeletal_sentry", name="Gravecalled Sentry")
+            support.notes.append("Raised by Vaelith Marr's gravecall ritual.")
+            enemies.append(support)
+            initiative.append(support)
+            self.say("A Gravecalled Sentry claws out of the corpse-salt ring and joins Vaelith's line.")
+        elif gravecall == 4 and not vaelith.bond_flags.get("gravecall_line_blessed"):
+            vaelith.bond_flags["gravecall_line_blessed"] = True
+            self.say("Vaelith finishes a harsh gravecall cadence, and the dead line moves with borrowed certainty.")
+            for enemy in enemies:
+                if enemy.is_conscious():
+                    self.apply_status(enemy, "blessed", 2, source="Vaelith's gravecall")
+
+    def varyn_spell_dc(self, varyn) -> int:
+        return max(14, 8 + varyn.proficiency_bonus + varyn.ability_mod("CHA"))
+
+    def handle_varyn_spell_clock(self, encounter, heroes, enemies, round_number: int) -> None:
+        if not self.is_varyn_sable_encounter(encounter):
+            return
+        varyn = self.find_varyn_sable(enemies)
+        if varyn is None or not varyn.is_conscious() or self.is_incapacitated(varyn) or not self.can_make_hostile_action(varyn):
+            return
+        if (round_number - 1) % 4 != 0:
+            return
+        if varyn.bond_flags.get("sable_spell_round") == round_number:
+            return
+        varyn.bond_flags["sable_spell_round"] = round_number
+        self.varyn_cast_black_ledger_edict(varyn, heroes)
+        if any(hero.is_conscious() for hero in heroes):
+            self.varyn_cast_ashen_knife_storm(varyn, heroes)
+
+    def varyn_cast_black_ledger_edict(self, varyn, heroes) -> None:
+        conscious_heroes = [hero for hero in heroes if hero.is_conscious()]
+        if not conscious_heroes:
+            return
+        target = max(conscious_heroes, key=self.combat_damage_pressure_score)
+        dc = self.varyn_spell_dc(varyn)
+        self.say(f"{varyn.name} snaps open a black ledger page and reads {target.name}'s next mistake aloud.")
+        if not self.saving_throw(target, "WIS", dc, context=f"against {varyn.name}'s Black Ledger Edict"):
+            self.apply_status(target, "marked", 2, source=f"{varyn.name}'s Black Ledger Edict")
+            self.apply_status(target, "incapacitated", 1, source=f"{varyn.name}'s Black Ledger Edict")
+        else:
+            self.apply_status(target, "marked", 1, source=f"{varyn.name}'s Black Ledger Edict")
+            self.say(f"{target.name} keeps moving, but the ledger still leaves a bright cut of attention on them.")
+
+    def varyn_cast_ashen_knife_storm(self, varyn, heroes) -> None:
+        conscious_heroes = [hero for hero in heroes if hero.is_conscious()]
+        if not conscious_heroes:
+            return
+        dc = self.varyn_spell_dc(varyn)
+        targets = sorted(conscious_heroes, key=lambda hero: (hero.current_hp, hero.armor_class, hero.save_bonus("DEX")))[:2]
+        self.say(f"{varyn.name} flicks two fingers, and ash-thin knives cross the chamber on impossible lines.")
+        for target in targets:
+            damage_roll = self.roll_with_display_bonus(
+                "2d5+3",
+                style="damage",
+                context_label=f"{varyn.name}'s Ashen Knife Storm",
+                outcome_kind="damage",
+            )
+            if self.saving_throw(target, "DEX", dc, context=f"against {varyn.name}'s Ashen Knife Storm"):
+                actual = self.apply_damage(target, max(1, damage_roll.total // 2), damage_type="slashing")
+                self.say(f"{target.name} twists through the worst of the knives but still takes {self.style_damage(actual)} damage.")
+            else:
+                actual = self.apply_damage(target, damage_roll.total, damage_type="slashing")
+                self.say(f"The knife storm opens a line across {target.name} for {self.style_damage(actual)} damage.")
+                if target.is_conscious():
+                    self.apply_status(target, "reeling", 1, source=f"{varyn.name}'s Ashen Knife Storm")
+            self.announce_downed_target(target)
+
+    def ashfall_basin_alarm_is_suppressed(self) -> bool:
+        if self.state is None:
+            return False
+        if self.state.flags.get("ashfall_signal_basin_cleanly_snuffed"):
+            return True
+        return bool(self.state.flags.get("ashfall_signal_basin_silenced") and not self.state.flags.get("ashfall_signal_basin_noisy"))
+
+    def handle_ashfall_alarm_clock(self, encounter, enemies, initiative, round_number: int) -> None:
+        if not self.is_ashfall_alarm_encounter(encounter) or round_number != 3:
+            return
+        if self.ashfall_basin_alarm_is_suppressed() or not enemies:
+            return
+        if any(enemy.bond_flags.get("ashfall_alarm_clock_triggered") for enemy in enemies):
+            return
+        enemies[0].bond_flags["ashfall_alarm_clock_triggered"] = True
+        conscious_enemies = [enemy for enemy in enemies if enemy.is_conscious()]
+        if len(conscious_enemies) <= 3:
+            reinforcement = create_enemy("bandit", name="Ashfall Alarm Runner")
+            reinforcement.notes.append("Pulled in by the unsnuffed Ashfall signal basin.")
+            enemies.append(reinforcement)
+            initiative.append(reinforcement)
+            self.say("The signal basin coughs out a hard red flare, and an Ashfall Alarm Runner barrels into the line.")
+        else:
+            self.say("The signal basin answers with a red flare, and the Ashfall line surges behind it.")
+            for enemy in conscious_enemies:
+                self.apply_status(enemy, "emboldened", 1, source="the Ashfall alarm basin")
+
+    def first_living_melee_enemy(self, enemies) -> Any | None:
+        return next((enemy for enemy in enemies if enemy.is_conscious() and not getattr(enemy.weapon, "ranged", False)), None)
+
+    def handle_ashfall_barracks_shield_line(self, encounter, enemies) -> None:
+        if not self.is_ashfall_barracks_encounter(encounter):
+            return
+        shield_bearer = next(
+            (enemy for enemy in enemies if enemy.is_conscious() and enemy.bond_flags.get("barracks_shield_bearer")),
+            None,
+        )
+        if shield_bearer is None and not any(enemy.bond_flags.get("barracks_shield_bearer") for enemy in enemies):
+            shield_bearer = self.first_living_melee_enemy(enemies)
+            if shield_bearer is not None:
+                shield_bearer.bond_flags["barracks_shield_bearer"] = True
+                self.say(f"{shield_bearer.name} locks the barracks shield line and forces the party to break the front first.")
+        if shield_bearer is None or not shield_bearer.is_conscious():
+            return
+        for ally in enemies:
+            if ally is not shield_bearer and ally.is_conscious():
+                self.apply_status(ally, "guarded", 1, source=f"{shield_bearer.name}'s shield line")
+
+    def handle_rukhar_command_aura(self, encounter, enemies, round_number: int) -> None:
+        if not self.is_rukhar_cinderfang_encounter(encounter):
+            return
+        rukhar = self.find_rukhar_cinderfang(enemies)
+        if rukhar is None or not rukhar.is_conscious() or rukhar.current_hp * 2 <= rukhar.max_hp:
+            return
+        allies = [enemy for enemy in enemies if enemy is not rukhar and enemy.is_conscious()]
+        if not allies:
+            return
+        target = max(allies, key=lambda ally: (ally.attack_bonus(), ally.current_hp))
+        if round_number % 2:
+            self.apply_status(target, "emboldened", 1, source=f"{rukhar.name}'s command aura")
+            self.say(f"{rukhar.name} cuts one sharp order through the smoke, and {target.name} surges to answer it.")
+        else:
+            self.apply_status(target, "attack_pressure", 1, source=f"{rukhar.name}'s command aura")
+            self.say(f"{rukhar.name} points {target.name} into the party's weakest angle.")
+
+    def handle_cistern_eye_secret_tax(self, encounter, heroes, enemies, round_number: int) -> None:
+        if not self.is_tresendar_cistern_eye_encounter(encounter) or round_number != 2:
+            return
+        if self.state is not None and self.state.flags.get("tresendar_eye_read"):
+            return
+        eye = self.find_cistern_eye(enemies)
+        if eye is None or not eye.is_conscious() or eye.bond_flags.get("secret_tax_triggered"):
+            return
+        conscious_heroes = [hero for hero in heroes if hero.is_conscious()]
+        if not conscious_heroes:
+            return
+        eye.bond_flags["secret_tax_triggered"] = True
+        target = min(conscious_heroes, key=lambda hero: (hero.save_bonus("WIS"), hero.skill_bonus("Insight"), hero.current_hp))
+        self.say(f"The Cistern Eye finds the softest unguarded thought in the party and speaks it in {target.name}'s voice.")
+        if not self.saving_throw(target, "WIS", 13, context="against the Cistern Eye's secret tax"):
+            self.apply_status(target, "reeling", 2, source="the Cistern Eye's secret tax")
+        else:
+            actual = self.apply_damage(
+                target,
+                self.roll_with_display_bonus(
+                    "1d6",
+                    style="damage",
+                    context_label="Cistern Eye secret tax",
+                    outcome_kind="damage",
+                ).total,
+                damage_type="psychic",
+            )
+            self.say(f"{target.name} keeps the secret closed, but the effort costs {self.style_damage(actual)} psychic damage.")
+            self.announce_downed_target(target)
+
+    def tresendar_cleared_room_count(self) -> int:
+        if self.state is None or self.state.current_scene != "tresendar_manor":
+            return 0
+        self._sync_map_state_with_scene()
+        payload = self._map_state_payload()
+        cleared_rooms = set(payload["cleared_rooms"])
+        dungeon_id = payload.get("current_dungeon_id")
+        if dungeon_id == "tresendar_undercellars":
+            dungeon = ACT1_HYBRID_MAP.dungeons[dungeon_id]
+            return sum(1 for room_id in cleared_rooms if room_id in dungeon.rooms)
+        return sum(
+            1
+            for flag_name in (
+                "tresendar_stair_found",
+                "tresendar_intake_cleared",
+                "tresendar_cistern_found",
+                "tresendar_records_secured",
+                "tresendar_cleared",
+            )
+            if self.state.flags.get(flag_name)
+        )
+
+    def handle_tresendar_cellar_alarm_chain(self, encounter, enemies, initiative, round_number: int) -> None:
+        if not self.is_tresendar_cellar_encounter(encounter) or round_number != 3:
+            return
+        if self.state is None or not self.state.flags.get("tresendar_entry_approach_failed"):
+            return
+        marker = enemies[0] if enemies else None
+        if marker is None or marker.bond_flags.get("tresendar_cellar_alarm_chain_triggered"):
+            return
+        marker.bond_flags["tresendar_cellar_alarm_chain_triggered"] = True
+        archer = create_enemy("bandit_archer", name="Records Passage Cutout")
+        archer.notes.append("Arrived from the cage-store records passage after the entry alarm carried.")
+        enemies.append(archer)
+        initiative.append(archer)
+        self.say("The failed entry finally pays off for the Ashen Brand: a cutout archer slides in from the records passage.")
+
+    def handle_tresendar_manor_collapse_timer(self, encounter, heroes, enemies, round_number: int) -> None:
+        if not self.is_tresendar_manor_encounter(encounter) or round_number != 3:
+            return
+        if self.tresendar_cleared_room_count() < 2:
+            return
+        marker = next((enemy for enemy in enemies if enemy.is_conscious()), None)
+        if marker is None or marker.bond_flags.get("tresendar_collapse_timer_triggered"):
+            return
+        marker.bond_flags["tresendar_collapse_timer_triggered"] = True
+        targets = []
+        conscious_heroes = [hero for hero in heroes if hero.is_conscious()]
+        conscious_enemies = [enemy for enemy in enemies if enemy.is_conscious()]
+        if conscious_heroes:
+            targets.append(self.rng.choice(conscious_heroes))
+        if conscious_enemies:
+            targets.append(self.rng.choice(conscious_enemies))
+        if not targets:
+            return
+        self.say("Tresendar's old bones start losing the argument with the fight. Stone breaks loose from the ceiling.")
+        for target in targets:
+            self.resolve_tresendar_falling_stone(target)
+
+    def resolve_tresendar_falling_stone(self, target) -> None:
+        if self.saving_throw(target, "DEX", 12, context="against Tresendar's falling stones"):
+            self.say(f"{target.name} twists clear before the ceiling finds them.")
+            return
+        actual = self.apply_damage(
+            target,
+            self.roll_with_display_bonus(
+                "1d4",
+                style="damage",
+                context_label="Tresendar collapse",
+                outcome_kind="damage",
+            ).total,
+            damage_type="bludgeoning",
+        )
+        if target.is_conscious():
+            status = self.rng.choice(("prone", "reeling"))
+            self.apply_status(target, status, 1, source="falling stone from Tresendar's collapse")
+        self.say(f"{target.name} is clipped by falling stone for {self.style_damage(actual)} bludgeoning damage.")
+        self.announce_downed_target(target)
+
+    def handle_cistern_eye_secret_hunger(self, encounter, heroes, enemies, round_number: int) -> None:
+        if not self.is_tresendar_cistern_eye_encounter(encounter) or round_number % 3 != 0:
+            return
+        eye = self.find_cistern_eye(enemies)
+        if eye is None or not eye.is_conscious() or eye.bond_flags.get("secret_hunger_round") == round_number:
+            return
+        conscious_heroes = [hero for hero in heroes if hero.is_conscious()]
+        if not conscious_heroes:
+            return
+        eye.bond_flags["secret_hunger_round"] = round_number
+        target = min(conscious_heroes, key=lambda hero: (hero.current_hp, hero.max_hp))
+        self.say(f"The Cistern Eye smells the thinnest pulse in the room and bites down on {target.name}'s hidden fear.")
+        actual = self.apply_damage(
+            target,
+            self.roll_with_display_bonus(
+                "1d6",
+                style="damage",
+                context_label="Cistern Eye secret hunger",
+                outcome_kind="damage",
+            ).total,
+            damage_type="psychic",
+        )
+        self.say(f"{target.name} suffers {self.style_damage(actual)} psychic damage from the Eye's secret hunger.")
+        self.announce_downed_target(target)
+
+    def harmful_combat_statuses(self) -> set[str]:
+        return {
+            "acid",
+            "bleeding",
+            "blinded",
+            "burning",
+            "charmed",
+            "cursed",
+            "deafened",
+            "exhaustion",
+            "frightened",
+            "grappled",
+            "incapacitated",
+            "marked",
+            "paralyzed",
+            "petrified",
+            "poisoned",
+            "prone",
+            "reeling",
+            "restrained",
+            "stunned",
+            "unconscious",
+        }
+
+    def clear_harmful_combat_statuses(self, actor) -> int:
+        removed = 0
+        for status in list(actor.conditions):
+            if status in self.harmful_combat_statuses():
+                actor.conditions.pop(status, None)
+                removed += 1
+        return removed
+
+    def after_actor_damaged(self, target, *, previous_hp: int, damage: int, damage_type: str = "") -> None:
+        encounter = getattr(self, "_active_encounter", None)
+        self.handle_vaelith_bloodied_ward(encounter, target, previous_hp)
+        self.handle_varyn_bloodied_reposition(encounter, target, previous_hp)
+        self.handle_rukhar_bloodied_order(encounter, target, previous_hp)
+        self.clear_barracks_shield_line_if_bearer_downed(encounter, target)
+
+    def handle_vaelith_bloodied_ward(self, encounter, target, previous_hp: int) -> None:
+        if not self.is_old_owl_vaelith_encounter(encounter):
+            return
+        if getattr(target, "archetype", "") != "vaelith_marr":
+            return
+        if target.bond_flags.get("grave_ward_triggered"):
+            return
+        if previous_hp * 2 < target.max_hp or target.current_hp <= 0 or target.current_hp * 2 >= target.max_hp:
+            return
+
+        target.bond_flags["grave_ward_triggered"] = True
+        ward_hp = self.rng.randint(6, 8)
+        target.grant_temp_hp(ward_hp)
+        self.say(
+            f"Blood darkens Vaelith's sleeve, and the well answers with a grave ward worth "
+            f"{self.style_healing(ward_hp)} temporary hit points."
+        )
+        heroes = [hero for hero in getattr(self, "_active_combat_heroes", []) if hero.is_conscious()]
+        if not heroes:
+            return
+        target_hero = max(heroes, key=self.old_owl_damage_pressure_score)
+        if not self.saving_throw(target_hero, "WIS", 13, context=f"against {target.name}'s grave ward"):
+            self.apply_status(target_hero, "frightened", 1, source=f"{target.name}'s grave ward")
+        else:
+            self.say(f"{target_hero.name} holds their nerve as the grave ward reaches for the party's sharpest blade.")
+
+    def handle_varyn_bloodied_reposition(self, encounter, target, previous_hp: int) -> None:
+        if not self.is_varyn_sable_encounter(encounter):
+            return
+        if getattr(target, "archetype", "") != "varyn":
+            return
+        if target.bond_flags.get("sable_reposition_triggered"):
+            return
+        if previous_hp * 2 <= target.max_hp or target.current_hp <= 0 or target.current_hp * 2 > target.max_hp:
+            return
+        target.bond_flags["sable_reposition_triggered"] = True
+        removed = self.clear_harmful_combat_statuses(target)
+        self.apply_status(target, "invisible", 1, source=f"{target.name}'s reserve route")
+        if removed:
+            self.say(f"{target.name} sheds every bad angle the party pinned on him and vanishes into the support line.")
+        else:
+            self.say(f"{target.name} breaks the line at the exact moment blood touches his glove and vanishes behind his support.")
+        supports = [
+            enemy
+            for enemy in getattr(self, "_active_combat_enemies", [])
+            if enemy is not target and enemy.is_conscious()
+        ]
+        for support in supports:
+            self.apply_status(support, "guarded", 2, source=f"{target.name}'s reposition order")
+            self.apply_status(support, "emboldened", 1, source=f"{target.name}'s reposition order")
+        if supports:
+            self.say("The remaining support closes ranks, buying Varyn the breath he needs to reset the fight.")
+
+    def handle_rukhar_bloodied_order(self, encounter, target, previous_hp: int) -> None:
+        if not self.is_rukhar_cinderfang_encounter(encounter):
+            return
+        if getattr(target, "archetype", "") != "rukhar":
+            return
+        heroes = [hero for hero in getattr(self, "_active_combat_heroes", []) if hero.is_conscious()]
+        if target.current_hp <= 0:
+            for hero in heroes:
+                if hero.bond_flags.pop("marked_by_rukhar", None):
+                    self.clear_status(hero, "marked")
+            return
+        if target.bond_flags.get("break_their_line_triggered"):
+            return
+        if previous_hp * 2 <= target.max_hp or target.current_hp * 2 > target.max_hp:
+            return
+        target.bond_flags["break_their_line_triggered"] = True
+        if not heroes:
+            return
+        marked = max(heroes, key=self.combat_damage_pressure_score)
+        marked.bond_flags["marked_by_rukhar"] = True
+        target.bond_flags["marked_target"] = marked.name
+        self.say(f"{target.name} snaps the order: Break their line. Every blade in the court starts hunting {marked.name}.")
+        self.apply_status(marked, "marked", -1, source=f"{target.name}'s Break Their Line")
+
+    def clear_barracks_shield_line_if_bearer_downed(self, encounter, target) -> None:
+        if not self.is_ashfall_barracks_encounter(encounter):
+            return
+        if not target.bond_flags.get("barracks_shield_bearer") or target.is_conscious():
+            return
+        for enemy in getattr(self, "_active_combat_enemies", []):
+            if enemy is not target:
+                self.clear_status(enemy, "guarded")
+        self.say(f"{target.name}'s shield line collapses, and the barracks formation finally opens.")
+
+    def combat_damage_pressure_score(self, hero) -> tuple[int, int, int]:
+        class_pressure = {
+            "Barbarian": 4,
+            "Cleric": 2,
+            "Fighter": 3,
+            "Paladin": 3,
+            "Rogue": 3,
+            "Ranger": 2,
+            "Monk": 2,
+            "Warlock": 2,
+            "Sorcerer": 2,
+            "Wizard": 2,
+        }.get(getattr(hero, "class_name", ""), 0)
+        return (hero.attack_bonus() + hero.damage_bonus() + class_pressure, hero.level, hero.current_hp)
+
+    def old_owl_damage_pressure_score(self, hero) -> tuple[int, int, int]:
+        return self.combat_damage_pressure_score(hero)
+
     def _old_owl_gravecaller_lip(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         self.say(
@@ -4797,6 +5326,9 @@ class MapSystemMixin:
             boss_enemies.append(create_enemy("carrion_lash_crawler"))
         if party_size >= 4:
             boss_enemies.append(self.act1_pick_enemy(("skeletal_sentry", "graveblade_wight", "lantern_fen_wisp")))
+        if not (self.state.flags.get("old_owl_prospector_rescued") or self.state.flags.get("old_owl_notes_found")):
+            boss_enemies.append(create_enemy("skeletal_sentry", name="Gravecalled Sentry"))
+            self.say("With no rescued witness or preserved notes to spoil the cadence, one more dead sentry rises beside the well.")
         boss_bonus = int(self.state.flags.get("old_owl_prospector_rescued", False)) + int(self.state.flags.get("old_owl_notes_found", False))
         if self.state.flags.get("old_owl_ritual_sabotaged"):
             boss_enemies[0].current_hp = max(1, boss_enemies[0].current_hp - 4)
@@ -5483,8 +6015,10 @@ class MapSystemMixin:
             self.player_action("Snuff the signal basin before anyone can call the ridge.")
             success = self.skill_check(self.state.player, "Stealth", 12, context="to kill the signal basin without drawing the whole court")
             if success:
+                self.state.flags["ashfall_signal_basin_cleanly_snuffed"] = True
                 self.say("You smother the basin under wet tarp and grit. No help is coming from the ridge in time to matter.")
             else:
+                self.state.flags["ashfall_signal_basin_noisy"] = True
                 self.say("You kill the signal late and loud, but late still counts for something.")
             self.complete_map_room(dungeon, "signal_basin")
         elif choice == 2:
@@ -5577,19 +6111,24 @@ class MapSystemMixin:
             self.player_action("Snuff the signal basin before anyone can call the ridge.")
             success = self.skill_check(self.state.player, "Stealth", 12, context="to kill the signal basin without drawing the whole court")
             if success:
+                self.state.flags["ashfall_signal_basin_cleanly_snuffed"] = True
                 self.say("You smother the basin under wet tarp and grit. No help is coming from the ridge in time to matter.")
             else:
+                self.state.flags["ashfall_signal_basin_noisy"] = True
                 self.say("You kill the signal late and loud, but late still counts for something.")
         elif choice == 2:
             self.player_speaker("The wind is shifting. I can use it to turn the smoke back into the yard.")
             success = self.skill_check(self.state.player, "Survival", 12, context="to use the crosswind against the signal basin")
             if success:
+                self.state.flags["ashfall_signal_basin_cleanly_snuffed"] = True
                 self.say("The smoke whips back into the yard and wrecks the timing of anyone still trying to form a line.")
                 self.reward_party(xp=10, reason="turning Ashfall's signal smoke back on the fort")
             else:
+                self.state.flags["ashfall_signal_basin_noisy"] = True
                 self.say("The wind helps, but not cleanly enough to hide the sabotage.")
         else:
             self.player_action("Kick the braziers apart and drown the whole thing in grit.")
+            self.state.flags["ashfall_signal_basin_noisy"] = True
             self.say("The basin collapses into a coughing ruin of sparks, ash, and wet earth.")
 
         self.complete_map_room(dungeon, room.room_id)
@@ -5773,6 +6312,7 @@ class MapSystemMixin:
             self.player_speaker("There is a hidden stair here somewhere. Let me find the one they trust.")
             success = self.skill_check(self.state.player, "Investigation", 13, context="to find the concealed manor intake route")
             self.state.flags["tresendar_hidden_entry"] = success
+            self.state.flags["tresendar_entry_approach_failed"] = not success
             if success:
                 self.say("You find the concealed stair and enter on the defenders' blind side.")
             else:
@@ -5781,6 +6321,7 @@ class MapSystemMixin:
             self.player_action("Slip through the collapsed chapel side and into the cellars.")
             success = self.skill_check(self.state.player, "Stealth", 13, context="to cross the broken chapel without warning the cellars")
             self.state.flags["tresendar_chapel_entry"] = success
+            self.state.flags["tresendar_entry_approach_failed"] = not success
             if success:
                 self.say("You come through the chapel rubble already moving and the first lookout never gets set.")
             else:
@@ -5790,6 +6331,7 @@ class MapSystemMixin:
             self.player_action("Rip the old cistern grate open and take the straight drop.")
             success = self.skill_check(self.state.player, "Athletics", 13, context="to force the old grate without losing balance on the drop")
             self.state.flags["tresendar_cistern_breach"] = success
+            self.state.flags["tresendar_entry_approach_failed"] = not success
             if success:
                 self.apply_status(self.state.player, "emboldened", 2, source="a brutal manor breach")
                 self.say("The grate comes free in a crash of iron and you land already driving the fight.")
@@ -5839,6 +6381,7 @@ class MapSystemMixin:
             return
 
         self.complete_map_room(dungeon, room.room_id)
+        self.state.flags.pop("tresendar_entry_approach_failed", None)
         self.say("The intake route is broken. Wet corridors open toward the cistern walk, and a barred side store lies deeper in the dark.")
 
     def _tresendar_cistern_walk(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
@@ -6188,6 +6731,10 @@ class MapSystemMixin:
         if party_size >= 4:
             second_enemies.append(self.act1_pick_enemy(("stonegaze_skulker", "whispermaw_blob", "graveblade_wight")))
         boss_bonus = int(self.state.flags.get("tresendar_eye_read", False)) + (2 if self.state.flags.get("tresendar_eye_ambushed", False) else 0)
+        if not self.state.flags.get("tresendar_records_secured"):
+            self.apply_status(second_enemies[0], "guarded", 2, source="unsecured cage-store reflections")
+            second_enemies[0].bond_flags["cistern_reflection_active"] = True
+            self.say("Unsecured cage-store records ripple through the cistern water, throwing false Eyes across the dark.")
         route_bonus, enemy_bonus = self._tresendar_nothic_route_shell(second_enemies[0])
         boss_bonus += route_bonus
         outcome = self.run_encounter(

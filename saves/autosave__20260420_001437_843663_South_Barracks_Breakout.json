@@ -120,7 +120,7 @@
     "act1_started": true,
     "background_prologue_pending": "Soldier",
     "map_state": {
-      "current_node_id": "neverwinter_briefing",
+      "current_node_id": "wayside_luck_shrine",
       "current_dungeon_id": null,
       "current_room_id": null,
       "visited_nodes": [],
@@ -137,7 +137,8 @@
   "journal": [
     "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
     "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
-    "Reward from South Barracks Breakout: 50 XP, 8 gp."
+    "Reward from South Barracks Breakout: 50 XP, 8 gp.",
+    "Looted Frontier Ale x1 from South Barracks Breakout."
   ],
   "quests": {},
   "completed_acts": [],
@@ -149,7 +150,7 @@
     "travel_biscuits": 4,
     "dried_fish": 3,
     "goat_cheese": 2,
-    "frontier_ale": 2,
+    "frontier_ale": 3,
     "root_vegetables": 2,
     "antitoxin_vial": 1,
     "chain_mail_common": 1,

@@ -61,6 +61,11 @@ STATUS_DEFINITIONS: dict[str, dict[str, object]] = {
         "combat_only": True,
         "ac_bonus": 1,
     },
+    "attack_pressure": {
+        "name": "Attack Pressure",
+        "combat_only": True,
+        "attack_bonus": 1,
+    },
     "marked": {"name": "Marked", "combat_only": True},
     "bleeding": {
         "name": "Bleeding",

@@ -1166,6 +1166,9 @@ class CombatResolutionMixin:
                 target.death_failures = 0
         if target.current_hp < previous_hp:
             self.animate_health_bar_loss(target, previous_hp, target.current_hp)
+            damage_hook = getattr(self, "after_actor_damaged", None)
+            if callable(damage_hook):
+                damage_hook(target, previous_hp=previous_hp, damage=damage, damage_type=damage_type)
         return damage
 
     def announce_downed_target(self, target) -> None:

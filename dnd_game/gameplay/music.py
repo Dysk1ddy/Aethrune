@@ -27,6 +27,9 @@ MUSIC_CONTEXT_FOLDERS: dict[str, tuple[str, ...]] = {
 
 SCENE_MUSIC_CONTEXTS: dict[str, str] = {
     "background_prologue": "wilderness",
+    "wayside_luck_shrine": "wilderness",
+    "greywake_triage_yard": "city",
+    "greywake_road_breakout": "city",
     "neverwinter_briefing": "city",
     "blackwake_crossing": "dungeon",
     "road_decision_post_blackwake": "wilderness",

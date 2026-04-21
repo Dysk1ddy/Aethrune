@@ -1,6 +1,6 @@
-# Sword Coast: Act I
+# Roads That Remember
 
-A Python text adventure built around a D&D-inspired party adventure set between Neverwinter and Phandalin in the Forgotten Realms.
+Roads That Remember is a Python text adventure built around a D&D-inspired party adventure set between Neverwinter and Phandalin in the Forgotten Realms.
 
 ## Current state
 
@@ -61,7 +61,7 @@ Act 2 is now playable as a scaffolded expedition campaign, and the project also 
 
 Easiest option on Windows:
 
-1. Double-click `Play Sword Coast.bat`
+1. Double-click `Play Roads That Remember.bat`
 
 That launcher automatically opens the game from the correct folder, so you do not need to use `cd` or type `python main.py`.
 

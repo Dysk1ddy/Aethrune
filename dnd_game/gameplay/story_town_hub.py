@@ -110,32 +110,36 @@ class StoryTownHubMixin:
                 ready_text = self.action_option("Descend into Emberhall Cellars")
             else:
                 ready_text = self.action_option("Ride for Ashfall Watch") if len(self.state.clues) >= 2 else self.action_option("Ride for Ashfall Watch (need 2 clues)")
-            choice = self.scenario_choice(
-                "Where do you go next?",
+            options: list[tuple[str, str]] = []
+            if self.has_steward_interactions():
+                options.append(("steward", self.action_option("Report to Steward Tessa Harrow")))
+            options.append(("inn", self.action_option("Visit the Stonehill Inn")))
+            if self.has_shrine_interactions():
+                options.append(("shrine", self.action_option("Stop by the shrine of Tymora")))
+            options.extend(
                 [
-                    self.action_option("Report to Steward Tessa Harrow"),
-                    self.action_option("Visit the Stonehill Inn"),
-                    self.action_option("Stop by the shrine of Tymora"),
-                    self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions")),
-                    self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post")),
-                    self.action_option("Return to camp"),
-                    self.action_option("Take a short rest"),
-                    ready_text,
-                ],
+                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
+                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
+                    ("camp", self.action_option("Return to camp")),
+                    ("rest", self.action_option("Take a short rest")),
+                    ("ashfall", ready_text),
+                ]
             )
-            if choice == 1:
+            choice = self.scenario_choice("Where do you go next?", [text for _, text in options])
+            selection_key, _ = options[choice - 1]
+            if selection_key == "steward":
                 self.visit_steward()
-            elif choice == 2:
+            elif selection_key == "inn":
                 self.visit_stonehill_inn()
-            elif choice == 3:
+            elif selection_key == "shrine":
                 self.visit_shrine()
-            elif choice == 4:
+            elif selection_key == "barthen":
                 self.visit_barthen_provisions()
-            elif choice == 5:
+            elif selection_key == "linene":
                 self.visit_trading_post()
-            elif choice == 6:
+            elif selection_key == "camp":
                 self.open_camp_menu()
-            elif choice == 7:
+            elif selection_key == "rest":
                 self.short_rest()
             else:
                 if not self.state.flags.get("ashfall_watch_cleared") and len(self.state.clues) < 2:
@@ -147,12 +151,24 @@ class StoryTownHubMixin:
                     self.state.current_scene = "ashfall_watch"
                     return
 
+    def has_steward_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("steward_seen")
+            or self.quest_is_ready("secure_miners_road")
+            or not self.state.flags.get("steward_pressure_asked")
+            or not self.state.flags.get("steward_ruins_asked")
+            or (self.state.flags.get("blackwake_completed") and not self.state.flags.get("steward_blackwake_asked"))
+            or (not self.state.flags.get("steward_vow_made") and self.quest_status("secure_miners_road") == "active")
+        )
+
     def visit_steward(self) -> None:
         assert self.state is not None
         self.banner("Steward's Hall")
+        self.introduce_character("Tessa Harrow")
         if not self.state.flags.get("steward_seen"):
             self.say(
-                "Steward Tessa Harrow stands over a desk buried in route maps, supply notes, and half-dried ink. "
+                "Tessa stands over a desk buried in route maps, supply notes, and half-dried ink. "
                 "She looks like someone trying to hold a frontier town together with ledgers, stubbornness, and not "
                 "nearly enough sleep.",
                 typed=True,
@@ -168,7 +184,7 @@ class StoryTownHubMixin:
                 options.append(("ruins", "\"Tell me about the old ruins around town.\""))
             if self.state.flags.get("blackwake_completed") and not self.state.flags.get("steward_blackwake_asked"):
                 options.append(("blackwake", self.action_option("Share what happened at Blackwake Crossing.")))
-            if not self.state.flags.get("steward_vow_made"):
+            if not self.state.flags.get("steward_vow_made") and self.quest_status("secure_miners_road") == "active":
                 options.append(("vow", "\"I'll break their grip on Phandalin.\""))
             options.append(("leave", self.action_option("Leave Tessa to her work and move on.")))
             choice = self.scenario_choice("Choose what you say to Tessa.", [text for _, text in options])
@@ -273,21 +289,24 @@ class StoryTownHubMixin:
                     options.append(("rumors", "\"Tell me what the roads are saying about the Ashen Brand.\""))
                 if self.state.flags.get("blackwake_completed") and not self.state.flags.get("inn_blackwake_rumor_asked"):
                     options.append(("blackwake", "\"What are people saying about Blackwake Crossing?\""))
-                if self.quest_is_ready("marked_keg_investigation"):
-                    options.append(("mara", self.action_option("Tell Mara Stonehill what you found about the marked keg.")))
-                else:
-                    options.append(("mara", self.action_option("Talk to Mara Stonehill, who is keeping half the room from a fight.")))
-                options.append(("jerek", self.action_option("Sit with Jerek Harl and hear what anger has left him.")))
-                if self.quest_is_ready("songs_for_the_missing"):
+                if self.stonehill_has_mara_interactions():
+                    if self.quest_is_ready("marked_keg_investigation"):
+                        options.append(("mara", self.action_option("Tell Mara Stonehill what you found about the marked keg.")))
+                    else:
+                        options.append(("mara", self.action_option("Talk to Mara Stonehill, who is keeping half the room from a fight.")))
+                if self.stonehill_has_jerek_interactions():
+                    options.append(("jerek", self.action_option("Sit with Jerek Harl and hear what anger has left him.")))
+                if self.quest_is_ready("songs_for_the_missing") and self.stonehill_has_sella_interactions():
                     options.append(("sella", self.action_option("Bring Sella Quill the three true details she asked for.")))
-                else:
+                elif self.stonehill_has_sella_interactions():
                     options.append(("sella", self.action_option("Listen to Sella Quill and the room she keeps half-honest.")))
-                options.append(("tam", self.action_option("Hear Old Tam Veller out over his cooling cup.")))
-                if self.quest_is_ready("quiet_table_sharp_knives"):
+                if self.stonehill_has_old_tam_interactions():
+                    options.append(("tam", self.action_option("Hear Old Tam Veller out over his cooling cup.")))
+                if self.quest_is_ready("quiet_table_sharp_knives") and self.stonehill_has_nera_interactions():
                     options.append(("nera", self.action_option("Report the quiet-table scheme to Nera Doss.")))
-                elif not self.state.flags.get("stonehill_nera_treated"):
+                elif self.stonehill_has_nera_interactions() and not self.state.flags.get("stonehill_nera_treated"):
                     options.append(("nera", self.quoted_option("MEDICINE", "Let me look at that split lip.")))
-                else:
+                elif self.stonehill_has_nera_interactions():
                     options.append(("nera", self.action_option("Check on Nera Doss at the wall table.")))
                 if self.state.flags.get("stonehill_barfight_ready") and not self.state.flags.get("stonehill_barfight_resolved"):
                     options.append(("barfight", self.action_option("Step into the rising dispute before the whole room tips over.")))
@@ -420,6 +439,72 @@ class StoryTownHubMixin:
         if callable(adjust_metric):
             adjust_metric("act1_town_fear", delta)
 
+    def stonehill_has_mara_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("stonehill_mara_met")
+            or self.quest_is_ready("marked_keg_investigation")
+            or (not self.has_quest("marked_keg_investigation") and not self.quest_is_completed("marked_keg_investigation"))
+            or (
+                self.has_quest("marked_keg_investigation")
+                and not self.quest_is_completed("marked_keg_investigation")
+                and not self.state.flags.get("marked_keg_resolved")
+            )
+            or not self.state.flags.get("stonehill_mara_order_asked")
+        )
+
+    def stonehill_has_jerek_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("stonehill_jerek_met")
+            or self.quest_is_ready("find_dain_harl")
+            or (not self.has_quest("find_dain_harl") and not self.quest_is_completed("find_dain_harl"))
+            or (
+                not self.state.flags.get("stonehill_jerek_route_marks_shared")
+                and not self.state.flags.get("dain_harl_truth_found")
+            )
+            or not self.state.flags.get("stonehill_jerek_grievance_asked")
+            or not self.state.flags.get("songs_for_missing_jerek_detail")
+        )
+
+    def stonehill_has_sella_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("stonehill_sella_met")
+            or self.quest_is_ready("songs_for_the_missing")
+            or (not self.has_quest("songs_for_the_missing") and not self.quest_is_completed("songs_for_the_missing"))
+            or (self.has_quest("songs_for_the_missing") and not self.quest_is_completed("songs_for_the_missing"))
+            or not self.state.flags.get("stonehill_sella_room_asked")
+            or not self.state.flags.get("stonehill_sella_performance_attempted")
+            or (
+                self.quest_is_completed("songs_for_the_missing")
+                and self.quest_is_completed("find_dain_harl")
+                and not self.state.flags.get("stonehill_sella_dain_memorial_done")
+            )
+        )
+
+    def stonehill_has_old_tam_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("stonehill_old_tam_met")
+            or not self.state.flags.get("stonehill_old_tam_route_asked")
+            or not self.state.flags.get("songs_for_missing_tam_detail")
+        )
+
+    def stonehill_has_nera_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("stonehill_nera_met")
+            or self.quest_is_ready("quiet_table_sharp_knives")
+            or not self.state.flags.get("stonehill_nera_treated")
+            or (not self.has_quest("quiet_table_sharp_knives") and not self.quest_is_completed("quiet_table_sharp_knives"))
+            or (
+                self.has_quest("quiet_table_sharp_knives")
+                and not self.quest_is_completed("quiet_table_sharp_knives")
+                and not self.state.flags.get("quiet_table_knives_resolved")
+            )
+        )
+
     def stonehill_talk_mara(self) -> None:
         assert self.state is not None
         if not self.state.flags.get("stonehill_mara_met"):
@@ -435,7 +520,7 @@ class StoryTownHubMixin:
                 options.append(("turn_in", self.action_option("Tell Mara who marked the keg and why.")))
             elif not self.has_quest("marked_keg_investigation") and not self.quest_is_completed("marked_keg_investigation"):
                 options.append(("quest", "\"What has you watching the kegs instead of the door?\""))
-            else:
+            elif not self.state.flags.get("marked_keg_resolved"):
                 options.append(("investigate", self.action_option("Read the room around Mara's marked keg.")))
             if not self.state.flags.get("stonehill_mara_order_asked"):
                 options.append(("order", "\"How are you keeping this room from breaking?\""))
@@ -704,7 +789,7 @@ class StoryTownHubMixin:
                 options.append(("turn_in", self.action_option("Bring Sella the three true details she asked for.")))
             elif not self.has_quest("songs_for_the_missing") and not self.quest_is_completed("songs_for_the_missing"):
                 options.append(("quest", "\"Can a song do anything for the missing?\""))
-            else:
+            elif self.has_quest("songs_for_the_missing") and not self.quest_is_completed("songs_for_the_missing"):
                 options.append(("reminder", "\"Who do you still need me to hear properly?\""))
             if not self.state.flags.get("stonehill_sella_room_asked"):
                 options.append(("room", "\"What does this room sound like to you?\""))
@@ -848,7 +933,11 @@ class StoryTownHubMixin:
                 options.append(("treat", self.quoted_option("MEDICINE", "Let me look at that split lip.")))
             if not self.has_quest("quiet_table_sharp_knives") and not self.quest_is_completed("quiet_table_sharp_knives"):
                 options.append(("quest", "\"That was not a fall. Who wanted your message changed?\""))
-            elif not self.state.flags.get("quiet_table_knives_resolved"):
+            elif (
+                self.has_quest("quiet_table_sharp_knives")
+                and not self.quest_is_completed("quiet_table_sharp_knives")
+                and not self.state.flags.get("quiet_table_knives_resolved")
+            ):
                 options.append(("shadow", self.action_option("Shadow the quiet table Nera pointed out.")))
             options.append(("leave", self.action_option("Leave Nera Doss to the wall table and the exits.")))
             choice = self.scenario_choice("Choose what you say to Nera Doss.", [text for _, text in options])

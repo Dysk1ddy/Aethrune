@@ -181,6 +181,11 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(MUSIC_CONTEXT_FOLDERS["dungeon"], ("Dungeon",))
         self.assertEqual(MUSIC_CONTEXT_FOLDERS["main_menu"], ("Main menu",))
         self.assertEqual(MUSIC_CONTEXT_FOLDERS["camp"], ("Camp",))
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["background_prologue"], "wilderness")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["wayside_luck_shrine"], "wilderness")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["greywake_triage_yard"], "city")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["greywake_road_breakout"], "city")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["neverwinter_briefing"], "city")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["phandalin_hub"], "city")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["tresendar_manor"], "dungeon")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["blackwake_crossing"], "dungeon")
@@ -778,6 +783,18 @@ class CoreTests(unittest.TestCase):
         with patch("dnd_game.gameplay.base.sys.stdout", buffer):
             game.typewrite_text("Hold fast.", delay=0.1)
         self.assertEqual(buffer.getvalue(), "Hold fast.")
+
+    def test_typewriter_does_not_animate_continuation_indent_spaces(self) -> None:
+        game = TextDnDGame(input_fn=input, output_fn=print, rng=random.Random(900644), type_dialogue=True)
+        buffer = io.StringIO()
+        delay_snapshots: list[str] = []
+        game.animation_skip_requested = lambda **kwargs: False
+        game.sleep_for_animation = lambda duration, require_animation=False: delay_snapshots.append(buffer.getvalue()) or False
+        with patch("dnd_game.gameplay.base.sys.stdout", buffer):
+            game.typewrite_text("First line\n             indented words", delay=0.1)
+        self.assertEqual(buffer.getvalue(), "First line\n             indented words")
+        self.assertNotIn("First line\n ", delay_snapshots)
+        self.assertIn("First line\n             i", delay_snapshots)
 
     def test_animation_skip_scope_consumes_only_one_enter_press(self) -> None:
         game = TextDnDGame(input_fn=input, output_fn=print, rng=random.Random(900643), animate_dice=True)
@@ -2301,6 +2318,127 @@ class CoreTests(unittest.TestCase):
         self.assertGreater(boss_encounter.enemies[0].max_hp, 26)
         self.assertTrue(any(enemy.name == "Carrion Lash Crawler" for enemy in boss_encounter.enemies[1:]))
 
+    def test_old_owl_vaelith_gravecall_clock_raises_support_and_blesses_line(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008320))
+        game.state = GameState(
+            player=player,
+            current_scene="old_owl_well",
+            flags={"miners_exchange_lead": True},
+        )
+        game.ensure_state_integrity()
+        vaelith = create_enemy("vaelith_marr")
+        encounter = Encounter(
+            title="Miniboss: Vaelith Marr",
+            description="The gravecaller waits at the well.",
+            enemies=[vaelith],
+            allow_flee=False,
+            allow_post_combat_random_encounter=False,
+        )
+        game.enemy_turn = lambda actor, heroes, enemies, encounter, dodging: None  # type: ignore[method-assign]
+
+        def end_after_gravecall(actor, heroes, enemies, encounter, dodging):
+            if int(vaelith.bond_flags.get("gravecall_counter", 0)) >= 4:
+                for enemy in enemies:
+                    enemy.current_hp = 0
+                    enemy.dead = True
+            return None
+
+        game.hero_turn = end_after_gravecall  # type: ignore[method-assign]
+        outcome = game.run_encounter(encounter)
+
+        self.assertEqual(outcome, "victory")
+        self.assertGreaterEqual(vaelith.bond_flags["gravecall_counter"], 4)
+        self.assertTrue(vaelith.bond_flags["gravecall_support_raised"])
+        self.assertTrue(vaelith.bond_flags["gravecall_line_blessed"])
+        self.assertTrue(any(enemy.name == "Gravecalled Sentry" for enemy in encounter.enemies))
+
+    def test_old_owl_vaelith_gravecall_pauses_while_disrupted(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008321))
+        game.state = GameState(
+            player=player,
+            current_scene="old_owl_well",
+            flags={"miners_exchange_lead": True},
+        )
+        vaelith = create_enemy("vaelith_marr")
+        game.apply_status(vaelith, "reeling", 1, source="test disruption")
+        encounter = Encounter(title="Miniboss: Vaelith Marr", description="", enemies=[vaelith])
+
+        game.on_encounter_round_start(encounter, [player], [vaelith], [player, vaelith], 1)
+
+        self.assertNotIn("gravecall_counter", vaelith.bond_flags)
+
+    def test_old_owl_vaelith_bloodied_grave_ward_frightens_top_threat(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008322))
+        game.state = GameState(
+            player=player,
+            current_scene="old_owl_well",
+            flags={"miners_exchange_lead": True},
+        )
+        game.ensure_state_integrity()
+        vaelith = create_enemy("vaelith_marr")
+        encounter = Encounter(title="Miniboss: Vaelith Marr", description="", enemies=[vaelith])
+        game._active_encounter = encounter
+        game._active_combat_heroes = [player]
+        game._active_combat_enemies = [vaelith]
+        game.saving_throw = lambda actor, ability, dc, **kwargs: False  # type: ignore[method-assign]
+
+        game.apply_damage(vaelith, vaelith.current_hp - (vaelith.max_hp // 2) + 1)
+
+        self.assertTrue(vaelith.bond_flags["grave_ward_triggered"])
+        self.assertGreaterEqual(vaelith.temp_hp, 6)
+        self.assertLessEqual(vaelith.temp_hp, 8)
+        self.assertIn("frightened", player.conditions)
+
+    def test_old_owl_vaelith_gets_extra_support_if_lull_was_skipped(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        encounters: list[Encounter] = []
+        game = TextDnDGame(input_fn=lambda _: "3", output_fn=lambda _: None, rng=random.Random(9008323))
+        game.state = GameState(
+            player=player,
+            current_scene="old_owl_well",
+            flags={"miners_exchange_lead": True},
+        )
+        game.ensure_state_integrity()
+        dungeon = game.current_act1_dungeon()
+        assert dungeon is not None
+        game.run_encounter = lambda encounter: encounters.append(encounter) or "victory"  # type: ignore[method-assign]
+
+        game._old_owl_gravecaller_lip(dungeon, dungeon.rooms["gravecaller_lip"])
+
+        boss_encounter = encounters[0]
+        self.assertTrue(any(enemy.name == "Gravecalled Sentry" for enemy in boss_encounter.enemies))
+
     def test_old_owl_notes_unlock_cinderfall_route_and_reduce_ashen_strength(self) -> None:
         player = build_character(
             name="Vale",
@@ -2834,6 +2972,265 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(player.story_skill_bonuses, {})
         self.assertEqual(encounters[0].hero_initiative_bonus, 2)
         self.assertIn("reeling", encounters[0].enemies[0].conditions)
+
+    def test_cistern_eye_secret_tax_hits_lowest_wis_save_unless_eye_was_read(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 8, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        elira = create_elira_dawnmantle()
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008352))
+        game.state = GameState(player=player, companions=[elira], current_scene="tresendar_manor", flags={"tresendar_revealed": True})
+        game.ensure_state_integrity()
+        eye = create_enemy("nothic", name="Cistern Eye")
+        encounter = Encounter(title="The Cistern Eye", description="", enemies=[eye])
+        game.saving_throw = lambda actor, ability, dc, context, against_poison=False: False  # type: ignore[method-assign]
+
+        game.on_encounter_round_start(encounter, [player, elira], [eye], [player, elira, eye], 2)
+
+        self.assertTrue(eye.bond_flags["secret_tax_triggered"])
+        self.assertIn("reeling", player.conditions)
+        self.assertNotIn("reeling", elira.conditions)
+
+        protected_player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 8, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        protected_game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008353))
+        protected_game.state = GameState(
+            player=protected_player,
+            current_scene="tresendar_manor",
+            flags={"tresendar_revealed": True, "tresendar_eye_read": True},
+        )
+        protected_eye = create_enemy("nothic", name="Cistern Eye")
+        protected_game.saving_throw = lambda actor, ability, dc, context, against_poison=False: False  # type: ignore[method-assign]
+        protected_game.on_encounter_round_start(
+            Encounter(title="The Cistern Eye", description="", enemies=[protected_eye]),
+            [protected_player],
+            [protected_eye],
+            [protected_player, protected_eye],
+            2,
+        )
+        self.assertNotIn("secret_tax_triggered", protected_eye.bond_flags)
+        self.assertNotIn("reeling", protected_player.conditions)
+
+    def test_cistern_reflection_guards_eye_unless_cage_store_records_secured(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        encounters: list[Encounter] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008354))
+        game.state = GameState(player=player, current_scene="tresendar_manor", flags={"tresendar_revealed": True})
+        game.ensure_state_integrity()
+        dungeon = game.current_act1_dungeon()
+        assert dungeon is not None
+        game.scenario_choice = lambda prompt, options, **kwargs: 1  # type: ignore[method-assign]
+        game.run_encounter = lambda encounter: encounters.append(encounter) or "victory"  # type: ignore[method-assign]
+
+        game._tresendar_nothic_lair(dungeon, dungeon.rooms["nothic_lair"])
+
+        eye = encounters[0].enemies[0]
+        self.assertEqual(eye.conditions.get("guarded"), 2)
+        self.assertTrue(eye.bond_flags["cistern_reflection_active"])
+
+        protected_player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        protected_encounters: list[Encounter] = []
+        protected_game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008355))
+        protected_game.state = GameState(
+            player=protected_player,
+            current_scene="tresendar_manor",
+            flags={"tresendar_revealed": True, "tresendar_records_secured": True},
+        )
+        protected_game.ensure_state_integrity()
+        protected_dungeon = protected_game.current_act1_dungeon()
+        assert protected_dungeon is not None
+        protected_game.scenario_choice = lambda prompt, options, **kwargs: 1  # type: ignore[method-assign]
+        protected_game.run_encounter = lambda encounter: protected_encounters.append(encounter) or "victory"  # type: ignore[method-assign]
+
+        protected_game._tresendar_nothic_lair(protected_dungeon, protected_dungeon.rooms["nothic_lair"])
+
+        protected_eye = protected_encounters[0].enemies[0]
+        self.assertNotIn("guarded", protected_eye.conditions)
+        self.assertNotIn("cistern_reflection_active", protected_eye.bond_flags)
+
+    def test_tresendar_entry_failure_triggers_cellar_alarm_chain(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008356))
+        game.state = GameState(
+            player=player,
+            current_scene="tresendar_manor",
+            flags={"tresendar_revealed": True, "tresendar_entry_approach_failed": True},
+        )
+        game.ensure_state_integrity()
+        guard = create_enemy("bandit", name="Ashen Brand Collector")
+        enemies = [guard]
+        initiative = [player, guard]
+        encounter = Encounter(title="Tresendar Cellars", description="", enemies=enemies)
+
+        game.on_encounter_round_start(encounter, [player], enemies, initiative, 3)
+
+        self.assertTrue(guard.bond_flags["tresendar_cellar_alarm_chain_triggered"])
+        self.assertEqual(enemies[-1].name, "Records Passage Cutout")
+        self.assertIn(enemies[-1], initiative)
+
+    def test_tresendar_collapse_timer_hits_hero_and_enemy_after_second_room(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008357))
+        game.state = GameState(player=player, current_scene="tresendar_manor", flags={"tresendar_revealed": True})
+        game.ensure_state_integrity()
+        game.state.flags[game.MAP_STATE_KEY] = {
+            "current_node_id": "tresendar_manor",
+            "current_dungeon_id": "tresendar_undercellars",
+            "current_room_id": "nothic_lair",
+            "visited_nodes": ["tresendar_manor"],
+            "cleared_rooms": ["hidden_stair", "cellar_intake"],
+            "seen_story_beats": [],
+            "node_history": [],
+            "room_history": [],
+        }
+        guard = create_enemy("bandit", name="Ashen Brand Collector")
+        enemies = [guard]
+        initiative = [player, guard]
+        encounter = Encounter(title="Tresendar Cellars", description="", enemies=enemies)
+        game.saving_throw = lambda actor, ability, dc, context, against_poison=False: False  # type: ignore[method-assign]
+        player_hp = player.current_hp
+        guard_hp = guard.current_hp
+
+        game.on_encounter_round_start(encounter, [player], enemies, initiative, 3)
+
+        self.assertTrue(guard.bond_flags["tresendar_collapse_timer_triggered"])
+        self.assertLess(player.current_hp, player_hp)
+        self.assertLess(guard.current_hp, guard_hp)
+        self.assertTrue({"prone", "reeling"} & set(player.conditions))
+        self.assertTrue({"prone", "reeling"} & set(guard.conditions))
+
+    def test_cistern_eye_secret_hunger_hits_lowest_health_every_third_round(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        elira = create_elira_dawnmantle()
+        elira.current_hp = 5
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008358))
+        game.state = GameState(player=player, companions=[elira], current_scene="tresendar_manor", flags={"tresendar_revealed": True})
+        game.ensure_state_integrity()
+        eye = create_enemy("nothic", name="Cistern Eye")
+        encounter = Encounter(title="The Cistern Eye", description="", enemies=[eye])
+        player_hp = player.current_hp
+        elira_hp = elira.current_hp
+
+        game.on_encounter_round_start(encounter, [player, elira], [eye], [player, elira, eye], 3)
+
+        self.assertEqual(eye.bond_flags["secret_hunger_round"], 3)
+        self.assertEqual(player.current_hp, player_hp)
+        self.assertLess(elira.current_hp, elira_hp)
+
+    def test_varyn_super_buff_stats_and_opening_spell_clock(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        varyn = create_enemy("varyn")
+        self.assertEqual(varyn.level, 5)
+        self.assertGreaterEqual(varyn.max_hp, 64)
+        self.assertEqual(varyn.weapon.damage, "2d8+2")
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008354))
+        game.state = GameState(player=player, current_scene="emberhall_cellars")
+        game.ensure_state_integrity()
+        encounter = Encounter(title="Boss: Varyn Sable", description="", enemies=[varyn])
+        game.saving_throw = lambda actor, ability, dc, context, against_poison=False: False  # type: ignore[method-assign]
+        damage_rolls = []
+
+        def capture_damage_roll(expression: str, **kwargs):
+            damage_rolls.append((expression, kwargs))
+            return SimpleNamespace(total=8)
+
+        game.roll_with_display_bonus = capture_damage_roll  # type: ignore[method-assign]
+        hp_before = player.current_hp
+
+        game.on_encounter_round_start(encounter, [player], [varyn], [player, varyn], 1)
+        hp_after_opening = player.current_hp
+        game.on_encounter_round_start(encounter, [player], [varyn], [player, varyn], 2)
+
+        self.assertEqual(varyn.bond_flags["sable_spell_round"], 1)
+        self.assertIn("marked", player.conditions)
+        self.assertIn("incapacitated", player.conditions)
+        self.assertIn("reeling", player.conditions)
+        self.assertEqual(damage_rolls[0][0], "2d5+3")
+        self.assertLess(hp_after_opening, hp_before)
+        self.assertEqual(player.current_hp, hp_after_opening)
+
+    def test_varyn_bloodied_reposition_clears_debuffs_and_screens_with_support(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008355))
+        game.state = GameState(player=player, current_scene="emberhall_cellars")
+        game.ensure_state_integrity()
+        varyn = create_enemy("varyn")
+        support = create_enemy("ash_brand_enforcer")
+        encounter = Encounter(title="Boss: Varyn Sable", description="", enemies=[varyn, support])
+        game._active_encounter = encounter
+        game._active_combat_heroes = [player]
+        game._active_combat_enemies = [varyn, support]
+        game.apply_status(varyn, "reeling", 2, source="test")
+        game.apply_status(varyn, "frightened", 2, source="test")
+
+        game.apply_damage(varyn, varyn.current_hp - (varyn.max_hp // 2))
+
+        self.assertTrue(varyn.bond_flags["sable_reposition_triggered"])
+        self.assertNotIn("reeling", varyn.conditions)
+        self.assertNotIn("frightened", varyn.conditions)
+        self.assertIn("invisible", varyn.conditions)
+        self.assertIn("guarded", support.conditions)
+        self.assertIn("emboldened", support.conditions)
 
     def test_emberhall_and_forge_encounters_reinforce_for_full_party(self) -> None:
         player = build_character(
@@ -5245,6 +5642,106 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(baseline_encounters[2].enemies[0].temp_hp, 4)
         self.assertEqual(sabotage_encounters[2].enemies[0].temp_hp, 0)
 
+    def test_ashfall_alarm_clock_adds_runner_unless_signal_was_cleanly_snuffed(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008372))
+        game.state = GameState(player=player, current_scene="ashfall_watch")
+        enemy = create_enemy("bandit")
+        encounter = Encounter(title="Ashfall Gate", description="", enemies=[enemy])
+        initiative = [player, enemy]
+
+        game.on_encounter_round_start(encounter, [player], encounter.enemies, initiative, 3)
+
+        self.assertEqual(len(encounter.enemies), 2)
+        self.assertEqual(encounter.enemies[-1].name, "Ashfall Alarm Runner")
+        self.assertIn(encounter.enemies[-1], initiative)
+
+        quiet_game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008373))
+        quiet_game.state = GameState(
+            player=build_character(
+                name="Vale",
+                race="Human",
+                class_name="Fighter",
+                background="Soldier",
+                base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+                class_skill_choices=["Athletics", "Survival"],
+            ),
+            current_scene="ashfall_watch",
+            flags={"ashfall_signal_basin_cleanly_snuffed": True},
+        )
+        quiet_enemy = create_enemy("bandit")
+        quiet_encounter = Encounter(title="Ashfall Gate", description="", enemies=[quiet_enemy])
+        quiet_game.on_encounter_round_start(quiet_encounter, [quiet_game.state.player], quiet_encounter.enemies, [quiet_enemy], 3)
+        self.assertEqual(len(quiet_encounter.enemies), 1)
+
+    def test_ashfall_barracks_shield_line_guards_allies_until_bearer_drops(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008374))
+        game.state = GameState(player=player, current_scene="ashfall_watch")
+        shield = create_enemy("ash_brand_enforcer")
+        archer = create_enemy("bandit_archer")
+        encounter = Encounter(title="Ashfall Lower Barracks", description="", enemies=[shield, archer])
+        game._active_encounter = encounter
+        game._active_combat_heroes = [player]
+        game._active_combat_enemies = [shield, archer]
+
+        game.on_encounter_round_start(encounter, [player], encounter.enemies, [player, shield, archer], 1)
+
+        self.assertTrue(shield.bond_flags["barracks_shield_bearer"])
+        self.assertIn("guarded", archer.conditions)
+
+        game.apply_damage(shield, shield.current_hp)
+
+        self.assertNotIn("guarded", archer.conditions)
+
+    def test_rukhar_aura_and_bloodied_order_mark_party_target(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008375))
+        game.state = GameState(player=player, current_scene="ashfall_watch")
+        game.ensure_state_integrity()
+        rukhar = create_enemy("rukhar")
+        support = create_enemy("bandit")
+        encounter = Encounter(title="Miniboss: Rukhar Cinderfang", description="", enemies=[rukhar, support])
+        game._active_encounter = encounter
+        game._active_combat_heroes = [player]
+        game._active_combat_enemies = [rukhar, support]
+
+        game.on_encounter_round_start(encounter, [player], encounter.enemies, [player, rukhar, support], 1)
+
+        self.assertEqual(rukhar.max_hp, 37)
+        self.assertIn("emboldened", support.conditions)
+
+        game.apply_damage(rukhar, 19)
+
+        self.assertTrue(rukhar.bond_flags["break_their_line_triggered"])
+        self.assertEqual(rukhar.bond_flags["marked_target"], player.name)
+        self.assertIn("marked", player.conditions)
+
+        game.apply_damage(rukhar, rukhar.current_hp)
+
+        self.assertNotIn("marked", player.conditions)
+
     def test_act1_epilogue_flags_capture_clean_and_fractured_victories(self) -> None:
         player = build_character(
             name="Vale",
@@ -5853,18 +6350,21 @@ class CoreTests(unittest.TestCase):
         )
         deception_before = player.skill_bonus("Deception")
         persuasion_before = player.skill_bonus("Persuasion")
-        answers = iter(["5", "3"])
+        answers = iter(["5", "3", "1"])
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=lambda _: None, rng=random.Random(9211))
         game.state = GameState(
             player=player,
             current_scene="high_road_liars_circle",
             flags={"act1_started": True, "road_ambush_cleared": True, "liars_circle_branch_available": True},
+            xp=385,
         )
         game.scene_high_road_liars_circle()
         self.assertTrue(game.state.flags["liars_circle_solved"])
         self.assertTrue(game.state.flags["liars_circle_locked"])
         self.assertTrue(game.state.flags["liars_blessing_active"])
         self.assertFalse(game.state.flags["liars_circle_branch_available"])
+        self.assertEqual(game.state.xp, 585)
+        self.assertEqual(player.level, 2)
         self.assertEqual(player.skill_bonus("Deception"), deception_before + 2)
         self.assertEqual(player.skill_bonus("Persuasion"), persuasion_before + 1)
         self.assertEqual(player.story_skill_bonuses, {"Deception": 2, "Persuasion": 1})
@@ -5892,6 +6392,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["liars_circle_locked"])
         self.assertTrue(game.state.flags["liars_curse_active"])
         self.assertEqual(game.state.flags["liars_circle_answer"], "knight")
+        self.assertEqual(game.state.xp, 0)
         self.assertEqual(player.skill_bonus("Deception"), deception_before - 1)
         self.assertEqual(player.skill_bonus("Persuasion"), persuasion_before - 1)
         self.assertEqual(player.story_skill_bonuses, {"Deception": -1, "Persuasion": -1})
@@ -8267,6 +8768,19 @@ class CoreTests(unittest.TestCase):
         game.state = GameState(player=player, current_scene="phandalin_hub")
         game.visit_steward()
         rendered = self.plain_output(log)
+        self.assertLess(
+            rendered.index("Tessa Harrow is Phandalin's exhausted steward"),
+            rendered.index("Tessa stands over a desk buried in route maps"),
+        )
+        self.assertLess(
+            rendered.index("Tessa Harrow is Phandalin's exhausted steward"),
+            rendered.index("Choose what you say to Tessa."),
+        )
+        self.assertLess(
+            rendered.index("Break that watchtower and you won't just win a fight"),
+            rendered.index('"I\'ll break their grip on Phandalin."'),
+        )
+        self.assertEqual(rendered.count('"I\'ll break their grip on Phandalin."'), 1)
         self.assertEqual(rendered.count('1. "Where is the Ashen Brand hurting you the most?"'), 1)
 
     def test_steward_accepts_blackwake_report_once(self) -> None:
@@ -8301,6 +8815,348 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Sereth Vane is still breathing", rendered)
         self.assertTrue(game.state.flags["steward_blackwake_asked"])
         self.assertEqual(game.state.gold, 8)
+
+    def test_phandalin_menu_hides_exhausted_npc_destinations(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(92041))
+        game.state = GameState(
+            player=player,
+            current_scene="phandalin_hub",
+            flags={
+                "phandalin_arrived": True,
+                "steward_seen": True,
+                "steward_pressure_asked": True,
+                "steward_ruins_asked": True,
+                "steward_vow_made": True,
+                "shrine_seen": True,
+                "shrine_medicine_attempted": True,
+                "shrine_prayer_attempted": True,
+                "shrine_raiders_asked": True,
+                "shrine_recruit_attempted": True,
+                "edermath_orchard_seen": True,
+                "edermath_orchard_blight_checked": True,
+                "edermath_orchard_wyvern_tor_asked": True,
+                "edermath_orchard_training_done": True,
+                "edermath_old_cache_recovered": True,
+                "miners_exchange_seen": True,
+                "miners_exchange_missing_crews_asked": True,
+                "miners_exchange_ledgers_checked": True,
+                "miners_exchange_dispute_resolved": True,
+            },
+        )
+        game.run_phandalin_council_event = lambda: None
+        game.run_after_watch_gathering = lambda: None
+        game._sync_story_beats_from_flags = lambda: None
+        game.maybe_offer_act1_personal_quests = lambda: None
+        game.maybe_resolve_bryn_loose_ends = lambda: None
+        game.maybe_run_act1_companion_conflict = lambda: None
+        captured: list[str] = []
+
+        def capture_menu(prompt: str, options: list[str], **kwargs) -> int:
+            if prompt == "Where do you go next?":
+                captured.extend(strip_ansi(option) for option in options)
+                raise self._SceneExit
+            raise AssertionError(prompt)
+
+        game.scenario_choice = capture_menu  # type: ignore[method-assign]
+        with self.assertRaises(self._SceneExit):
+            game.scene_phandalin_hub()
+
+        rendered = "\n".join(captured)
+        self.assertNotIn("Report to Steward Tessa Harrow", rendered)
+        self.assertNotIn("Stop by the shrine of Tymora", rendered)
+        self.assertNotIn("Walk the old walls of Edermath Orchard", rendered)
+        self.assertNotIn("Step into the Miner's Exchange", rendered)
+        self.assertIn("Visit the Stonehill Inn", rendered)
+        self.assertIn("Browse Barthen's Provisions", rendered)
+        self.assertIn("Lionshield trading post", rendered)
+
+    def test_stonehill_menu_hides_exhausted_npc_branches(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(92042))
+        game.state = GameState(
+            player=player,
+            current_scene="phandalin_hub",
+            quests={
+                "marked_keg_investigation": QuestLogEntry("marked_keg_investigation", status="completed"),
+                "find_dain_harl": QuestLogEntry("find_dain_harl", status="completed"),
+                "songs_for_the_missing": QuestLogEntry("songs_for_the_missing", status="completed"),
+                "quiet_table_sharp_knives": QuestLogEntry("quiet_table_sharp_knives", status="completed"),
+            },
+            flags={
+                "inn_seen": True,
+                "inn_buy_drink_asked": True,
+                "inn_road_rumors_asked": True,
+                "inn_recruit_bryn_attempted": True,
+                "inn_recruit_bryn_second_attempted": True,
+                "stonehill_mara_met": True,
+                "marked_keg_resolved": True,
+                "stonehill_mara_order_asked": True,
+                "stonehill_jerek_met": True,
+                "stonehill_jerek_route_marks_shared": True,
+                "stonehill_jerek_grievance_asked": True,
+                "songs_for_missing_jerek_detail": True,
+                "stonehill_sella_met": True,
+                "stonehill_sella_room_asked": True,
+                "stonehill_sella_performance_attempted": True,
+                "stonehill_sella_dain_memorial_done": True,
+                "stonehill_old_tam_met": True,
+                "stonehill_old_tam_route_asked": True,
+                "songs_for_missing_tam_detail": True,
+                "stonehill_nera_met": True,
+                "stonehill_nera_treated": True,
+                "songs_for_missing_nera_detail": True,
+                "quiet_table_knives_resolved": True,
+                "stonehill_quiet_room_scene_done": True,
+            },
+        )
+        captured: list[str] = []
+
+        def capture_menu(prompt: str, options: list[str], **kwargs) -> int:
+            if prompt == "The common room quiets for a moment as you enter.":
+                captured.extend(strip_ansi(option) for option in options)
+                raise self._SceneExit
+            raise AssertionError(prompt)
+
+        game.scenario_choice = capture_menu  # type: ignore[method-assign]
+        with self.assertRaises(self._SceneExit):
+            game.visit_stonehill_inn()
+
+        rendered = "\n".join(captured)
+        self.assertNotIn("Mara Stonehill", rendered)
+        self.assertNotIn("Jerek Harl", rendered)
+        self.assertNotIn("Sella Quill", rendered)
+        self.assertNotIn("Old Tam Veller", rendered)
+        self.assertNotIn("Nera Doss", rendered)
+        self.assertIn("Rent beds", rendered)
+
+    def test_contract_house_menu_hides_exhausted_contact_branches(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Rogue",
+            background="Charlatan",
+            base_ability_scores={"STR": 10, "DEX": 15, "CON": 12, "INT": 14, "WIS": 13, "CHA": 14},
+            class_skill_choices=["Insight", "Investigation", "Sleight of Hand"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(92043))
+        game.state = GameState(
+            player=player,
+            current_scene="neverwinter_briefing",
+            quests={"false_manifest_circuit": QuestLogEntry("false_manifest_circuit", status="completed")},
+            flags={
+                "neverwinter_contract_house_seen": True,
+                "neverwinter_oren_met": True,
+                "false_manifest_oren_detail": True,
+                "neverwinter_oren_room_asked": True,
+                "neverwinter_oren_mira_asked": True,
+                "neverwinter_sabra_met": True,
+                "neverwinter_sabra_fear_asked": True,
+                "neverwinter_vessa_met": True,
+                "false_manifest_vessa_detail": True,
+                "neverwinter_vessa_cards_played": True,
+                "neverwinter_smuggler_phrase_known": True,
+                "neverwinter_vessa_smoke_asked": True,
+                "neverwinter_garren_met": True,
+                "false_manifest_garren_detail": True,
+                "neverwinter_garren_route_asked": True,
+                "neverwinter_garren_pressed": True,
+                "quest_reward_neverwinter_private_room_access": True,
+                "neverwinter_private_room_scene_done": True,
+            },
+        )
+        captured: list[str] = []
+
+        def capture_menu(prompt: str, options: list[str], **kwargs) -> int:
+            if prompt == "The contract house room keeps three conversations going at once.":
+                captured.extend(strip_ansi(option) for option in options)
+                raise self._SceneExit
+            raise AssertionError(prompt)
+
+        game.scenario_choice = capture_menu  # type: ignore[method-assign]
+        with self.assertRaises(self._SceneExit):
+            game.visit_neverwinter_contract_house()
+
+        rendered = "\n".join(captured)
+        self.assertNotIn("Oren Vale", rendered)
+        self.assertNotIn("Sabra Kestrel", rendered)
+        self.assertNotIn("Vessa Marr", rendered)
+        self.assertNotIn("Garren Flint", rendered)
+        self.assertIn("Rent beds", rendered)
+
+    def test_exhausted_dialogue_npcs_show_leave_only_local_menu(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        completed = lambda quest_id: QuestLogEntry(quest_id, status="completed")
+        cases = [
+            (
+                "visit_steward",
+                {
+                    "steward_seen": True,
+                    "steward_pressure_asked": True,
+                    "steward_ruins_asked": True,
+                    "steward_vow_made": True,
+                },
+                {},
+                "Choose what you say to Tessa.",
+                "Leave Tessa to her work",
+            ),
+            (
+                "visit_shrine",
+                {
+                    "shrine_seen": True,
+                    "shrine_medicine_attempted": True,
+                    "shrine_prayer_attempted": True,
+                    "shrine_raiders_asked": True,
+                    "shrine_recruit_attempted": True,
+                },
+                {},
+                "Choose what you say to Elira.",
+                "leave Elira to her work",
+            ),
+            (
+                "stonehill_talk_mara",
+                {"stonehill_mara_met": True, "marked_keg_resolved": True, "stonehill_mara_order_asked": True},
+                {"marked_keg_investigation": completed("marked_keg_investigation")},
+                "Choose what you say to Mara Stonehill.",
+                "Leave Mara to the floor",
+            ),
+            (
+                "stonehill_talk_jerek",
+                {
+                    "stonehill_jerek_met": True,
+                    "stonehill_jerek_route_marks_shared": True,
+                    "stonehill_jerek_grievance_asked": True,
+                    "songs_for_missing_jerek_detail": True,
+                },
+                {"find_dain_harl": completed("find_dain_harl")},
+                "Choose what you say to Jerek Harl.",
+                "Leave Jerek",
+            ),
+            (
+                "stonehill_talk_sella",
+                {
+                    "stonehill_sella_met": True,
+                    "stonehill_sella_room_asked": True,
+                    "stonehill_sella_performance_attempted": True,
+                    "stonehill_sella_dain_memorial_done": True,
+                },
+                {"songs_for_the_missing": completed("songs_for_the_missing")},
+                "Choose what you say to Sella Quill.",
+                "Leave Sella Quill",
+            ),
+            (
+                "stonehill_talk_old_tam",
+                {"stonehill_old_tam_met": True, "stonehill_old_tam_route_asked": True, "songs_for_missing_tam_detail": True},
+                {},
+                "Choose what you say to Old Tam Veller.",
+                "Leave Old Tam",
+            ),
+            (
+                "stonehill_talk_nera",
+                {"stonehill_nera_met": True, "stonehill_nera_treated": True, "quiet_table_knives_resolved": True},
+                {"quiet_table_sharp_knives": completed("quiet_table_sharp_knives")},
+                "Choose what you say to Nera Doss.",
+                "Leave Nera Doss",
+            ),
+            (
+                "visit_edermath_orchard",
+                {
+                    "edermath_orchard_seen": True,
+                    "edermath_orchard_blight_checked": True,
+                    "edermath_orchard_wyvern_tor_asked": True,
+                    "edermath_orchard_training_done": True,
+                    "edermath_old_cache_recovered": True,
+                },
+                {},
+                "Daran wipes orchard dust from his hands and waits.",
+                "Leave the orchard",
+            ),
+            (
+                "visit_miners_exchange",
+                {
+                    "miners_exchange_seen": True,
+                    "miners_exchange_missing_crews_asked": True,
+                    "miners_exchange_ledgers_checked": True,
+                    "miners_exchange_dispute_resolved": True,
+                },
+                {},
+                "Halia closes one ledger with a fingertip and gives you her attention.",
+                "Leave the exchange",
+            ),
+            (
+                "neverwinter_talk_oren",
+                {"neverwinter_oren_met": True, "neverwinter_oren_room_asked": True, "neverwinter_oren_mira_asked": True},
+                {},
+                "Choose what you say to Oren Vale.",
+                "Leave Oren",
+            ),
+            (
+                "neverwinter_talk_sabra",
+                {"neverwinter_sabra_met": True, "neverwinter_sabra_fear_asked": True},
+                {"false_manifest_circuit": completed("false_manifest_circuit")},
+                "Choose what you say to Sabra Kestrel.",
+                "Leave Sabra",
+            ),
+            (
+                "neverwinter_talk_vessa",
+                {
+                    "neverwinter_vessa_met": True,
+                    "neverwinter_vessa_cards_played": True,
+                    "neverwinter_smuggler_phrase_known": True,
+                    "neverwinter_vessa_smoke_asked": True,
+                },
+                {},
+                "Choose what you say to Vessa Marr.",
+                "Leave Vessa",
+            ),
+            (
+                "neverwinter_talk_garren",
+                {"neverwinter_garren_met": True, "neverwinter_garren_route_asked": True, "neverwinter_garren_pressed": True},
+                {},
+                "Choose what you say to Garren Flint.",
+                "Leave Garren",
+            ),
+        ]
+
+        for method_name, flags, quests, expected_prompt, leave_needle in cases:
+            with self.subTest(method_name=method_name):
+                game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(92044))
+                game.state = GameState(player=player, current_scene="phandalin_hub", flags=dict(flags), quests=dict(quests))
+                captured: list[list[str]] = []
+
+                def capture_menu(prompt: str, options: list[str], **kwargs) -> int:
+                    if prompt != expected_prompt:
+                        raise AssertionError(prompt)
+                    captured.append([strip_ansi(option) for option in options])
+                    return 1
+
+                game.scenario_choice = capture_menu  # type: ignore[method-assign]
+                getattr(game, method_name)()
+
+                self.assertEqual(len(captured), 1)
+                self.assertEqual(len(captured[0]), 1)
+                self.assertIn(leave_needle, captured[0][0])
 
     def test_inn_question_cannot_be_repeated(self) -> None:
         player = build_character(
@@ -8677,7 +9533,7 @@ class CoreTests(unittest.TestCase):
         game._ashfall_rukhar_command(dungeon, room)
 
         self.assertEqual(len(captured), 1)
-        self.assertEqual(captured[0].enemies[0].current_hp, 23)
+        self.assertEqual(captured[0].enemies[0].current_hp, 33)
 
     def test_emberhall_quiet_room_intel_option_reads_ledgers_without_check(self) -> None:
         player = build_character(

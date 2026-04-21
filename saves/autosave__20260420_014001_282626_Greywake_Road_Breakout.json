@@ -99,8 +99,11 @@
     "companion_id": "",
     "disposition": 0,
     "lore": [],
-    "bond_flags": {},
+    "bond_flags": {
+      "story_skill_modifiers": {}
+    },
     "relationship_bonuses": {},
+    "story_skill_bonuses": {},
     "stable": false,
     "dead": false,
     "death_successes": 0,
@@ -110,122 +113,6 @@
     "gold_value": 0
   },
   "companions": [
-    {
-      "name": "Rhogar Valeguard",
-      "race": "Dragonborn",
-      "class_name": "Paladin",
-      "background": "Soldier",
-      "level": 1,
-      "ability_scores": {
-        "STR": 17,
-        "DEX": 10,
-        "CON": 13,
-        "INT": 8,
-        "WIS": 12,
-        "CHA": 15
-      },
-      "skill_proficiencies": [
-        "Athletics",
-        "Intimidation",
-        "Persuasion"
-      ],
-      "saving_throw_proficiencies": [
-        "WIS",
-        "CHA"
-      ],
-      "features": [
-        "divine_smite",
-        "draconic_presence",
-        "lay_on_hands"
-      ],
-      "weapon": {
-        "name": "Roadworn Longsword",
-        "damage": "1d8",
-        "ability": "STR",
-        "weapon_type": "longsword",
-        "to_hit_bonus": 0,
-        "damage_bonus": 0,
-        "finesse": false,
-        "ranged": false,
-        "hands_required": 1,
-        "properties": [
-          "versatile"
-        ]
-      },
-      "armor": {
-        "name": "Roadworn Chain Mail",
-        "base_ac": 16,
-        "armor_type": "heavy",
-        "dex_cap": 0,
-        "heavy": true,
-        "stealth_disadvantage": true
-      },
-      "hit_die": 10,
-      "current_hp": 11,
-      "max_hp": 11,
-      "shield": true,
-      "spellcasting_ability": "CHA",
-      "skill_expertise": [],
-      "bonus_proficiencies": [
-        "Land Vehicles",
-        "Gaming Set"
-      ],
-      "resources": {
-        "lay_on_hands": 5
-      },
-      "max_resources": {
-        "lay_on_hands": 5
-      },
-      "inventory": {},
-      "conditions": {},
-      "equipment_bonuses": {
-        "Athletics": 1,
-        "Intimidation": 1
-      },
-      "gear_bonuses": {
-        "AC": 0
-      },
-      "notes": [
-        "Veteran's kit: +1 to Athletics and Intimidation checks.",
-        "A dragonborn sworn to protect caravans on the road south of Neverwinter.",
-        "A dragonborn oathsworn who treats duty like a living thing that must be fed by action."
-      ],
-      "tags": [
-        "hero",
-        "companion"
-      ],
-      "equipment_slots": {
-        "head": null,
-        "ring_1": null,
-        "ring_2": null,
-        "neck": null,
-        "chest": "chain_mail_common",
-        "gloves": null,
-        "boots": null,
-        "main_hand": "longsword_common",
-        "off_hand": "shield_common",
-        "cape": null
-      },
-      "archetype": "paladin",
-      "companion_id": "rhogar_valeguard",
-      "disposition": 0,
-      "lore": [
-        "Rhogar was raised among caravan wardens who believed a sworn road was as sacred as any temple threshold.",
-        "He carries every oath like a visible weight and grows restless whenever words are left unfinished.",
-        "His confidence comes easily, but his forgiveness does not; once broken, his trust has to be rebuilt with deeds."
-      ],
-      "bond_flags": {
-        "talked_topics": []
-      },
-      "relationship_bonuses": {},
-      "stable": false,
-      "dead": false,
-      "death_successes": 0,
-      "death_failures": 0,
-      "temp_hp": 0,
-      "xp_value": 0,
-      "gold_value": 0
-    },
     {
       "name": "Elira Dawnmantle",
       "race": "Human",
@@ -331,6 +218,7 @@
         "talked_topics": []
       },
       "relationship_bonuses": {},
+      "story_skill_bonuses": {},
       "stable": false,
       "dead": false,
       "death_successes": 0,
@@ -342,14 +230,16 @@
   ],
   "camp_companions": [],
   "current_act": 1,
-  "current_scene": "neverwinter_briefing",
+  "current_scene": "greywake_road_breakout",
   "flags": {
     "act1_started": true,
     "map_state": {
-      "current_node_id": "neverwinter_briefing",
+      "current_node_id": "wayside_luck_shrine",
       "current_dungeon_id": null,
       "current_room_id": null,
-      "visited_nodes": [],
+      "visited_nodes": [
+        "wayside_luck_shrine"
+      ],
       "cleared_rooms": [],
       "seen_story_beats": [],
       "node_history": [],
@@ -357,63 +247,56 @@
     },
     "introduced_characters": [
       "Ashen Brand Runner",
-      "Elira Dawnmantle",
-      "Mira Thann",
-      "Rhogar Valeguard"
+      "Elira Dawnmantle"
     ],
     "background_prologue_completed": "Soldier",
-    "briefing_seen": true,
-    "briefing_q_neverwinter": true,
-    "briefing_q_brand": true,
-    "identity_neverwinter_briefing_class_fighter_map": true,
-    "briefing_q_phandalin": true,
-    "neverwinter_preparation_done": true,
-    "early_companion_recruited": "Rhogar Valeguard",
-    "neverwinter_tymora_shrine_seen": true,
+    "system_profile_seeded": true,
+    "wayside_luck_shrine_seen": true,
+    "wayside_luck_bell_seen": true,
+    "elira_first_contact": true,
     "neverwinter_elira_met": true,
-    "elira_helped": true,
-    "neverwinter_elira_helped": true,
-    "road_poison_pattern_known": true,
+    "elira_first_read": "triage_competence",
+    "wayside_aid_route": "prayer",
+    "elira_initial_trust_reason": "spiritual_kinship",
+    "elira_wayside_recruit_attempted": true,
+    "elira_pre_neverwinter_recruited": true,
     "elira_neverwinter_recruited": true,
-    "shrine_recruit_attempted": true,
-    "neverwinter_high_road_milehouse_seen": true,
-    "neverwinter_pilgrims_guarded": true,
-    "blackwake_gallows_copse_lead": true
+    "elira_first_companion": true,
+    "wayside_luck_bell_promised": true,
+    "greywake_triage_yard_seen": true,
+    "greywake_outcome_sorting_seen": true,
+    "greywake_manifest_preserved": true,
+    "greywake_outcome_manifest_read": true,
+    "greywake_mira_evidence_kind": "marked_manifest",
+    "varyn_route_pattern_seen": true,
+    "greywake_attack_imminent": true
   },
   "clues": [
     "A stolen dispatch confirms the attacks around Phandalin are organized enough to rattle Neverwinter's quartermasters.",
-    "Mira marks the switchback, likely scout perches, and the rough spacing the gang prefers when collapsing on a wagon.",
-    "Dockside rumors say the Ashen Brand sells stolen ore through quiet middlemen.",
-    "Elira identifies an ash-bitter poison reaching victims before Phandalin."
+    "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived."
   ],
   "journal": [
     "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
     "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
     "Reward from South Barracks Breakout: 50 XP, 8 gp.",
-    "Looted Roadworn Leather Armor x1 from South Barracks Breakout.",
+    "Looted Frontier Ale x1 from South Barracks Breakout.",
     "Reward from holding the barracks line: 15 XP, 6 gp.",
     "Clue: A stolen dispatch confirms the attacks around Phandalin are organized enough to rattle Neverwinter's quartermasters.",
     "Your soldier prologue ends with the trail leading toward Mira Thann's private briefing in Neverwinter.",
-    "Clue: Mira marks the switchback, likely scout perches, and the rough spacing the gang prefers when collapsing on a wagon.",
-    "Reward from Fighter identity choice: 10 XP.",
-    "You treated the contract like a fighter's field briefing and forced it into useful shape.",
-    "Clue: Dockside rumors say the Ashen Brand sells stolen ore through quiet middlemen.",
-    "Reward from working the rumor mill: 15 XP, 12 gp.",
-    "Rhogar Valeguard joined the active party.",
-    "Clue: Elira identifies an ash-bitter poison reaching victims before Phandalin.",
-    "Reward from helping Elira stabilize a poisoned drover: 10 XP.",
     "Elira Dawnmantle joined the active party.",
-    "Reward from High Road Milehouse Intercept: 110 XP, 16 gp.",
-    "Looted Antitoxin Vial x1 from High Road Milehouse Intercept.",
-    "Looted Frontier Ale x1 from High Road Milehouse Intercept.",
-    "Looted Roadworn Shortsword x1 from High Road Milehouse Intercept."
+    "Clue: Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "Clue: The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived.",
+    "Reward from Greywake Road Breakout: 100 XP, 17 gp.",
+    "Looted Antitoxin Vial x1 from Greywake Road Breakout.",
+    "Looted Roasted Nut Mix x1 from Greywake Road Breakout."
   ],
   "quests": {},
   "completed_acts": [],
-  "xp": 210,
-  "gold": 62,
+  "xp": 165,
+  "gold": 51,
   "inventory": {
-    "potion_healing": 4,
+    "potion_healing": 3,
     "bread_round": 4,
     "travel_biscuits": 4,
     "dried_fish": 3,
@@ -421,13 +304,13 @@
     "frontier_ale": 3,
     "root_vegetables": 2,
     "antitoxin_vial": 2,
-    "chain_mail_common": 2,
-    "longsword_common": 2,
-    "shield_common": 3,
-    "leather_armor_common": 1,
+    "chain_mail_common": 1,
+    "longsword_common": 1,
+    "shield_common": 2,
+    "blessed_salve": 1,
     "scale_mail_common": 1,
     "mace_common": 1,
-    "shortsword_common": 1
+    "nut_mix": 1
   },
   "short_rests_remaining": 2
 }

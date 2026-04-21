@@ -4,6 +4,18 @@ from ..content import create_elira_dawnmantle
 
 
 class StoryTownServicesMixin:
+    def has_shrine_interactions(self) -> bool:
+        assert self.state is not None
+        if self.has_companion("Elira Dawnmantle") and self.state.flags.get("elira_neverwinter_recruited"):
+            return not self.state.flags.get("shrine_seen")
+        return bool(
+            not self.state.flags.get("shrine_seen")
+            or not self.state.flags.get("shrine_medicine_attempted")
+            or not self.state.flags.get("shrine_prayer_attempted")
+            or not self.state.flags.get("shrine_raiders_asked")
+            or (not self.state.flags.get("shrine_recruit_attempted") and not self.has_companion("Elira Dawnmantle"))
+        )
+
     def visit_shrine(self) -> None:
         assert self.state is not None
         self.banner("Shrine of Tymora")

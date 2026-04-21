@@ -1,0 +1,454 @@
+{
+  "player": {
+    "name": "Theron Vale",
+    "race": "Human",
+    "class_name": "Wizard",
+    "background": "Sage",
+    "level": 1,
+    "ability_scores": {
+      "STR": 9,
+      "DEX": 15,
+      "CON": 14,
+      "INT": 16,
+      "WIS": 13,
+      "CHA": 11
+    },
+    "skill_proficiencies": [
+      "Arcana",
+      "History",
+      "Investigation"
+    ],
+    "saving_throw_proficiencies": [
+      "INT",
+      "WIS"
+    ],
+    "features": [
+      "arcane_recovery",
+      "wizard_spellcasting"
+    ],
+    "weapon": {
+      "name": "Roadworn Quarterstaff",
+      "damage": "1d6",
+      "ability": "STR",
+      "weapon_type": "quarterstaff",
+      "to_hit_bonus": 0,
+      "damage_bonus": 0,
+      "finesse": false,
+      "ranged": false,
+      "hands_required": 1,
+      "properties": [
+        "versatile"
+      ]
+    },
+    "armor": null,
+    "hit_die": 6,
+    "current_hp": 0,
+    "max_hp": 8,
+    "shield": false,
+    "spellcasting_ability": "INT",
+    "skill_expertise": [],
+    "bonus_proficiencies": [
+      "Calligrapher's Supplies",
+      "Draconic"
+    ],
+    "resources": {
+      "spell_slots_1": 2
+    },
+    "max_resources": {
+      "spell_slots_1": 2
+    },
+    "inventory": {},
+    "conditions": {},
+    "equipment_bonuses": {
+      "Arcana": 1,
+      "History": 1
+    },
+    "gear_bonuses": {},
+    "notes": [
+      "Field journal: +1 to Arcana and History checks.",
+      "A clean arcane blaster setup with sharp utility skills, solid initiative, and enough toughness to survive mistakes.",
+      "Preset build: optimized for faster testing and quick starts."
+    ],
+    "tags": [
+      "hero"
+    ],
+    "equipment_slots": {
+      "head": null,
+      "ring_1": null,
+      "ring_2": null,
+      "neck": null,
+      "chest": null,
+      "gloves": null,
+      "boots": null,
+      "main_hand": "quarterstaff_common",
+      "off_hand": null,
+      "cape": null
+    },
+    "archetype": "wizard",
+    "companion_id": "",
+    "disposition": 0,
+    "lore": [],
+    "bond_flags": {
+      "story_skill_modifiers": {}
+    },
+    "relationship_bonuses": {},
+    "story_skill_bonuses": {},
+    "stable": false,
+    "dead": true,
+    "death_successes": 1,
+    "death_failures": 3,
+    "temp_hp": 0,
+    "xp_value": 0,
+    "gold_value": 0
+  },
+  "companions": [
+    {
+      "name": "Elira Dawnmantle",
+      "race": "Human",
+      "class_name": "Cleric",
+      "background": "Acolyte",
+      "level": 1,
+      "ability_scores": {
+        "STR": 11,
+        "DEX": 13,
+        "CON": 14,
+        "INT": 11,
+        "WIS": 16,
+        "CHA": 15
+      },
+      "skill_proficiencies": [
+        "Insight",
+        "Medicine",
+        "Persuasion",
+        "Religion"
+      ],
+      "saving_throw_proficiencies": [
+        "WIS",
+        "CHA"
+      ],
+      "features": [
+        "cleric_spellcasting"
+      ],
+      "weapon": {
+        "name": "Roadworn Mace",
+        "damage": "1d6",
+        "ability": "STR",
+        "weapon_type": "mace",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": []
+      },
+      "armor": {
+        "name": "Roadworn Scale Mail",
+        "base_ac": 14,
+        "armor_type": "medium",
+        "dex_cap": 2,
+        "heavy": false,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 8,
+      "current_hp": 10,
+      "max_hp": 10,
+      "shield": true,
+      "spellcasting_ability": "WIS",
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Calligrapher's Supplies",
+        "Celestial"
+      ],
+      "resources": {
+        "spell_slots_1": 0
+      },
+      "max_resources": {
+        "spell_slots_1": 2
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Medicine": 1,
+        "Religion": 1
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Healer's satchel: +1 to Medicine and Religion checks.",
+        "A priestess of Tymora tending the frontier faithful in Phandalin.",
+        "A priestess of Tymora whose compassion is sharpened, not softened, by the frontier's cruelty."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "scale_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "mace_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "cleric",
+      "companion_id": "elira_dawnmantle",
+      "disposition": 2,
+      "lore": [
+        "Elira learned battlefield triage from roadside shrines that treated lumber crews, miners, and pilgrims with equal urgency.",
+        "She believes luck is not random mercy but a chance people build for one another with courage and timing.",
+        "Under stress she gets quieter, not colder, as though she is measuring every word for whether it heals or harms."
+      ],
+      "bond_flags": {
+        "talked_topics": []
+      },
+      "relationship_bonuses": {},
+      "story_skill_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    },
+    {
+      "name": "Rhogar Valeguard",
+      "race": "Dragonborn",
+      "class_name": "Paladin",
+      "background": "Soldier",
+      "level": 1,
+      "ability_scores": {
+        "STR": 17,
+        "DEX": 10,
+        "CON": 13,
+        "INT": 8,
+        "WIS": 12,
+        "CHA": 15
+      },
+      "skill_proficiencies": [
+        "Athletics",
+        "Intimidation",
+        "Persuasion"
+      ],
+      "saving_throw_proficiencies": [
+        "WIS",
+        "CHA"
+      ],
+      "features": [
+        "divine_smite",
+        "draconic_presence",
+        "lay_on_hands"
+      ],
+      "weapon": {
+        "name": "Roadworn Longsword",
+        "damage": "1d8",
+        "ability": "STR",
+        "weapon_type": "longsword",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": [
+          "versatile"
+        ]
+      },
+      "armor": {
+        "name": "Roadworn Chain Mail",
+        "base_ac": 16,
+        "armor_type": "heavy",
+        "dex_cap": 0,
+        "heavy": true,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 10,
+      "current_hp": 11,
+      "max_hp": 11,
+      "shield": true,
+      "spellcasting_ability": "CHA",
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Land Vehicles",
+        "Gaming Set"
+      ],
+      "resources": {
+        "lay_on_hands": 5
+      },
+      "max_resources": {
+        "lay_on_hands": 5
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Athletics": 1,
+        "Intimidation": 1
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Veteran's kit: +1 to Athletics and Intimidation checks.",
+        "A dragonborn sworn to protect caravans on the road south of Neverwinter.",
+        "A dragonborn oathsworn who treats duty like a living thing that must be fed by action."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "chain_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "longsword_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "paladin",
+      "companion_id": "rhogar_valeguard",
+      "disposition": 0,
+      "lore": [
+        "Rhogar was raised among caravan wardens who believed a sworn road was as sacred as any temple threshold.",
+        "He carries every oath like a visible weight and grows restless whenever words are left unfinished.",
+        "His confidence comes easily, but his forgiveness does not; once broken, his trust has to be rebuilt with deeds."
+      ],
+      "bond_flags": {
+        "talked_topics": []
+      },
+      "relationship_bonuses": {},
+      "story_skill_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    }
+  ],
+  "camp_companions": [],
+  "current_act": 1,
+  "current_scene": "neverwinter_briefing",
+  "flags": {
+    "act1_started": true,
+    "map_state": {
+      "current_node_id": "wayside_luck_shrine",
+      "current_dungeon_id": null,
+      "current_room_id": null,
+      "visited_nodes": [],
+      "cleared_rooms": [],
+      "seen_story_beats": [],
+      "node_history": [],
+      "room_history": []
+    },
+    "background_prologue_completed": "Sage",
+    "system_profile_seeded": true,
+    "wayside_luck_shrine_seen": true,
+    "wayside_luck_bell_seen": true,
+    "elira_first_contact": true,
+    "neverwinter_elira_met": true,
+    "elira_first_read": "knowledge_vs_saving",
+    "introduced_characters": [
+      "Elira Dawnmantle",
+      "Mira Thann",
+      "Rhogar Valeguard"
+    ],
+    "wayside_aid_route": "wounded",
+    "elira_initial_trust_reason": "warm_trust",
+    "elira_helped": true,
+    "wayside_drover_stabilized": true,
+    "elira_wayside_recruit_attempted": true,
+    "elira_pre_neverwinter_recruited": true,
+    "elira_neverwinter_recruited": true,
+    "elira_first_companion": true,
+    "wayside_luck_bell_promised": true,
+    "greywake_triage_yard_seen": true,
+    "greywake_outcome_sorting_seen": true,
+    "greywake_mira_evidence_kind": "unverified_outcome_board",
+    "greywake_attack_imminent": true,
+    "greywake_wounded_line_guarded": true,
+    "greywake_breakout_resolved": true,
+    "briefing_seen": true,
+    "greywake_mira_reacted": true,
+    "briefing_q_neverwinter": true,
+    "identity_neverwinter_briefing_class_wizard_reports": true,
+    "mira_q_need_initial": true,
+    "briefing_q_phandalin": true,
+    "varyn_route_pattern_seen": true,
+    "neverwinter_preparation_done": true,
+    "early_companion_recruited": "Rhogar Valeguard",
+    "neverwinter_tymora_shrine_seen": true,
+    "neverwinter_high_road_milehouse_seen": true,
+    "neverwinter_false_writs_spotted": true,
+    "blackwake_millers_ford_lead": true,
+    "road_patrol_writ": true
+  },
+  "clues": [
+    "Archive notes point to old cellar routes beneath manor-side stonework in and around Phandalin.",
+    "Elira identifies an ash-bitter poison reaching victims before the road even enters Neverwinter.",
+    "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "Mira accepts the Greywake witnesses as evidence that someone is pre-sorting road outcomes.",
+    "Greywake survivors can testify because the wounded line lived through the attack.",
+    "Original reports repeat the eastern switchback, ruined stone, and strangely consistent timing windows.",
+    "Caravan ledgers point to repeated disappearances near the old switchback east of Phandalin.",
+    "False roadwarden writs near Neverwinter point toward forged authority before Phandalin."
+  ],
+  "journal": [
+    "Your sage's opening frames the campaign as a puzzle of old stone, missing records, and dangerous people trying very hard to keep those pieces apart.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
+    "Reward from untangling the archive theft: 30 XP.",
+    "Clue: Archive notes point to old cellar routes beneath manor-side stonework in and around Phandalin.",
+    "Your sage prologue ends with the trail leading toward Mira Thann's private briefing in Neverwinter.",
+    "Clue: Elira identifies an ash-bitter poison reaching victims before the road even enters Neverwinter.",
+    "Reward from helping Elira stabilize a poisoned drover: 10 XP.",
+    "Elira Dawnmantle joined the active party.",
+    "Clue: Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "Reward from Greywake Road Breakout: 100 XP, 17 gp.",
+    "Looted Roasted Nut Mix x1 from Greywake Road Breakout.",
+    "Looted Potion of Healing x1 from Greywake Road Breakout.",
+    "Reward from holding Greywake Yard before the Neverwinter briefing: 25 XP, 8 gp.",
+    "You held Greywake Yard long enough to carry its outcome-marked manifest pressure into Mira Thann's briefing.",
+    "Clue: Mira accepts the Greywake witnesses as evidence that someone is pre-sorting road outcomes.",
+    "Clue: Greywake survivors can testify because the wounded line lived through the attack.",
+    "Mira Thann treated Greywake's outcome marks as concrete proof that the Ashen Brand is coordinating losses, not merely causing them.",
+    "Clue: Original reports repeat the eastern switchback, ruined stone, and strangely consistent timing windows.",
+    "Reward from Wizard identity choice: 10 XP.",
+    "You answered the briefing like a wizard who trusts patterns more than polished summaries.",
+    "Clue: Caravan ledgers point to repeated disappearances near the old switchback east of Phandalin.",
+    "Reward from reviewing caravan ledgers: 15 XP, 8 gp.",
+    "Rhogar Valeguard joined the active party.",
+    "Clue: False roadwarden writs near Neverwinter point toward forged authority before Phandalin.",
+    "Reward from High Road Milehouse Intercept: 60 XP, 8 gp."
+  ],
+  "quests": {},
+  "completed_acts": [],
+  "xp": 250,
+  "gold": 61,
+  "inventory": {
+    "potion_healing": 4,
+    "bread_round": 4,
+    "travel_biscuits": 4,
+    "dried_fish": 3,
+    "goat_cheese": 2,
+    "frontier_ale": 2,
+    "root_vegetables": 2,
+    "antitoxin_vial": 1,
+    "quarterstaff_common": 1,
+    "focus_ink": 1,
+    "scale_mail_common": 1,
+    "mace_common": 1,
+    "shield_common": 2,
+    "nut_mix": 1,
+    "chain_mail_common": 1,
+    "longsword_common": 1
+  },
+  "short_rests_remaining": 2
+}

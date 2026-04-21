@@ -1543,6 +1543,49 @@ class StoryIntroMixin:
             self.say("You keep your focus on the road ahead.")
         self.state.flags["neverwinter_preparation_done"] = True
 
+    def neverwinter_has_oren_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("neverwinter_oren_met")
+            or (self.has_quest("false_manifest_circuit") and not self.state.flags.get("false_manifest_oren_detail"))
+            or not self.state.flags.get("neverwinter_oren_room_asked")
+            or not self.state.flags.get("neverwinter_oren_mira_asked")
+            or (
+                self.state.flags.get("quest_reward_neverwinter_private_room_access")
+                and not self.state.flags.get("neverwinter_private_room_scene_done")
+            )
+        )
+
+    def neverwinter_has_sabra_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("neverwinter_sabra_met")
+            or self.quest_is_ready("false_manifest_circuit")
+            or (not self.has_quest("false_manifest_circuit") and not self.quest_is_completed("false_manifest_circuit"))
+            or (self.has_quest("false_manifest_circuit") and not self.quest_is_completed("false_manifest_circuit"))
+            or not self.state.flags.get("neverwinter_sabra_fear_asked")
+        )
+
+    def neverwinter_has_vessa_interactions(self) -> bool:
+        assert self.state is not None
+        has_blessing = self.has_story_skill_modifier(self.state.player, self.LIARS_BLESSING_MODIFIER_ID)
+        return bool(
+            not self.state.flags.get("neverwinter_vessa_met")
+            or (self.has_quest("false_manifest_circuit") and not self.state.flags.get("false_manifest_vessa_detail"))
+            or not self.state.flags.get("neverwinter_vessa_cards_played")
+            or (has_blessing and not self.state.flags.get("neverwinter_smuggler_phrase_known"))
+            or not self.state.flags.get("neverwinter_vessa_smoke_asked")
+        )
+
+    def neverwinter_has_garren_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("neverwinter_garren_met")
+            or (self.has_quest("false_manifest_circuit") and not self.state.flags.get("false_manifest_garren_detail"))
+            or not self.state.flags.get("neverwinter_garren_route_asked")
+            or not self.state.flags.get("neverwinter_garren_pressed")
+        )
+
     def visit_neverwinter_contract_house(self) -> None:
         assert self.state is not None
         if not self.state.flags.get("neverwinter_contract_house_seen"):
@@ -1565,12 +1608,16 @@ class StoryIntroMixin:
             options: list[tuple[str, str]] = []
             if self.state.flags.get("quest_reward_neverwinter_private_room_access") and not self.state.flags.get("neverwinter_private_room_scene_done"):
                 options.append(("private_room", self.action_option("Take Oren's offer and use the upstairs private room.")))
+            if self.neverwinter_has_oren_interactions():
+                options.append(("oren", "\"Oren Vale looks like he already priced this conversation.\""))
+            if self.neverwinter_has_sabra_interactions():
+                options.append(("sabra", "\"Let me see the ledgers Sabra Kestrel keeps glaring at.\""))
+            if self.neverwinter_has_vessa_interactions():
+                options.append(("vessa", "\"Sit in on Vessa Marr's card table.\""))
+            if self.neverwinter_has_garren_interactions():
+                options.append(("garren", "\"Ask Garren Flint how false roadwarden seals keep getting obeyed.\""))
             options.extend(
                 [
-                    ("oren", "\"Oren Vale looks like he already priced this conversation.\""),
-                    ("sabra", "\"Let me see the ledgers Sabra Kestrel keeps glaring at.\""),
-                    ("vessa", "\"Sit in on Vessa Marr's card table.\""),
-                    ("garren", "\"Ask Garren Flint how false roadwarden seals keep getting obeyed.\""),
                     ("rest", self.action_option("Rent beds upstairs (10 gp per active party member).")),
                     ("leave", self.action_option("Leave the contract house and return to Mira's rooms.")),
                 ]
@@ -1679,7 +1726,7 @@ class StoryIntroMixin:
                 options.append(("turn_in", self.action_option("Bring Sabra the contract-house lies you untangled.")))
             elif not self.has_quest("false_manifest_circuit") and not self.quest_is_completed("false_manifest_circuit"):
                 options.append(("quest", "\"Which ledger line is wrong enough to matter before I ride?\""))
-            else:
+            elif self.has_quest("false_manifest_circuit") and not self.quest_is_completed("false_manifest_circuit"):
                 options.append(("reminder", "\"Whose detail are you still missing from the manifest line?\""))
             if not self.state.flags.get("neverwinter_sabra_fear_asked"):
                 options.append(("fear", "\"Which caravan frightens you most?\""))
@@ -2518,6 +2565,7 @@ class StoryIntroMixin:
             self.state.flags["liars_circle_solved"] = True
             self.speaker("Thief", "Finally. Someone heard the shape of the lie instead of the polish on the crown.")
             self.say("The Thief statue bows with a scrape of old stone, and the circle exhales like a held secret.")
+            self.reward_party(xp=200, reason="solving Liar's Circle before Phandalin")
             self.apply_liars_blessing()
             return
         self.state.flags["liars_circle_failed"] = True

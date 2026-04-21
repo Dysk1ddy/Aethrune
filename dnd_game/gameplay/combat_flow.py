@@ -24,6 +24,9 @@ class TurnState:
 class CombatFlowMixin:
     def run_encounter(self, encounter: Encounter) -> str:
         assert self.state is not None
+        previous_active_encounter = getattr(self, "_active_encounter", None)
+        previous_active_heroes = getattr(self, "_active_combat_heroes", None)
+        previous_active_enemies = getattr(self, "_active_combat_enemies", None)
         self._in_combat = True
         heroes: list[Character] = []
         enemies: list[Character] = []
@@ -33,6 +36,9 @@ class CombatFlowMixin:
             heroes = [member for member in self.state.party_members() if not member.dead]
             self.prepare_encounter_for_party(encounter, heroes=heroes)
             enemies = encounter.enemies
+            self._active_encounter = encounter
+            self._active_combat_heroes = heroes
+            self._active_combat_enemies = enemies
             self.banner(encounter.title)
             self.say(encounter.description, typed=True)
             if callable(play_encounter_music):
@@ -58,6 +64,13 @@ class CombatFlowMixin:
                     return "defeat"
 
                 self.say(f"Round {round_number}")
+                round_start_hook = getattr(self, "on_encounter_round_start", None)
+                if callable(round_start_hook):
+                    round_start_hook(encounter, heroes, enemies, initiative, round_number)
+                    if not any(enemy.is_conscious() for enemy in enemies):
+                        return self.resolve_encounter_victory(encounter, enemies)
+                    if not any(hero.is_conscious() for hero in heroes):
+                        return "defeat"
                 self.print_battlefield(heroes, enemies)
                 for actor in initiative:
                     if actor.name in dodging:
@@ -90,6 +103,9 @@ class CombatFlowMixin:
                 round_number += 1
         finally:
             self.clear_after_encounter([*heroes, *enemies])
+            self._active_encounter = previous_active_encounter
+            self._active_combat_heroes = previous_active_heroes
+            self._active_combat_enemies = previous_active_enemies
             self._in_combat = False
             if callable(refresh_scene_music):
                 refresh_scene_music()

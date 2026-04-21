@@ -477,7 +477,7 @@ class GameBase:
                     if callable(refresh_scene_music):
                         refresh_scene_music(default_to_menu=True)
                     choice = self.choose_title_menu(
-                        "Sword Coast",
+                        "Roads That Remember",
                         "Acts I-II: Frontier Roads and Echoing Depths",
                         (
                             "A choice-driven D&D-inspired text adventure spanning the road from "
@@ -722,6 +722,7 @@ class GameBase:
     def typewrite_text(self, text: str, *, delay: float) -> None:
         self.begin_animation_skip_scope()
         try:
+            at_line_start = False
             for index, character in enumerate(text):
                 if self.animation_skip_requested():
                     remainder = text[index:]
@@ -731,6 +732,12 @@ class GameBase:
                     return
                 sys.stdout.write(character)
                 sys.stdout.flush()
+                if character == "\n":
+                    at_line_start = True
+                    continue
+                if at_line_start and character in {" ", "\t"}:
+                    continue
+                at_line_start = False
                 if self.sleep_for_animation(delay):
                     remainder = text[index + 1 :]
                     if remainder:

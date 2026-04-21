@@ -303,7 +303,7 @@ class GameIOMixin:
                         border_style=rich_style_name("light_yellow"),
                         box=box.DOUBLE,
                         padding=(1, 2),
-                        title=self.rich_text("Sword Coast Chronicle", "light_yellow", bold=True),
+                        title=self.rich_text("Roads That Remember", "light_yellow", bold=True),
                     ),
                     Columns(
                         [

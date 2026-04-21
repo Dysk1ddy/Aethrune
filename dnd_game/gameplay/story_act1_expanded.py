@@ -27,6 +27,27 @@ class StoryAct1ExpandedMixin:
         assert self.state is not None
         return bool(self.has_quest("break_wyvern_tor_raiders") or self.state.flags.get("edermath_orchard_lead"))
 
+    def has_edermath_orchard_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("edermath_orchard_seen")
+            or self.quest_is_ready("break_wyvern_tor_raiders")
+            or not self.state.flags.get("edermath_orchard_blight_checked")
+            or not self.state.flags.get("edermath_orchard_wyvern_tor_asked")
+            or not self.state.flags.get("edermath_orchard_training_done")
+            or not self.state.flags.get("edermath_old_cache_recovered")
+        )
+
+    def has_miners_exchange_interactions(self) -> bool:
+        assert self.state is not None
+        return bool(
+            not self.state.flags.get("miners_exchange_seen")
+            or self.quest_is_ready("silence_old_owl_well")
+            or not self.state.flags.get("miners_exchange_missing_crews_asked")
+            or not self.state.flags.get("miners_exchange_ledgers_checked")
+            or not self.state.flags.get("miners_exchange_dispute_resolved")
+        )
+
     def wyvern_tor_recommended_level(self) -> int:
         return 3
 
@@ -265,17 +286,28 @@ class StoryAct1ExpandedMixin:
         self.run_after_watch_gathering()
 
         while True:
-            options: list[tuple[str, str]] = [
-                ("steward", self.action_option("Report to Steward Tessa Harrow")),
-                ("inn", self.action_option("Visit the Stonehill Inn")),
-                ("shrine", self.action_option("Stop by the shrine of Tymora")),
-                ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
-                ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
-                ("orchard", self.action_option("Walk the old walls of Edermath Orchard")),
-                ("exchange", self.action_option("Step into the Miner's Exchange")),
-                ("camp", self.action_option("Return to camp")),
-                ("rest", self.action_option("Take a short rest")),
-            ]
+            options: list[tuple[str, str]] = []
+            if self.has_steward_interactions():
+                options.append(("steward", self.action_option("Report to Steward Tessa Harrow")))
+            options.append(("inn", self.action_option("Visit the Stonehill Inn")))
+            if self.has_shrine_interactions():
+                options.append(("shrine", self.action_option("Stop by the shrine of Tymora")))
+            options.extend(
+                [
+                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
+                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
+                ]
+            )
+            if self.has_edermath_orchard_interactions():
+                options.append(("orchard", self.action_option("Walk the old walls of Edermath Orchard")))
+            if self.has_miners_exchange_interactions():
+                options.append(("exchange", self.action_option("Step into the Miner's Exchange")))
+            options.extend(
+                [
+                    ("camp", self.action_option("Return to camp")),
+                    ("rest", self.action_option("Take a short rest")),
+                ]
+            )
             if not self.state.flags.get("old_owl_well_cleared"):
                 label = self.action_option("Investigate Old Owl Well")
                 if not self.can_visit_old_owl_well():
