@@ -1,6 +1,6 @@
 # Leveling System Draft
 
-Last updated: 2026-04-15
+Last updated: 2026-04-21
 
 This document is a hybrid progression draft for the text-based Python DnD game. It takes its backbone from official Dungeons & Dragons 5e progression and uses Baldur's Gate 3 as the model for feat cadence, subclass timing, and class choice density.
 
@@ -62,7 +62,7 @@ When a new companion joins:
 
 1. Set `target_level = player.level`.
 2. If the companion is below that level, auto-run every missed level-up.
-3. Apply all missed HP gains, spell slots, class features, subclass features, feats, and passives.
+3. Apply all missed HP gains, MP capacity, spell-slot compatibility data, class features, subclass features, feats, and passives.
 4. Use a companion build template for automatic choices. Template fields should include preferred subclass, fighting style, cantrips, spell picks by level, feats, and invocations or metamagic.
 5. After catch-up, fully restore HP and resources so the companion joins ready to use.
 
@@ -139,11 +139,13 @@ Use BG3 timing for subclass selection:
 
 ## Spellcasting Progression Templates
 
+Current repo note: the live combat implementation now uses Magic Points (`MP`) for spell affordability and spending. The BG3 spell-slot material in this section remains useful for future spell-list, upcasting, and compatibility planning, but player-facing combat should check MP first.
+
 Use BG3's spellcasting concept instead of a bespoke per-class slot table. This makes future class data cleaner and lines up with the way BG3 handles full casters, half casters, one-third casters, prepared casters, and warlocks.
 
 ### BG3 Spellcasting Concepts
 
-- Cantrips do not consume spell slots and can usually be cast at will.
+- In official D&D and BG3, cantrips do not consume spell slots and can usually be cast at will. In this repo's current combat MVP, implemented combat cantrips cost `1 MP`.
 - Most spell slots refresh on a long rest.
 - Warlock Pact Magic slots refresh on a short or long rest.
 - Casting a spell with a higher slot upcasts it if the spell supports scaling.
@@ -210,7 +212,7 @@ Warlocks do not use the universal spellcasting slot table. They use Pact Magic.
 
 ### Recommended Implementation Rule
 
-For this game, store spell slots as a dictionary by slot level, for example:
+For future spell-list and upcasting work, keep deriving slot-style compatibility data by slot level, for example:
 
 ```python
 spell_slots = {1: 4, 2: 3, 3: 2, 4: 0}
@@ -223,7 +225,7 @@ Then derive those values from:
 - `subclass`
 - `is_warlock`
 
-This is cleaner than adding `+1 spell slot` on every level-up, because it keeps the data in line with BG3 and avoids drift when companions auto-scale to party level.
+This is cleaner than adding `+1 spell slot` on every level-up, because it keeps the data in line with BG3 and avoids drift when companions auto-scale to party level. Runtime combat should still spend MP through `dnd_game/gameplay/magic_points.py`.
 
 ## BG3 Feat Catalog
 
@@ -471,7 +473,7 @@ BG3 subclass roster: Beast Master, Gloom Stalker, Hunter, Swarmkeeper
 | --- | --- | --- |
 | 1 | Favoured Enemy, Natural Explorer | Choose one Favoured Enemy and one Natural Explorer |
 | 2 | Fighting Style, Spellcasting | Choose Fighting Style and first spells |
-| 3 | Subclass, extra spell slot | Choose subclass and new spell |
+| 3 | Subclass, improved spell progression | Choose subclass and new spell |
 | 4 | Feat | Choose feat / Ability Improvement |
 | 5 | Extra Attack, level-2 spells | Choose new spell |
 | 6 | Additional Favoured Enemy and Natural Explorer | Choose second Favoured Enemy and second Natural Explorer |
@@ -866,7 +868,7 @@ Add or refactor these fields on `Character` later:
 ### Phase 2
 
 - Replace the current static level 2 to 4 feature table with per-class level 1 to 8 progression data.
-- Add spell slot templates.
+- Add or maintain MP synchronization plus spell-slot compatibility templates.
 - Add spell list data files.
 
 ### Phase 3
@@ -887,6 +889,7 @@ Recommended future shape:
 CLASS_LEVEL_PROGRESSION["Wizard"][5] = {
     "features": ["level_3_spells"],
     "spell_slot_progression": {"1": 4, "2": 3, "3": 2},
+    "mp_progression": "full_caster",
     "spell_choice": {"learn": 2, "max_spell_level": 3},
 }
 ```

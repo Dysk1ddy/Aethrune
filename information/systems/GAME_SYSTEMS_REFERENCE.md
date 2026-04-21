@@ -19,6 +19,7 @@ This file is a source-oriented reference for reading and debugging the current g
 - `dnd_game/data/story/character_options/backgrounds.py`: backgrounds
 - `dnd_game/gameplay/progression.py`: XP and level-up handling
 - `dnd_game/gameplay/map_system.py`: live Act 1 and Act 2 map flow, route flags, reactivity state, and epilogue carryover
+- `dnd_game/gameplay/magic_points.py`: MP formulas, spell costs, spend/restore helpers, and spell-slot-to-MP item conversion
 - `dnd_game/gameplay/combat_flow.py`: combat turn options and enemy AI
 - `dnd_game/gameplay/combat_resolution.py`: attack, spell, healing, damage, save, and death logic
 - `dnd_game/gameplay/status_effects.py`: status definitions and condition ticking
@@ -36,7 +37,8 @@ This file is a source-oriented reference for reading and debugging the current g
 - Overworld travel is node-based around `Phandalin`
 - Hostile sites use room-based dungeon progression from `dnd_game/drafts/map_system/data/act1_hybrid_map.py`
 - The live mid-Act route can now include `Old Owl Well`, `Wyvern Tor`, and an optional hidden `Cinderfall Ruins` strike before `Ashfall Watch`
-- The High Road now has post-ambush side branches for `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones`; the checkpoint is non-combat and can spend contract-house proof before Blackwake.
+- The High Road now has a post-ambush travel choice before Phandalin. Once both ambush waves are cleared, the scene reopens with the south road, a `BACKTRACK` option when history allows it, and any unlocked side branches: `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones`.
+- Returning from those High Road side branches travels to `phandalin_hub` without recording the side branch as the new backtrack target. From Phandalin, backtracking skips resolved High Road side detours and points back to the meaningful High Road route node.
 
 ### Act 1 metrics and carryover
 
@@ -94,22 +96,35 @@ This file is a source-oriented reference for reading and debugging the current g
 - Spell attack bonus: proficiency + spellcasting ability modifier + spell attack bonuses
 - Spell save DC: `8 + proficiency + spellcasting ability modifier`
 
+### Magic Points
+
+Combat spellcasting now uses Magic Points (`MP`) as the player-facing resource. Spell-slot resources still synchronize as compatibility data, but combat menus, party sheets, combatant summaries, rest recovery, and spell-refresh consumables all speak in MP.
+
+- MP is stored as `resources["mp"]` with the maximum in `max_resources["mp"]`
+- Full casters: `6 + 4 * level + max(0, spellcasting modifier)`
+- Pact casters: `4 + 3 * level + max(0, spellcasting modifier)`
+- Half casters from level 2 onward: `4 + 2 * level + max(0, spellcasting modifier)`
+- Feature casters, including level-1 Paladins with `divine_smite`, use `3 + max(0, spellcasting modifier)`
+- Characters without spellcasting or feature-caster access have no MP row
+- Creation, level reconciliation, and old-save integrity checks call `synchronize_magic_points`
+- Combat options only show spells the actor can currently afford; direct cast attempts with too little MP print the required cost and current MP
+
 ## Classes
 
 | Class | HD | Saves | Level 1 features | Starting resources | Spell stat |
 | --- | ---: | --- | --- | --- | --- |
 | Barbarian | d12 | STR, CON | Rage, Unarmored Defense | rage 2 | none |
-| Bard | d8 | DEX, CHA | Bard Spellcasting, Bardic Inspiration | spell_slots 2, bardic_inspiration 3 | CHA |
-| Cleric | d8 | WIS, CHA | Cleric Spellcasting | spell_slots 2 | WIS |
-| Druid | d8 | INT, WIS | Druid Spellcasting | spell_slots 2 | WIS |
+| Bard | d8 | DEX, CHA | Bard Spellcasting, Bardic Inspiration | MP by formula, bardic_inspiration 3 | CHA |
+| Cleric | d8 | WIS, CHA | Cleric Spellcasting | MP by formula | WIS |
+| Druid | d8 | INT, WIS | Druid Spellcasting | MP by formula | WIS |
 | Fighter | d10 | STR, CON | Second Wind | second_wind 1 | none |
 | Monk | d8 | STR, DEX | Martial Arts, Unarmored Defense | none | none |
-| Paladin | d10 | WIS, CHA | Lay on Hands, Divine Smite | lay_on_hands 5, spell_slots 2 | CHA |
+| Paladin | d10 | WIS, CHA | Lay on Hands, Divine Smite | lay_on_hands 5, MP from Divine Smite access | CHA |
 | Ranger | d10 | STR, DEX | Natural Explorer | none | none |
 | Rogue | d8 | DEX, INT | Sneak Attack, Expertise | none | none |
-| Sorcerer | d6 | CON, CHA | Sorcerer Spellcasting | spell_slots 2 | CHA |
-| Warlock | d8 | WIS, CHA | Warlock Spellcasting | spell_slots 2 | CHA |
-| Wizard | d6 | INT, WIS | Wizard Spellcasting, Arcane Recovery | spell_slots 2 | INT |
+| Sorcerer | d6 | CON, CHA | Sorcerer Spellcasting | MP by formula | CHA |
+| Warlock | d8 | WIS, CHA | Warlock Spellcasting | MP by pact formula | CHA |
+| Wizard | d6 | INT, WIS | Wizard Spellcasting, Arcane Recovery | MP by formula | INT |
 
 ## Leveling
 
@@ -129,7 +144,7 @@ This file is a source-oriented reference for reading and debugging the current g
 - HP gain on level-up: `max(1, hit_die // 2 + 1 + CON modifier)`
 - The player picks one new class skill at each level-up if one remains available
 - Companions auto-pick the first available class skill
-- Full spellcasters in this game gain `+1` max spell slot each level
+- Spellcasting characters resynchronize MP on level-up and save reconciliation; spell-slot values still synchronize as hidden compatibility data
 - Paladin Lay on Hands pool becomes `level * 5`
 - Monk ki scales to current level once ki has been unlocked
 
@@ -155,7 +170,7 @@ This file is a source-oriented reference for reading and debugging the current g
 
 #### Druid
 
-- Level 2: Natural Recovery, recover `1` spell slot on short rest
+- Level 2: Natural Recovery, short rests restore spellcasting stamina under the MP recovery rules
 - Level 3: Wildfire Adept, `+1 spell damage`, `+1 healing`
 - Level 4: Land's Embrace, `+1 AC`, `+1 WIS saves`
 
@@ -315,14 +330,14 @@ Present as tags and lore, but not given dedicated runtime logic yet:
 
 | Spell or ability | Users | Cost | Effect |
 | --- | --- | --- | --- |
-| Sacred Flame | Cleric | action | DEX save vs WIS DC, `1d8` radiant, applies Reeling 1 |
-| Cure Wounds | Bard, Cleric, Druid, Paladin | action, 1 spell slot | `1d8 + casting mod + healing bonuses` |
-| Healing Word | Bard, Cleric, Druid | bonus action, 1 spell slot | `1d4 + casting mod + healing bonuses` |
-| Fire Bolt | Sorcerer, Wizard | action | spell attack, `1d10` fire, applies Burning 2 |
-| Produce Flame | Druid | action | spell attack, `1d8` fire, applies Burning 2 |
-| Magic Missile | Sorcerer, Wizard | action, 1 spell slot | auto-hit style implementation, `3d4+3` force |
-| Vicious Mockery | Bard | action | WIS save vs CHA DC, `1d6` psychic, applies Reeling 2 |
-| Eldritch Blast | Warlock | action | spell attack, `1d10` force, applies Reeling 1 |
+| Sacred Flame | Cleric | action, 1 MP | DEX save vs WIS DC, `1d8` radiant, applies Reeling 1 |
+| Cure Wounds | Bard, Cleric, Druid, Paladin | action, 3 MP | `1d8 + casting mod + healing bonuses` |
+| Healing Word | Bard, Cleric, Druid | bonus action, 4 MP | `1d4 + casting mod + healing bonuses` |
+| Fire Bolt | Sorcerer, Wizard | action, 1 MP | spell attack, `1d10` fire, applies Burning 2 |
+| Produce Flame | Druid | action, 1 MP | spell attack, `1d8` fire, applies Burning 2 |
+| Magic Missile | Sorcerer, Wizard | action, 5 MP | auto-hit style implementation, `3d4+3` force |
+| Vicious Mockery | Bard | action, 1 MP | WIS save vs CHA DC, `1d6` psychic, applies Reeling 2 |
+| Eldritch Blast | Warlock | action, 1 MP | spell attack, `1d10` force, applies Reeling 1 |
 | Rage | Barbarian | bonus action, 1 rage | gains temp HP `4 + level`, applies Emboldened 3 |
 | Bardic Inspiration | Bard | bonus action, 1 inspiration | applies Blessed 2 to ally |
 | Second Wind | Fighter | bonus action, 1 use | heal `1d10 + level` |
@@ -332,7 +347,7 @@ Present as tags and lore, but not given dedicated runtime logic yet:
 | Patient Defense | Monk | bonus action, 1 ki | applies dodge state until next turn |
 | Step of the Wind | Monk | bonus action, 1 ki | grants clean escape setup, may apply Emboldened 1 |
 | Lay on Hands | Paladin | action | heal up to 5 HP per use from remaining pool |
-| Divine Smite | Paladin | attack rider, 1 spell slot | adds `2d8` radiant on a weapon hit |
+| Divine Smite | Paladin | attack rider, 4 MP on hit | adds `2d8` radiant on a weapon hit |
 | Channel Divinity | Cleric level 2+ | action, 1 use | `2d8` radiant, applies Stunned 1 |
 | Cunning Action | Rogue level 2+ | bonus action | hide for Invisible 2 on success, or create flee opening |
 | Help a Downed Ally | any hero | action | Medicine check DC `10`; on success target returns at 1 HP, on failure target stabilizes |
@@ -407,12 +422,14 @@ Present as tags and lore, but not given dedicated runtime logic yet:
 
 - Short rests per long rest: `2`
 - Short rest:
-  - heals each living party member for `1d(hit die) + CON mod`, minimum `1`
+  - heals each living party member for half maximum HP, rounded up
   - restores short-rest resources like Second Wind, Action Surge, Channel Divinity, and ki
-  - Arcane Recovery and Natural Recovery restore `1` spell slot on short rest
+  - restores half maximum MP, rounded up, for non-warlock MP users
+  - restores all MP for Warlocks
+  - Arcane Recovery and Natural Recovery still restore one hidden compatibility spell slot while combat casting uses MP
 - Long rest:
   - costs `12` supply points
-  - fully restores HP and resources for living members
+  - fully restores HP, MP, and other resources for living members
   - resets short rests to `2`
   - clears temporary combat conditions
   - reduces Exhaustion by `1`
@@ -422,7 +439,7 @@ Present as tags and lore, but not given dedicated runtime logic yet:
 - Drinking a healing potion yourself in combat is a bonus action
 - Using an item on someone else in combat is an action
 - Scroll of Revivify works at camp on dead companions only
-- The current item implementation supports healing, temp HP, revive HP, spell slot restoration, poison cure, condition clearing, and condition application
+- The current item implementation supports healing, temp HP, revive HP, MP restoration through former spell-slot-refresh items, poison cure, condition clearing, and condition application
 
 ### Item catalog
 

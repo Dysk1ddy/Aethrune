@@ -2496,6 +2496,7 @@ class StoryIntroMixin:
             self.travel_to_act1_node(
                 "phandalin_hub",
                 transition_text="You return to the High Road and continue toward Phandalin.",
+                record_history=False,
             )
             return
 
@@ -2510,7 +2511,7 @@ class StoryIntroMixin:
             ("priest", self.action_option("Inspect the Priest statue.")),
             ("thief", self.action_option("Inspect the Thief statue.")),
             ("king", self.action_option("Inspect the King statue.")),
-            ("answer", self.skill_tag("LOGIC", self.action_option("Name the only truthful statue."))),
+            ("answer", self.action_option("Name the only truthful statue.")),
             ("leave", self.action_option("Leave the circle unresolved.")),
         ]
         while True:
@@ -2553,6 +2554,7 @@ class StoryIntroMixin:
         self.travel_to_act1_node(
             "phandalin_hub",
             transition_text="You return to the High Road and continue toward Phandalin.",
+            record_history=False,
         )
 
     def resolve_liars_circle_answer(self, answer_key: str, answer_text: str) -> None:
@@ -2587,6 +2589,7 @@ class StoryIntroMixin:
             self.travel_to_act1_node(
                 "phandalin_hub",
                 transition_text="You leave the false checkpoint behind and continue toward Phandalin.",
+                record_history=False,
             )
             return
 
@@ -2637,6 +2640,7 @@ class StoryIntroMixin:
         self.travel_to_act1_node(
             "phandalin_hub",
             transition_text="You leave the false checkpoint behind and follow the High Road south.",
+            record_history=False,
         )
 
     def resolve_high_road_false_checkpoint(self, *, success: bool, method: str) -> None:
@@ -2704,6 +2708,7 @@ class StoryIntroMixin:
             self.travel_to_act1_node(
                 "phandalin_hub",
                 transition_text="You leave the milemarker behind and follow the High Road south.",
+                record_history=False,
             )
             return
 
@@ -2737,6 +2742,7 @@ class StoryIntroMixin:
             self.travel_to_act1_node(
                 "phandalin_hub",
                 transition_text="You leave the milemarker behind and follow the High Road south.",
+                record_history=False,
             )
             return
 
@@ -2769,6 +2775,7 @@ class StoryIntroMixin:
         self.travel_to_act1_node(
             "phandalin_hub",
             transition_text="You leave the milemarker behind and follow the High Road south.",
+            record_history=False,
         )
 
     def resolve_high_road_tollstones(self, *, success: bool, method: str) -> None:
@@ -2821,7 +2828,7 @@ class StoryIntroMixin:
                 "all sit under a wind that knows the worst of this fight already passed."
             )
             options: list[tuple[str, str]] = [
-                ("south", self.action_option("Follow the High Road back to Phandalin.")),
+                ("south", self.action_option("Follow the High Road to Phandalin.")),
             ]
             backtrack_node = self.peek_act1_overworld_backtrack_node()
             if backtrack_node is not None:
@@ -2830,21 +2837,21 @@ class StoryIntroMixin:
                 options.append(
                     (
                         "liars_circle",
-                        self.skill_tag("PUZZLE", self.action_option("Follow the overgrown statue trail into the wilderness.")),
+                        self.action_option("Follow the overgrown statue trail into the wilderness."),
                     )
                 )
             if self.high_road_tollstones_branch_available():
                 options.append(
                     (
                         "tollstones",
-                        self.skill_tag("PARLEY", self.action_option("Investigate the broken roadwarden milemarker.")),
+                        self.action_option("Investigate the broken roadwarden milemarker."),
                     )
                 )
             if self.high_road_false_checkpoint_available():
                 options.append(
                     (
                         "checkpoint",
-                        self.skill_tag("SOCIAL", self.action_option("Challenge the false roadwarden checkpoint.")),
+                        self.action_option("Challenge the false roadwarden checkpoint."),
                     )
                 )
             choice = self.scenario_choice("Where do you go from the High Road?", [text for _, text in options], allow_meta=False)
@@ -3107,4 +3114,4 @@ class StoryIntroMixin:
 
         self.state.flags["road_ambush_cleared"] = True
         self.discover_high_road_side_branches()
-        self.travel_to_act1_node("phandalin_hub")
+        self.scene_road_ambush()

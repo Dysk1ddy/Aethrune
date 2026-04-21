@@ -11,7 +11,13 @@ from ..items import (
     party_carry_capacity,
     roll_loot_for_enemy,
 )
-from .spell_slots import restore_all_spell_slots, restore_spell_slots, restored_spell_slot_summary
+from .magic_points import (
+    restore_all_magic_points,
+    restore_half_magic_points,
+    restore_magic_points,
+    spell_slot_restore_units_to_mp,
+)
+from .spell_slots import restore_all_spell_slots, restore_spell_slots
 from ..ui.colors import rarity_color, rich_style_name
 from ..ui.rich_render import Panel, RICH_AVAILABLE, Table, Text, box
 
@@ -224,6 +230,9 @@ class InventoryCoreMixin:
             member.resources["ki"] = member.max_resources["ki"]
         if member.class_name == "Warlock":
             restore_all_spell_slots(member)
+            restore_all_magic_points(member)
+        else:
+            restore_half_magic_points(member)
         if member.spellcasting_ability is not None and ("arcane_recovery" in member.features or "natural_recovery" in member.features):
             restore_spell_slots(member, 1)
 
@@ -450,9 +459,9 @@ class InventoryCoreMixin:
             gained = target.grant_temp_hp(item.temp_hp)
             effects.append(f"sets temporary hit points to {gained}")
         if item.spell_slot_restore and target.spellcasting_ability is not None:
-            restored_levels = restore_spell_slots(target, item.spell_slot_restore)
-            if restored_levels:
-                effects.append(f"restores {restored_spell_slot_summary(restored_levels)}")
+            restored_mp = restore_magic_points(target, spell_slot_restore_units_to_mp(item.spell_slot_restore))
+            if restored_mp:
+                effects.append(f"restores {restored_mp} MP")
         if item.cure_poison and "poisoned" in target.conditions:
             target.conditions.pop("poisoned", None)
             effects.append("cures poison")

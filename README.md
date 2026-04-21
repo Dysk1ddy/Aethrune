@@ -10,7 +10,7 @@ Act 1 is fully playable. The game now includes:
 - Expanded race options including Human, Dwarf, Elf, Halfling, Dragonborn, Half-Elf, Half-Orc, Gnome, Tiefling, Goliath, and Orc
 - Expanded class options including Fighter, Rogue, Cleric, Wizard, Paladin, Ranger, Druid, Barbarian, Bard, Monk, Sorcerer, and Warlock
 - Shared party XP, gold, inventory, level-ups, class progression, and companion relationship bonuses
-- A significantly expanded Act 1 with background-specific prologues, a larger Phandalin hub, fixed town events, non-combat scenes, inns and NPC hubs, a live hybrid map system, branching grid dungeons, the hidden `Cinderfall Ruins` route, multiple minibosses, and a longer final dungeon push
+- A significantly expanded Act 1 with background-specific prologues, post-ambush High Road side branches before Phandalin, a larger Phandalin hub, fixed town events, non-combat scenes, inns and NPC hubs, a live hybrid map system, branching grid dungeons, the hidden `Cinderfall Ruins` route, multiple minibosses, and a longer final dungeon push
 - Recruitable companions with camp interactions, relationship growth, scene support bonuses, trust-gated interjections, personal quest hooks, party/camp management, and camp resurrection for fallen allies with a `Scroll of Revivify`
 - Act 1 reactivity layers for `Town Fear`, `Ashen Strength`, and `Survivors Saved`, plus route sabotage, companion conflict scenes, and three end-of-act victory tiers that feed pressure into Act 2
 - Post-combat random encounters with non-forced outcomes, optional fights, loot scenes, road events, ruins, shrines, smugglers, bandits, animals, abandoned locations, and small follow-up chains that can pay off later in the act
@@ -24,6 +24,7 @@ Act 2 is now playable as a scaffolded expedition campaign, and the project also 
 ## Combat and rules systems
 
 - D&D-style checks, initiative, combat rounds, attack rolls, saving throws, damage, healing, conditions, and death saves
+- A visible Magic Points (`MP`) spellcasting economy: combat spells show their MP cost, cantrips spend MP, unaffordable spells drop out of the combat menu, and failed direct casts explain the shortfall
 - A real action / bonus action turn structure with support for features like Rage, Bardic Inspiration, Second Wind, Healing Word, Martial Arts, Flurry of Blows, Patient Defense, Step of the Wind, Cunning Action, off-hand attacks, and Action Surge
 - Potion timing rule support:
   drinking a healing potion yourself is a bonus action
@@ -33,6 +34,7 @@ Act 2 is now playable as a scaffolded expedition campaign, and the project also 
 ## Inventory, equipment, and items
 
 - A shared inventory with loot drops, merchants, selling, carrying capacity, consumables, scrolls, rarity tiers, and supply-based resting
+- Rest and consumable support for the MP migration: long rests refill MP, short rests restore half MP for most casters and all MP for warlocks, and spell-refresh consumables now restore MP
 - Full equipment management for every party member, not just the player character
 - Equipment slots for `Head`, `Ring 1`, `Ring 2`, `Neck`, `Chest`, `Gloves`, `Boots`, `Main Hand`, `Off Hand`, and `Cape`
 - Character sheets for every party member, separate from the quick `party` combat-status view
@@ -48,7 +50,7 @@ Act 2 is now playable as a scaffolded expedition campaign, and the project also 
   Act II pressure and route panels in the map UI
   journal and campaign snapshots for rescue, clue, and route state
   a compact camp digest so expedition fallout stays visible outside the hub
-- Skill-tagged dialogue only when a real check is involved, plus action-style options for non-dialogue choices
+- Skill-tagged dialogue only when a real check is involved, with redundant tags suppressed for action text and `BACKTRACK` labels kept explicit for navigation
 - Consistent blank-line spacing after non-conversation action choices
 - Failed checks now avoid repetitive canned failure text
 - Animated dice rolls for checks, attacks, saves, healing, damage, initiative, and other shared dice events
@@ -79,6 +81,8 @@ python main.py
 Act 1 now uses a hybrid navigation structure:
 
 - Phandalin uses node-based travel. The hub renders the current overworld route when you arrive, and you can reopen it any time with `map`.
+- After the High Road ambush is fully cleared, the road scene now reopens as a travel choice before Phandalin. You can press south, backtrack to the prior route node, or take unlocked side branches such as `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones`.
+- Returning from a High Road side branch preserves the High Road as the meaningful backtrack point and avoids sending Phandalin backtracking into resolved side detours.
 - Combat sites use room-based dungeon traversal. Each site keeps its own mini-map, current room, and cleared room history.
 - Branching routes usually reconverge on a miniboss or boss room. Some paths are optional support rooms; others gate later rooms directly.
 - Dungeon movement is now direction-driven. Available room choices are labeled as `[MOVE LEFT]`, `[MOVE RIGHT]`, `[MOVE UP]`, or `[MOVE DOWN]`.
@@ -141,18 +145,21 @@ python -m pytest tests/test_core.py
 That suite now includes coverage for:
 
 - Act 1 map-state initialization
+- High Road post-ambush branch routing, side-branch cleanup, and backtrack history behavior
 - branching room progression in the live map system
 - hidden-route unlocks, `Cinderfall Ruins`, and Ashfall sabotage behavior
 - companion quest / conflict hooks, encounter-chain unlocks, and Act 1 ending-tier carryover
 - new Act 1 enemy coordination and companion combat opener behavior
 - existing Act 1 scene flow compatibility
 - Act 2 local-map progression, route-order consequences, companion recruitment, pressure/digest UI, forge finale routing, and Act 3 handoff flags
+- MP creation, old-save reconciliation, combat menu costs, spell spending, insufficient-MP handling, short-rest recovery, warlock recovery, long-rest refill, and MP-restoring consumables
 
 ## Reference docs
 
 For reading, balancing, and debugging, the project now has a few source-facing markdown references:
 
 - `information/systems/GAME_SYSTEMS_REFERENCE.md`: classes, races, backgrounds, leveling, combat formulas, spells, abilities, statuses, rest rules, and inventory systems
+- `information/systems/MP_SYSTEM_DRAFT.md`: implemented MP economy notes, formulas, costs, rest recovery, migration status, and tuning guidance
 - `information/systems/QUEST_SYSTEM_REFERENCE.md`: quest data model, lifecycle, turn-in rules, rewards, story unlocks, and maintenance checklist
 - `information/Story/ACT1_CONTENT_REFERENCE.md`: Act 1 route flow, major NPC hubs, expanded quest chain, enemy archetypes, rewards, recruitment points, and useful story flags
 - `information/Story/ACT2_CONTENT_REFERENCE.md`: Act 2 route flow, new recruitable companions, companion side arcs, Wave Echo / cult structure, quests, enemies, and the planned Act 2 random encounter pool
@@ -192,6 +199,7 @@ The settings menu currently includes:
 - `main.py`: entry point
 - `dnd_game/`: main game code
 - `information/systems/GAME_SYSTEMS_REFERENCE.md`: mechanics and progression reference
+- `information/systems/MP_SYSTEM_DRAFT.md`: Magic Points implementation and balance reference
 - `information/systems/QUEST_SYSTEM_REFERENCE.md`: quest system and reward reference
 - `information/Story/ACT1_CONTENT_REFERENCE.md`: Act 1 content and debugging reference
 - `information/Story/ACT2_CONTENT_REFERENCE.md`: Act 2 design target and future implementation reference

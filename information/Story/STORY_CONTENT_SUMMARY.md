@@ -317,7 +317,7 @@ This means the game's narrative identity is not only in scenes; part of it lives
 
 1. Background-specific prologue in or near Neverwinter.
 2. Mira Thann's private briefing.
-3. High Road ambush, Tolan pivot, and optional post-ambush High Road side branches.
+3. High Road ambush, Tolan pivot, and a cleared-road travel menu with optional post-ambush High Road side branches before Phandalin.
 4. Phandalin hub, side conversations, and possible early discovery of the hidden `Cinderfall` route.
 5. `Old Owl Well` and `Wyvern Tor` in either order.
 6. Optional `Cinderfall Ruins` relay strike before the main assault.
@@ -374,7 +374,10 @@ Resolution choices after victory:
 
 Post-ambush side branches:
 
-- `Liar's Circle`: logic puzzle; correct answer grants `Liar's Blessing`, wrong answer applies `Liar's Curse`.
+- The second ambush wave now loops back into the cleared High Road scene instead of auto-entering Phandalin.
+- Side-branch options are plain action labels; only `BACKTRACK` remains explicitly tagged because it is navigation.
+- Returning from a side branch preserves the main High Road as the next useful backtrack point and prevents Phandalin from backtracking into resolved detours.
+- `Liar's Circle`: logic puzzle; correct answer grants `Liar's Blessing` and `200 XP`, wrong answer applies `Liar's Curse`.
 - `False Roadwarden Checkpoint`: non-combat social encounter with fake roadwardens demanding papers. Can resolve through `Deception`, `Insight`, `Persuasion`, `Intimidation`, or contract-house proof from Oren/Sabra/Garren.
 - `False Tollstones`: false toll operation at a broken milemarker; `Liar's Blessing` can bypass the normal checks.
 

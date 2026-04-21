@@ -31,6 +31,7 @@ from dnd_game.content import (
 from dnd_game.dice import roll, roll_d20
 from dnd_game.game import Encounter, TextDnDGame
 from dnd_game.gameplay.combat_flow import TurnState
+from dnd_game.gameplay.magic_points import current_magic_points, magic_point_summary
 from dnd_game.gameplay.sound_effects import (
     DICE_ROLL_SOUND_EFFECTS,
     DICE_ROLL_SOUND_MAX_SECONDS,
@@ -934,6 +935,17 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(log)
         self.assertLessEqual(max(len(strip_ansi(line)) for line in log), 53)
 
+    def test_skill_tag_suppresses_redundant_choice_labels(self) -> None:
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90073601))
+
+        self.assertEqual(game.quoted_option("KING", "The King tells the truth."), '"The King tells the truth."')
+        self.assertEqual(game.skill_tag("BACKTRACK", game.action_option("Backtrack to High Road")), "[BACKTRACK] *Backtrack to High Road")
+        self.assertEqual(
+            game.skill_tag("BACKTRACK WEST", game.action_option("Backtrack to Charred Tollhouse")),
+            "[BACKTRACK WEST] *Backtrack to Charred Tollhouse",
+        )
+        self.assertEqual(game.skill_tag("STEALTH", game.action_option("Slip through the brush.")), "[STEALTH] *Slip through the brush.")
+
     def test_selected_keyboard_choice_menu_stays_inside_terminal_width(self) -> None:
         if not RICH_AVAILABLE:
             self.skipTest("rich is not installed")
@@ -1293,6 +1305,7 @@ class CoreTests(unittest.TestCase):
         self.assertGreater(encounter.enemies[0].max_hp, 6)
         self.assertGreater(encounter.enemies[0].xp_value, 50)
         self.assertTrue(any("Added by party-size encounter scaling." in note for enemy in encounter.enemies[1:] for note in enemy.notes))
+        self.assertTrue(all(enemy.level >= 2 for enemy in encounter.enemies))
 
     def test_encounter_scaling_raises_two_enemies_when_four_or_more_are_present(self) -> None:
         player = build_character(
@@ -1322,9 +1335,9 @@ class CoreTests(unittest.TestCase):
 
         game.prepare_encounter_for_party(encounter)
 
-        scaled = [enemy for enemy in encounter.enemies if any(note.startswith("Pseudo-scaled") for note in enemy.notes)]
-        self.assertEqual(len(scaled), 2)
-        self.assertTrue(all(enemy.level == 4 for enemy in scaled))
+        fully_scaled = [enemy for enemy in encounter.enemies if enemy.level == 4]
+        self.assertEqual(len(fully_scaled), 2)
+        self.assertTrue(all(enemy.level >= 3 for enemy in encounter.enemies))
 
     def test_scaled_enemy_rewards_are_paid_from_encounter_victory(self) -> None:
         player = build_character(
@@ -3803,6 +3816,57 @@ class CoreTests(unittest.TestCase):
         self.assertIn("backtrack north along the High Road", rendered)
         self.assertIn("backtrack north toward Neverwinter", rendered)
 
+    def test_phandalin_backtrack_skips_resolved_high_road_side_branches(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90085141))
+        game.state = GameState(
+            player=player,
+            current_scene="phandalin_hub",
+            flags={"phandalin_arrived": True, "road_ambush_cleared": True, "liars_circle_solved": True},
+        )
+        game.ensure_state_integrity()
+        payload = game._map_state_payload()
+        payload["node_history"] = ["neverwinter_briefing", "high_road_ambush", "liars_circle"]
+
+        candidate = game.peek_act1_overworld_backtrack_node()
+
+        assert candidate is not None
+        self.assertEqual(candidate.node_id, "high_road_ambush")
+
+    def test_liars_circle_return_to_phandalin_keeps_high_road_as_backtrack(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        answers = iter(["6"])
+        game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=lambda _: None, rng=random.Random(90085142))
+        game.state = GameState(
+            player=player,
+            current_scene="road_ambush",
+            flags={"act1_started": True, "road_ambush_cleared": True, "liars_circle_branch_available": True},
+        )
+        game.ensure_state_integrity()
+        game.travel_to_act1_node("liars_circle")
+
+        game.scene_high_road_liars_circle()
+
+        self.assertEqual(game.state.current_scene, "phandalin_hub")
+        self.assertEqual(game._map_state_payload()["node_history"], ["neverwinter_briefing", "high_road_ambush"])
+        candidate = game.peek_act1_overworld_backtrack_node()
+        assert candidate is not None
+        self.assertEqual(candidate.node_id, "high_road_ambush")
+
     def test_cleared_high_road_scene_can_backtrack_to_neverwinter(self) -> None:
         player = build_character(
             name="Vale",
@@ -6236,7 +6300,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["blackwake_neverwinter_rumor"])
         self.assertTrue(any("forged river-cut inspections" in clue for clue in game.state.clues))
         rendered = self.plain_output(log)
-        self.assertIn("[BACKTRACK]", rendered)
+        self.assertIn("[BACKTRACK] *Circle back long enough to gather one more rumor in Neverwinter.", rendered)
         self.assertIn("good-looking papers and bad patience", rendered)
 
     def test_road_ambush_approach_can_backtrack_to_neverwinter(self) -> None:
@@ -6282,6 +6346,47 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Tolan Ironshield: \"Good. Give me a minute to cinch the shield", rendered)
 
+    def test_freshly_cleared_high_road_offers_side_branches_before_phandalin(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(92101))
+        game.state = GameState(player=player, current_scene="road_ambush", clues=[], journal=[])
+        encounters: list[Encounter] = []
+        captured_options: list[str] = []
+        game.run_encounter = lambda encounter: encounters.append(encounter) or "victory"
+
+        def choose_side_branch(prompt: str, options: list[str], **kwargs) -> int:
+            if prompt == "Where do you go from the High Road?":
+                captured_options.extend(strip_ansi(option) for option in options)
+                return self.option_index_containing(options, "overgrown statue trail")
+            return 1
+
+        game.scenario_choice = choose_side_branch  # type: ignore[method-assign]
+
+        game.scene_road_ambush()
+
+        self.assertEqual([encounter.title for encounter in encounters], ["Roadside Ambush: First Wave", "High Road Second Wave"])
+        self.assertTrue(game.state.flags["road_ambush_cleared"])
+        self.assertTrue(game.state.flags["liars_circle_branch_available"])
+        self.assertTrue(game.state.flags["high_road_tollstones_branch_available"])
+        self.assertTrue(game.state.flags["high_road_false_checkpoint_available"])
+        self.assertEqual(game.state.current_scene, "high_road_liars_circle")
+        rendered_options = "\n".join(captured_options)
+        self.assertIn("*Follow the High Road to Phandalin.", rendered_options)
+        self.assertIn("*Follow the overgrown statue trail into the wilderness.", rendered_options)
+        self.assertIn("*Investigate the broken roadwarden milemarker.", rendered_options)
+        self.assertIn("*Challenge the false roadwarden checkpoint.", rendered_options)
+        self.assertNotIn("[PUZZLE]", rendered_options)
+        self.assertNotIn("[PARLEY]", rendered_options)
+        self.assertNotIn("[SOCIAL]", rendered_options)
+
     def test_sereth_escape_leaves_high_road_followup_note(self) -> None:
         player = build_character(
             name="Vale",
@@ -6292,7 +6397,7 @@ class CoreTests(unittest.TestCase):
             class_skill_choices=["Athletics", "Survival"],
         )
         log: list[str] = []
-        answers = iter(["1", "2"])
+        answers = iter(["1", "2", "1"])
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(9209))
         game.state = GameState(
             player=player,
@@ -6337,7 +6442,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.current_scene, "high_road_liars_circle")
         self.assertEqual(game.state.flags["map_state"]["current_node_id"], "liars_circle")
         rendered = self.plain_output(log)
-        self.assertIn("[PUZZLE] *Follow the overgrown statue trail into the wilderness.", rendered)
+        self.assertIn("*Follow the overgrown statue trail into the wilderness.", rendered)
+        self.assertNotIn("[PUZZLE]", rendered)
 
     def test_liars_circle_correct_answer_grants_blessing(self) -> None:
         player = build_character(
@@ -7436,7 +7542,7 @@ class CoreTests(unittest.TestCase):
             base_ability_scores={"STR": 15, "DEX": 10, "CON": 13, "INT": 8, "WIS": 12, "CHA": 14},
             class_skill_choices=["Athletics", "Intimidation"],
         )
-        answers = iter(["3", "1"])
+        answers = iter(["3", "1", "1"])
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=lambda _: None, rng=random.Random(11))
         game.state = GameState(player=player, current_scene="road_ambush", clues=[], journal=[])
         game.run_encounter = lambda encounter: "victory"
@@ -7452,7 +7558,7 @@ class CoreTests(unittest.TestCase):
             base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
             class_skill_choices=["Athletics", "Survival"],
         )
-        answers = iter(["1", "1"])
+        answers = iter(["1", "1", "1"])
         captures: list[list[dict[str, int]]] = []
 
         def fake_run(encounter):
@@ -7476,7 +7582,7 @@ class CoreTests(unittest.TestCase):
             base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
             class_skill_choices=["Athletics", "Survival"],
         )
-        answers = iter(["3", "1"])
+        answers = iter(["3", "1", "1"])
         captures: list[list[dict[str, int]]] = []
 
         def fake_run(encounter):
@@ -7499,7 +7605,7 @@ class CoreTests(unittest.TestCase):
             base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
             class_skill_choices=["Athletics", "Survival"],
         )
-        answers = iter(["3", "1"])
+        answers = iter(["3", "1", "1"])
         log: list[str] = []
 
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(113))
@@ -7600,7 +7706,7 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(15))
         game.state = GameState(player=player, inventory={"potion_healing": 1}, current_scene="road_ambush")
         options = game.get_player_combat_options(player, SimpleNamespace(allow_parley=True, allow_flee=True))
-        self.assertIn("Attack with Divine Smite", options)
+        self.assertIn("Attack with Divine Smite (4 MP, on hit)", options)
         self.assertIn("[PERSUASION / INTIMIDATION] Attempt Parley", options)
         self.assertIn("[STEALTH] Try to Flee", options)
         self.assertIn("Drink a Healing Potion", options)
@@ -7686,8 +7792,8 @@ class CoreTests(unittest.TestCase):
             turn_state=TurnState(bonus_action_spell_cast=True),
             heroes=[player],
         )
-        self.assertIn("Cast Sacred Flame", options)
-        self.assertNotIn("Cast Cure Wounds", options)
+        self.assertIn("Cast Sacred Flame (1 MP)", options)
+        self.assertNotIn("Cast Cure Wounds (3 MP)", options)
 
     def test_healing_word_is_bonus_action_and_still_allows_action_cantrip(self) -> None:
         player = build_character(
@@ -7957,6 +8063,9 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(spell_slot_counts(wizard, maximum=True), {1: 2})
         self.assertEqual(spell_slot_counts(warlock, maximum=True), {1: 1})
         self.assertEqual(spell_slot_counts(paladin, maximum=True), {})
+        self.assertEqual(magic_point_summary(wizard), "12/12")
+        self.assertEqual(magic_point_summary(warlock), "10/10")
+        self.assertEqual(magic_point_summary(paladin), "5/5")
         self.assertNotIn("spell_slots", wizard.resources)
         self.assertNotIn("spell_slots", warlock.resources)
 
@@ -7984,6 +8093,24 @@ class CoreTests(unittest.TestCase):
         game.scale_level_resources(paladin)
         self.assertEqual(spell_slot_counts(wizard, maximum=True), {1: 4, 2: 2})
         self.assertEqual(spell_slot_counts(paladin, maximum=True), {1: 4, 2: 2})
+        self.assertEqual(magic_point_summary(wizard), "20/20")
+        self.assertEqual(magic_point_summary(paladin), "16/16")
+
+    def test_state_integrity_adds_missing_mp_to_old_spellcaster_save(self) -> None:
+        wizard = build_character(
+            name="Nyra",
+            race="Elf",
+            class_name="Wizard",
+            background="Sage",
+            base_ability_scores={"STR": 8, "DEX": 14, "CON": 12, "INT": 15, "WIS": 13, "CHA": 10},
+            class_skill_choices=["Arcana", "Investigation"],
+        )
+        wizard.resources.pop("mp", None)
+        wizard.max_resources.pop("mp", None)
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(16011))
+        game.state = GameState(player=wizard, current_scene="phandalin_hub")
+        game.ensure_state_integrity()
+        self.assertEqual(magic_point_summary(wizard), "12/12")
 
     def test_warlock_short_rest_restores_pact_slots(self) -> None:
         warlock = build_character(
@@ -7998,9 +8125,11 @@ class CoreTests(unittest.TestCase):
         warlock.level = 3
         game.scale_level_resources(warlock)
         warlock.resources["spell_slots_2"] = 0
+        warlock.resources["mp"] = 0
         game.state = GameState(player=warlock, current_scene="phandalin_hub", short_rests_remaining=2)
         game.short_rest()
         self.assertEqual(warlock.resources["spell_slots_2"], warlock.max_resources["spell_slots_2"])
+        self.assertEqual(warlock.resources["mp"], warlock.max_resources["mp"])
         self.assertEqual(game.state.short_rests_remaining, 1)
 
     def test_long_rest_consumes_supply_points_and_resets_short_rests(self) -> None:
@@ -8130,6 +8259,40 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.player.current_hp, min(player.max_hp, 1 + ((player.max_hp + 1) // 2)))
         self.assertEqual(game.state.short_rests_remaining, 1)
 
+    def test_short_rest_restores_half_maximum_mp_rounded_up(self) -> None:
+        player = build_character(
+            name="Ash",
+            race="Human",
+            class_name="Cleric",
+            background="Acolyte",
+            base_ability_scores={"STR": 10, "DEX": 12, "CON": 13, "INT": 10, "WIS": 15, "CHA": 14},
+            class_skill_choices=["Medicine", "Persuasion"],
+        )
+        player.resources["mp"] = 0
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(1702))
+        game.state = GameState(player=player, current_scene="phandalin_hub", short_rests_remaining=2)
+        game.short_rest()
+        self.assertEqual(player.resources["mp"], (player.max_resources["mp"] + 1) // 2)
+        self.assertEqual(game.state.short_rests_remaining, 1)
+
+    def test_spell_slot_restore_consumable_restores_mp(self) -> None:
+        player = build_character(
+            name="Nyra",
+            race="Elf",
+            class_name="Wizard",
+            background="Sage",
+            base_ability_scores={"STR": 8, "DEX": 14, "CON": 12, "INT": 15, "WIS": 13, "CHA": 10},
+            class_skill_choices=["Arcana", "Investigation"],
+        )
+        player.resources["mp"] = 0
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(1703))
+        game.state = GameState(player=player, current_scene="phandalin_hub", inventory={"resonance_tonic": 1})
+        self.assertTrue(game.use_item_from_inventory())
+        self.assertEqual(player.resources["mp"], 4)
+        self.assertNotIn("resonance_tonic", game.state.inventory)
+        self.assertIn("restores 4 MP", self.plain_output(log))
+
     def test_long_rest_restores_spell_slots_for_player_and_companion(self) -> None:
         player = build_character(
             name="Nyra",
@@ -8154,8 +8317,10 @@ class CoreTests(unittest.TestCase):
         game.scale_level_resources(companion)
         player.resources["spell_slots_1"] = 0
         player.resources["spell_slots_2"] = 1
+        player.resources["mp"] = 0
         companion.resources["spell_slots_1"] = 1
         companion.resources["spell_slots_2"] = 0
+        companion.resources["mp"] = 2
         game.state = GameState(
             player=player,
             companions=[companion],
@@ -8165,6 +8330,8 @@ class CoreTests(unittest.TestCase):
         game.long_rest()
         self.assertEqual(spell_slot_counts(player), spell_slot_counts(player, maximum=True))
         self.assertEqual(spell_slot_counts(companion), spell_slot_counts(companion, maximum=True))
+        self.assertEqual(player.resources["mp"], player.max_resources["mp"])
+        self.assertEqual(companion.resources["mp"], companion.max_resources["mp"])
 
     def test_long_rest_does_not_revive_dead_companions(self) -> None:
         player = build_character(
@@ -8189,7 +8356,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(companion.dead)
         self.assertEqual(companion.current_hp, 0)
 
-    def test_magic_missile_uses_highest_available_slot_when_lower_slots_are_empty(self) -> None:
+    def test_magic_missile_spends_mp_without_spending_spell_slots(self) -> None:
         wizard = build_character(
             name="Nyra",
             race="Elf",
@@ -8204,11 +8371,34 @@ class CoreTests(unittest.TestCase):
         game.scale_level_resources(wizard)
         wizard.resources["spell_slots_1"] = 0
         wizard.resources["spell_slots_2"] = 2
+        mp_before = current_magic_points(wizard)
         expressions: list[str] = []
         game.roll_with_display_bonus = lambda expression, **kwargs: expressions.append(expression) or SimpleNamespace(total=10)
         game.cast_magic_missile(wizard, target)
-        self.assertEqual(expressions, ["4d4+4"])
-        self.assertEqual(wizard.resources["spell_slots_2"], 1)
+        self.assertEqual(expressions, ["3d4+3"])
+        self.assertEqual(current_magic_points(wizard), mp_before - 5)
+        self.assertEqual(wizard.resources["spell_slots_2"], 2)
+
+    def test_spell_with_insufficient_mp_does_not_resolve(self) -> None:
+        wizard = build_character(
+            name="Nyra",
+            race="Elf",
+            class_name="Wizard",
+            background="Sage",
+            base_ability_scores={"STR": 8, "DEX": 14, "CON": 12, "INT": 15, "WIS": 13, "CHA": 10},
+            class_skill_choices=["Arcana", "Investigation"],
+        )
+        target = create_enemy("goblin_skirmisher")
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(1605))
+        wizard.resources["mp"] = 4
+        expressions: list[str] = []
+        game.roll_with_display_bonus = lambda expression, **kwargs: expressions.append(expression) or SimpleNamespace(total=10)
+        game.cast_magic_missile(wizard, target)
+        self.assertEqual(expressions, [])
+        self.assertEqual(target.current_hp, target.max_hp)
+        self.assertEqual(current_magic_points(wizard), 4)
+        self.assertIn("needs 5 MP to cast Magic Missile", self.plain_output(log))
 
     def test_camp_menu_shows_revivify_option_for_dead_companion(self) -> None:
         player = build_character(

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import replace
 
 from ...dice import ability_modifier
+from ...gameplay.magic_points import synchronize_magic_points
 from ...gameplay.spell_slots import synchronize_spell_slots
 from ...models import Armor, Character, Weapon
 from .companions import apply_companion_profile
@@ -65,6 +66,7 @@ def build_character(
         archetype=class_name.lower(),
     )
     synchronize_spell_slots(character, refill=True)
+    synchronize_magic_points(character, refill=True)
     return character
 
 

@@ -1,0 +1,652 @@
+{
+  "player": {
+    "name": "Brakka Stonewake",
+    "race": "Goliath",
+    "class_name": "Barbarian",
+    "background": "Outlander",
+    "level": 3,
+    "ability_scores": {
+      "STR": 17,
+      "DEX": 13,
+      "CON": 15,
+      "INT": 8,
+      "WIS": 12,
+      "CHA": 10
+    },
+    "skill_proficiencies": [
+      "Athletics",
+      "Intimidation",
+      "Perception",
+      "Survival"
+    ],
+    "saving_throw_proficiencies": [
+      "STR",
+      "CON"
+    ],
+    "features": [
+      "primal_tenacity",
+      "rage",
+      "reckless_pressure",
+      "stone_endurance",
+      "unarmored_defense_barbarian"
+    ],
+    "weapon": {
+      "name": "Roadworn Greatsword",
+      "damage": "2d6",
+      "ability": "STR",
+      "weapon_type": "greatsword",
+      "to_hit_bonus": 0,
+      "damage_bonus": 0,
+      "finesse": false,
+      "ranged": false,
+      "hands_required": 2,
+      "properties": [
+        "heavy",
+        "two-handed"
+      ]
+    },
+    "armor": null,
+    "hit_die": 12,
+    "current_hp": 24,
+    "max_hp": 32,
+    "shield": false,
+    "spellcasting_ability": null,
+    "skill_expertise": [],
+    "bonus_proficiencies": [
+      "Herbalism Kit",
+      "One Musical Instrument"
+    ],
+    "resources": {
+      "rage": 2
+    },
+    "max_resources": {
+      "rage": 2
+    },
+    "inventory": {},
+    "conditions": {},
+    "equipment_bonuses": {
+      "Nature": 1,
+      "Survival": 1,
+      "damage": 1,
+      "initiative": 1,
+      "AC": 1
+    },
+    "gear_bonuses": {},
+    "notes": [
+      "Forager's kit: +1 to Nature and Survival checks.",
+      "A hard-charging bruiser tuned for high Strength, strong staying power, and fast frontline testing.",
+      "Preset build: optimized for faster testing and quick starts."
+    ],
+    "tags": [
+      "hero"
+    ],
+    "equipment_slots": {
+      "head": null,
+      "ring_1": null,
+      "ring_2": null,
+      "neck": null,
+      "chest": null,
+      "gloves": null,
+      "boots": null,
+      "main_hand": "greatsword_common",
+      "off_hand": null,
+      "cape": null
+    },
+    "archetype": "barbarian",
+    "companion_id": "",
+    "disposition": 0,
+    "lore": [],
+    "bond_flags": {
+      "story_skill_modifiers": {}
+    },
+    "relationship_bonuses": {},
+    "story_skill_bonuses": {},
+    "stable": false,
+    "dead": false,
+    "death_successes": 0,
+    "death_failures": 0,
+    "temp_hp": 0,
+    "xp_value": 0,
+    "gold_value": 0
+  },
+  "companions": [
+    {
+      "name": "Elira Dawnmantle",
+      "race": "Human",
+      "class_name": "Cleric",
+      "background": "Acolyte",
+      "level": 3,
+      "ability_scores": {
+        "STR": 11,
+        "DEX": 13,
+        "CON": 14,
+        "INT": 11,
+        "WIS": 16,
+        "CHA": 15
+      },
+      "skill_proficiencies": [
+        "History",
+        "Insight",
+        "Medicine",
+        "Persuasion",
+        "Religion"
+      ],
+      "saving_throw_proficiencies": [
+        "WIS",
+        "CHA"
+      ],
+      "features": [
+        "channel_divinity",
+        "cleric_spellcasting",
+        "disciple_of_life"
+      ],
+      "weapon": {
+        "name": "Roadworn Mace",
+        "damage": "1d6",
+        "ability": "STR",
+        "weapon_type": "mace",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": []
+      },
+      "armor": {
+        "name": "Roadworn Scale Mail",
+        "base_ac": 14,
+        "armor_type": "medium",
+        "dex_cap": 2,
+        "heavy": false,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 8,
+      "current_hp": 20,
+      "max_hp": 24,
+      "shield": true,
+      "spellcasting_ability": "WIS",
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Calligrapher's Supplies",
+        "Celestial"
+      ],
+      "resources": {
+        "spell_slots_1": 3,
+        "channel_divinity": 1,
+        "spell_slots_2": 2
+      },
+      "max_resources": {
+        "spell_slots_1": 4,
+        "channel_divinity": 1,
+        "spell_slots_2": 2
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Medicine": 1,
+        "Religion": 1,
+        "healing": 2
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Healer's satchel: +1 to Medicine and Religion checks.",
+        "A priestess of Tymora tending the frontier faithful in Phandalin.",
+        "A priestess of Tymora whose compassion is sharpened, not softened, by the frontier's cruelty."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "scale_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "mace_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "cleric",
+      "companion_id": "elira_dawnmantle",
+      "disposition": 1,
+      "lore": [
+        "Elira learned battlefield triage from roadside shrines that treated lumber crews, miners, and pilgrims with equal urgency.",
+        "She believes luck is not random mercy but a chance people build for one another with courage and timing.",
+        "Under stress she gets quieter, not colder, as though she is measuring every word for whether it heals or harms."
+      ],
+      "bond_flags": {
+        "talked_topics": [],
+        "story_skill_modifiers": {}
+      },
+      "relationship_bonuses": {},
+      "story_skill_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    },
+    {
+      "name": "Rhogar Valeguard",
+      "race": "Dragonborn",
+      "class_name": "Paladin",
+      "background": "Soldier",
+      "level": 3,
+      "ability_scores": {
+        "STR": 17,
+        "DEX": 10,
+        "CON": 13,
+        "INT": 8,
+        "WIS": 12,
+        "CHA": 15
+      },
+      "skill_proficiencies": [
+        "Athletics",
+        "Insight",
+        "Intimidation",
+        "Medicine",
+        "Persuasion"
+      ],
+      "saving_throw_proficiencies": [
+        "WIS",
+        "CHA"
+      ],
+      "features": [
+        "aura_of_resolve",
+        "divine_health",
+        "divine_smite",
+        "draconic_presence",
+        "lay_on_hands"
+      ],
+      "weapon": {
+        "name": "Roadworn Longsword",
+        "damage": "1d8",
+        "ability": "STR",
+        "weapon_type": "longsword",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": [
+          "versatile"
+        ]
+      },
+      "armor": {
+        "name": "Roadworn Chain Mail",
+        "base_ac": 16,
+        "armor_type": "heavy",
+        "dex_cap": 0,
+        "heavy": true,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 10,
+      "current_hp": 25,
+      "max_hp": 25,
+      "shield": true,
+      "spellcasting_ability": "CHA",
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Land Vehicles",
+        "Gaming Set"
+      ],
+      "resources": {
+        "lay_on_hands": 15,
+        "spell_slots_1": 1
+      },
+      "max_resources": {
+        "lay_on_hands": 15,
+        "spell_slots_1": 3
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Athletics": 1,
+        "Intimidation": 1,
+        "CON_save": 1,
+        "WIS_save": 1,
+        "AC": 1
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Veteran's kit: +1 to Athletics and Intimidation checks.",
+        "A dragonborn sworn to protect caravans on the road south of Neverwinter.",
+        "A dragonborn oathsworn who treats duty like a living thing that must be fed by action."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "chain_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "longsword_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "paladin",
+      "companion_id": "rhogar_valeguard",
+      "disposition": 0,
+      "lore": [
+        "Rhogar was raised among caravan wardens who believed a sworn road was as sacred as any temple threshold.",
+        "He carries every oath like a visible weight and grows restless whenever words are left unfinished.",
+        "His confidence comes easily, but his forgiveness does not; once broken, his trust has to be rebuilt with deeds."
+      ],
+      "bond_flags": {
+        "talked_topics": [],
+        "story_skill_modifiers": {}
+      },
+      "relationship_bonuses": {},
+      "story_skill_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    },
+    {
+      "name": "Tolan Ironshield",
+      "race": "Dwarf",
+      "class_name": "Fighter",
+      "background": "Soldier",
+      "level": 3,
+      "ability_scores": {
+        "STR": 15,
+        "DEX": 10,
+        "CON": 16,
+        "INT": 8,
+        "WIS": 12,
+        "CHA": 13
+      },
+      "skill_proficiencies": [
+        "Acrobatics",
+        "Animal Handling",
+        "Athletics",
+        "Intimidation",
+        "Perception",
+        "Survival"
+      ],
+      "saving_throw_proficiencies": [
+        "STR",
+        "CON"
+      ],
+      "features": [
+        "action_surge",
+        "darkvision",
+        "dwarven_resilience",
+        "improved_critical",
+        "second_wind"
+      ],
+      "weapon": {
+        "name": "Roadworn Longsword",
+        "damage": "1d8",
+        "ability": "STR",
+        "weapon_type": "longsword",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": [
+          "versatile"
+        ]
+      },
+      "armor": {
+        "name": "Roadworn Chain Mail",
+        "base_ac": 16,
+        "armor_type": "heavy",
+        "dex_cap": 0,
+        "heavy": true,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 10,
+      "current_hp": 31,
+      "max_hp": 31,
+      "shield": true,
+      "spellcasting_ability": null,
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Land Vehicles",
+        "Gaming Set"
+      ],
+      "resources": {
+        "second_wind": 1,
+        "action_surge": 0
+      },
+      "max_resources": {
+        "second_wind": 1,
+        "action_surge": 1
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Athletics": 1,
+        "Intimidation": 1
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Veteran's kit: +1 to Athletics and Intimidation checks.",
+        "A caravan guard from Neverwinter with a shield wall mindset.",
+        "A dwarven shield veteran who measures people by whether they hold the line when it matters."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "chain_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "longsword_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "fighter",
+      "companion_id": "tolan_ironshield",
+      "disposition": 0,
+      "lore": [
+        "Tolan served on caravan routes out of Neverwinter for two decades, long enough to see three trade leagues fail and two rise in their place.",
+        "He still carries a notched tower-shield rivet from the ambush that killed his older brother near the Mere of Dead Men.",
+        "He trusts steady action more than speeches, but remembers every promise anyone makes in his hearing."
+      ],
+      "bond_flags": {
+        "talked_topics": [],
+        "story_skill_modifiers": {}
+      },
+      "relationship_bonuses": {},
+      "story_skill_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    }
+  ],
+  "camp_companions": [],
+  "current_act": 1,
+  "current_scene": "road_ambush",
+  "flags": {
+    "act1_started": true,
+    "map_state": {
+      "current_node_id": "high_road_ambush",
+      "current_dungeon_id": null,
+      "current_room_id": null,
+      "visited_nodes": [
+        "high_road_ambush",
+        "wayside_luck_shrine",
+        "greywake_triage_yard",
+        "greywake_road_breakout",
+        "neverwinter_briefing"
+      ],
+      "cleared_rooms": [],
+      "seen_story_beats": [],
+      "node_history": [
+        "neverwinter_briefing"
+      ],
+      "room_history": []
+    },
+    "background_prologue_completed": "Outlander",
+    "system_profile_seeded": true,
+    "wayside_luck_shrine_seen": true,
+    "wayside_luck_bell_seen": true,
+    "elira_first_contact": true,
+    "neverwinter_elira_met": true,
+    "elira_first_read": "steady_hands",
+    "introduced_characters": [
+      "Ashen Brand Enforcer",
+      "Elira Dawnmantle",
+      "Mira Thann",
+      "Oren Vale",
+      "Rhogar Valeguard",
+      "Tolan Ironshield"
+    ],
+    "wayside_aid_route": "wounded",
+    "elira_initial_trust_reason": "warm_trust",
+    "elira_helped": true,
+    "wayside_drover_stabilized": true,
+    "elira_wayside_recruit_attempted": true,
+    "elira_pre_neverwinter_recruited": true,
+    "elira_neverwinter_recruited": true,
+    "elira_first_companion": true,
+    "wayside_luck_bell_promised": true,
+    "greywake_triage_yard_seen": true,
+    "greywake_outcome_sorting_seen": true,
+    "greywake_yard_steadied": true,
+    "greywake_sorting_publicly_exposed": true,
+    "greywake_mira_evidence_kind": "yard_witnesses",
+    "greywake_attack_imminent": true,
+    "greywake_breakout_resolved": true,
+    "briefing_seen": true,
+    "greywake_mira_reacted": true,
+    "neverwinter_contract_house_seen": true,
+    "mira_q_need_initial": true,
+    "mira_q_elira_initial": true,
+    "early_companion_recruited": "Rhogar Valeguard",
+    "neverwinter_tymora_shrine_seen": true,
+    "neverwinter_high_road_milehouse_seen": true,
+    "neverwinter_false_writs_spotted": true,
+    "blackwake_millers_ford_lead": true,
+    "road_patrol_writ": true,
+    "neverwinter_milehouse_secured": true,
+    "neverwinter_signal_cairn_seen": true,
+    "road_reinforcement_signal_cut": true,
+    "road_second_wave_trail_read": true,
+    "neverwinter_signal_cairn_cleared": true,
+    "road_approach_chosen": true,
+    "road_ambush_wave_one_cleared": true
+  },
+  "clues": [
+    "The raiders are probing camps north of Phandalin, not just hitting wagons once they reach the frontier town itself.",
+    "Elira identifies an ash-bitter poison reaching victims before the road even enters Neverwinter.",
+    "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "Greywake witnesses heard clerks read outcome marks for travelers who had not arrived yet.",
+    "Mira accepts the Greywake witnesses as evidence that someone is pre-sorting road outcomes.",
+    "False roadwarden writs near Neverwinter point toward forged authority before Phandalin.",
+    "A signal cairn south of Neverwinter was meant to call a harder Ashen Brand wave onto the High Road.",
+    "A scorched badge on the first High Road raiders marks the Ashen Brand."
+  ],
+  "journal": [
+    "Your outlander's opening starts with the frontier itself sounding the warning before city officials ever get around to naming the threat.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
+    "Reward from Camp at First Light: 125 XP, 5 gp.",
+    "Reward from breaking the dawn raid: 15 XP, 5 gp.",
+    "Clue: The raiders are probing camps north of Phandalin, not just hitting wagons once they reach the frontier town itself.",
+    "Your outlander prologue ends with the trail leading toward Mira Thann's private briefing in Neverwinter.",
+    "Clue: Elira identifies an ash-bitter poison reaching victims before the road even enters Neverwinter.",
+    "Reward from helping Elira stabilize a poisoned drover: 10 XP.",
+    "Elira Dawnmantle joined the active party.",
+    "Clue: Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "Clue: Greywake witnesses heard clerks read outcome marks for travelers who had not arrived yet.",
+    "Reward from steadying Greywake Yard: 10 XP.",
+    "Reward from Greywake Road Breakout: 100 XP, 17 gp.",
+    "Looted Frontier Ale x1 from Greywake Road Breakout.",
+    "Looted Moonmint Drops x1 from Greywake Road Breakout.",
+    "Looted Roasted Nut Mix x1 from Greywake Road Breakout.",
+    "Looted Potion of Healing x1 from Greywake Road Breakout.",
+    "Looted Roadworn Shortbow x1 from Greywake Road Breakout.",
+    "Reward from holding Greywake Yard before the Neverwinter briefing: 25 XP, 8 gp.",
+    "You held Greywake Yard long enough to carry its outcome-marked manifest pressure into Mira Thann's briefing.",
+    "Clue: Mira accepts the Greywake witnesses as evidence that someone is pre-sorting road outcomes.",
+    "Mira Thann treated Greywake's outcome marks as concrete proof that the Ashen Brand is coordinating losses, not merely causing them.",
+    "Rhogar Valeguard joined the active party.",
+    "Clue: False roadwarden writs near Neverwinter point toward forged authority before Phandalin.",
+    "Reward from High Road Milehouse Intercept: 160 XP, 25 gp.",
+    "Looted Antitoxin Vial x1 from High Road Milehouse Intercept.",
+    "Looted Frontier Ale x1 from High Road Milehouse Intercept.",
+    "Looted Roadworn Leather Armor x1 from High Road Milehouse Intercept.",
+    "Looted Moonmint Drops x1 from High Road Milehouse Intercept.",
+    "Looted Roasted Nut Mix x1 from High Road Milehouse Intercept.",
+    "Reward from securing the High Road milehouse: 20 XP, 5 gp.",
+    "You secured a Neverwinter-side milehouse and chose how the road south would open.",
+    "Clue: A signal cairn south of Neverwinter was meant to call a harder Ashen Brand wave onto the High Road.",
+    "Reward from Neverwinter Wood Signal Cairn: 175 XP, 20 gp.",
+    "Looted Bread Round x1 from Neverwinter Wood Signal Cairn.",
+    "Looted Moonmint Drops x1 from Neverwinter Wood Signal Cairn.",
+    "Looted Potion of Healing x1 from Neverwinter Wood Signal Cairn.",
+    "Reward from silencing the Neverwinter Wood signal cairn: 15 XP, 4 gp.",
+    "You found and broke a signal cairn meant to harden the High Road ambush.",
+    "Mira Thann sent you south with a writ for Phandalin's steward.",
+    "Reward from Roadside Ambush: First Wave: 212 XP, 8 gp.",
+    "Looted Bread Round x1 from Roadside Ambush: First Wave.",
+    "Looted Roadworn Leather Armor x1 from Roadside Ambush: First Wave.",
+    "Looted Potion of Healing x1 from Roadside Ambush: First Wave.",
+    "Clue: A scorched badge on the first High Road raiders marks the Ashen Brand.",
+    "Reward from breaking the first High Road wave: 15 XP, 8 gp.",
+    "Tolan Ironshield joined the active party.",
+    "Reward from High Road Second Wave: 225 XP, 31 gp.",
+    "Looted Roasted Nut Mix x1 from High Road Second Wave.",
+    "Reward from High Road Second Wave: 250 XP, 33 gp.",
+    "Looted Moonmint Drops x1 from High Road Second Wave.",
+    "Reward from High Road Second Wave: 300 XP, 39 gp.",
+    "Looted Dried Fish x1 from High Road Second Wave."
+  ],
+  "quests": {},
+  "completed_acts": [],
+  "xp": 1907,
+  "gold": 261,
+  "inventory": {
+    "potion_healing": 7,
+    "bread_round": 6,
+    "travel_biscuits": 4,
+    "dried_fish": 4,
+    "goat_cheese": 2,
+    "frontier_ale": 4,
+    "root_vegetables": 2,
+    "antitoxin_vial": 2,
+    "greatsword_common": 1,
+    "scale_mail_common": 1,
+    "mace_common": 1,
+    "shield_common": 3,
+    "moonmint_drops": 5,
+    "nut_mix": 4,
+    "shortbow_common": 1,
+    "chain_mail_common": 2,
+    "longsword_common": 2,
+    "leather_armor_common": 2
+  },
+  "short_rests_remaining": 2
+}

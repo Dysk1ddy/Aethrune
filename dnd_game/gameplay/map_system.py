@@ -60,6 +60,7 @@ ACT1_MAP_FLAG_NAMES = _collect_blueprint_flag_names(ACT1_HYBRID_MAP)
 ACT2_MAP_FLAG_NAMES = _collect_blueprint_flag_names(ACT2_ENEMY_DRIVEN_MAP)
 ACT1_SCENE_TO_NODE_ID = {node.scene_key: node_id for node_id, node in ACT1_HYBRID_MAP.nodes.items()}
 ACT2_SCENE_TO_NODE_ID = {node.scene_key: node_id for node_id, node in ACT2_ENEMY_DRIVEN_MAP.nodes.items()}
+ACT1_HIGH_ROAD_SIDE_BRANCH_NODE_IDS = {"liars_circle", "false_checkpoint", "false_tollstones"}
 DUNGEON_DIRECTION_ORDER = {
     "NORTH": 0,
     "EAST": 2,
@@ -884,6 +885,8 @@ class MapSystemMixin:
         self.travel_to_act1_node("road_decision_post_blackwake", transition_text=text)
 
     def _act1_overworld_backtrack_allowed(self, current_node_id: str, candidate_node_id: str) -> bool:
+        if current_node_id == "phandalin_hub" and candidate_node_id in ACT1_HIGH_ROAD_SIDE_BRANCH_NODE_IDS:
+            return False
         return candidate_node_id in ACT1_HYBRID_MAP.nodes and candidate_node_id != current_node_id
 
     def peek_act1_overworld_backtrack_node(self):

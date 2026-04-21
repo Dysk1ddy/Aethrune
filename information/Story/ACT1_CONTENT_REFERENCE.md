@@ -6,7 +6,7 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 
 ## Act 1 Scope
 
-- Opening arc: background prologue -> Wayside Luck Shrine -> Greywake Triage Yard -> Greywake Road Breakout -> Neverwinter briefing -> High Road ambush -> Phandalin hub
+- Opening arc: background prologue -> Wayside Luck Shrine -> Greywake Triage Yard -> Greywake Road Breakout -> Neverwinter briefing -> High Road ambush -> cleared High Road branch menu -> Phandalin hub
 - Branching middle route: `Old Owl Well` and `Wyvern Tor` can be tackled in either order, with a hidden optional strike into `Cinderfall Ruins`
 - Convergence points: Stonehill war-room event, Ashfall Watch assault, Phandalin lantern vigil
 - Late route: `Tresendar Manor` -> `Emberhall Cellars`
@@ -22,7 +22,7 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 1. Background-specific opening encounter or shortcut, then shared pre-Neverwinter Elira/Greywake sequence:
    Wayside Luck Shrine -> Greywake Triage Yard -> Greywake Road Breakout
 2. Neverwinter setup, briefing, contract-house social hub, and optional Mira-assigned road companion
-3. High Road ambush and Tolan recruitment point, with optional post-ambush side branches into `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones`
+3. High Road ambush and Tolan recruitment point, then a cleared-road travel choice with optional side branches into `Liar's Circle`, `False Roadwarden Checkpoint`, and `False Tollstones` before Phandalin
 4. Phandalin arrival, inn / shrine / shop / steward loops, orchard / exchange hubs, and a possible early `Cinderfall` reveal on a strong `Insight` read
    - Edermath Orchard can also reveal Daran's old adventurer's cache: a `Stealth` DC 12 route to recover `edermath_cache_compass`, or a watcher encounter on failure.
 5. Old Owl Well route:
@@ -45,7 +45,7 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
 
 ## Drafted Future Inserts
 
-- `information/Story/HIGH_ROAD_LIARS_CIRCLE_PUZZLE_DRAFT.md`: optional post-ambush High Road wilderness branch built around four lying statues, with `Liar's Blessing` or `Liar's Curse` social-skill consequences.
+- `information/Story/HIGH_ROAD_LIARS_CIRCLE_PUZZLE_DRAFT.md`: implemented post-ambush High Road wilderness branch built around four lying statues, with `Liar's Blessing` or `Liar's Curse` social-skill consequences.
 - `information/Story/ACT1_PRE_NEVERWINTER_ELIRA_DRAFT.md`: implemented shared pre-Neverwinter opening insert that introduces Elira as the first companion candidate, gives her two early recruitment chances before the second major combat, and preserves the Phandalin shrine fallback.
 - `information/Story/MIRA_NEVERWINTER_DIALOGUE_DRAFT.md`: implemented expanded Mira Thann question dialogue for the first Neverwinter briefing, conditional Greywake/Elira/Blackwake responses, and return-to-Neverwinter debriefs after Phandalin-side progress.
 - `information/Story/COMPANION_CAMP_BANTER_DRAFT.md`: implemented companion-to-companion camp banter registry, Act 1 and Act 2 branching dialogue, gameplay and relationship consequences, and Act 3 secret-architect guardrails for keeping the second villain hidden until the planned midpoint reveal.
@@ -299,7 +299,11 @@ The summary sections at the top reflect the expanded Act 1 route and should be t
   - extra reward: `25 XP`, `15 gp`
   - Tolan can be recruited immediately or left waiting at the inn
 - Post-ambush side branches:
-  - `Liar's Circle`: a four-statue logic puzzle that grants `Liar's Blessing` or applies `Liar's Curse`
+  - after the second wave, the cleared High Road scene reopens instead of auto-entering Phandalin
+  - unlocked side branches use plain action labels rather than redundant `[PUZZLE]`, `[PARLEY]`, or `[SOCIAL]` tags
+  - side-branch returns travel to `phandalin_hub` without recording the side detour as the next backtrack target
+  - Phandalin backtracking skips resolved High Road side-detour nodes and points back to the main High Road route
+  - `Liar's Circle`: a four-statue logic puzzle that grants `Liar's Blessing` and `200 XP`, or applies `Liar's Curse`
   - `False Roadwarden Checkpoint`: a non-combat social stop with Deception, Insight, Persuasion, Intimidation, or Oren/Sabra/Garren proof
   - `False Tollstones`: a broken milemarker operation that changes if the player has `Liar's Blessing`
 
@@ -361,6 +365,18 @@ These flags show up repeatedly in Act 1 flow and are useful when debugging saves
 - `elira_phandalin_recruited`
 - `early_companion_recruited`
 - `road_approach_chosen`
+- `road_ambush_wave_one_cleared`
+- `road_ambush_wave_two_cleared`
+- `road_ambush_cleared`
+- `liars_circle_branch_available`
+- `liars_circle_seen`
+- `liars_circle_solved`
+- `liars_circle_failed`
+- `liars_circle_locked`
+- `high_road_false_checkpoint_available`
+- `high_road_false_checkpoint_resolved`
+- `high_road_tollstones_branch_available`
+- `high_road_tollstones_resolved`
 - `tolan_waiting_at_inn`
 - `inn_recruit_bryn_attempted`
 - `shrine_recruit_attempted`

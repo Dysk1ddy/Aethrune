@@ -4,7 +4,8 @@ from ..models import ABILITY_ORDER, SKILL_TO_ABILITY
 from ..items import get_item
 from ..ui.colors import rich_style_name, strip_ansi
 from ..ui.rich_render import Columns, Group, Panel, Table, box
-from .spell_slots import is_spell_slot_resource, spell_slot_summary
+from .magic_points import MAGIC_POINT_RESOURCE, magic_point_summary
+from .spell_slots import is_spell_slot_resource
 
 
 class JournalMixin:
@@ -34,7 +35,9 @@ class JournalMixin:
         if not visible_resources:
             return "None"
         return ", ".join(
-            f"{name.replace('_', ' ')} {member.resources.get(name, 0)}/{member.max_resources.get(name, 0)}"
+            f"MP {member.resources.get(name, 0)}/{member.max_resources.get(name, 0)}"
+            if name == MAGIC_POINT_RESOURCE
+            else f"{name.replace('_', ' ')} {member.resources.get(name, 0)}/{member.max_resources.get(name, 0)}"
             for name in visible_resources
         )
 
@@ -44,10 +47,11 @@ class JournalMixin:
             relationship_line = self.rich_from_ansi(
                 f"Relationship: {self.relationship_label_for(member)} ({member.disposition})"
             )
+        mp = f" | MP {magic_point_summary(member)}" if member.max_resources.get(MAGIC_POINT_RESOURCE, 0) > 0 else ""
         details = [
             self.rich_from_ansi(f"Level {member.level} {member.race} {member.class_name}"),
             self.rich_from_ansi(
-                f"{self.character_health_summary(member)} | AC {member.armor_class} | Temp HP {member.temp_hp}"
+                f"{self.character_health_summary(member)} | AC {member.armor_class}{mp} | Temp HP {member.temp_hp}"
             ),
             self.rich_from_ansi(f"Conditions: {self.character_condition_summary(member)}"),
         ]
@@ -121,7 +125,7 @@ class JournalMixin:
             spell_attack = self.spell_attack_bonus(member, member.spellcasting_ability)
             combat.add_row("Spellcasting", member.spellcasting_ability)
             combat.add_row("Spell attack", f"+{spell_attack}")
-            combat.add_row("Spell slots", spell_slot_summary(member))
+            combat.add_row("MP", magic_point_summary(member))
 
         saves = Table(box=box.SIMPLE_HEAVY, expand=True, pad_edge=False)
         saves.add_column("Save", style=f"bold {rich_style_name('light_aqua')}")
@@ -537,7 +541,7 @@ class JournalMixin:
             spell_attack = self.spell_attack_bonus(member, member.spellcasting_ability)
             self.output_fn(
                 f"- Spellcasting: {member.spellcasting_ability} | spell attack +{spell_attack} | "
-                f"spell slots {spell_slot_summary(member)}"
+                f"MP {magic_point_summary(member)}"
             )
         story_modifiers = self.story_skill_modifier_display_lines(member)
         if story_modifiers:

@@ -7,7 +7,7 @@ from ..items import ITEMS
 from ..ui.colors import rich_style_name
 from ..ui.rich_render import Group, Panel, box
 from .difficulty_policy import ACT_DIFFICULTY_BANDS, clamp_dc_to_band
-from .spell_slots import spend_spell_slot
+from .magic_points import current_magic_points, magic_point_cost, magic_point_summary, spend_magic_points
 
 
 class CombatResolutionMixin:
@@ -34,6 +34,16 @@ class CombatResolutionMixin:
             context_label=context_label,
             outcome_kind=outcome_kind,
         )
+
+    def spend_mp_for_spell(self, caster, spell_id: str, spell_name: str) -> bool:
+        cost = magic_point_cost(spell_id)
+        if spend_magic_points(caster, cost):
+            return True
+        self.say(
+            f"{self.style_name(caster)} needs {cost} MP to cast {spell_name}, "
+            f"but has {current_magic_points(caster)} MP."
+        )
+        return False
 
     def equipped_weapon_item(self, actor):
         return ITEMS.get(actor.equipment_slots.get("main_hand", "")) if getattr(actor, "equipment_slots", None) else None
@@ -230,12 +240,11 @@ class CombatResolutionMixin:
             martial_bonus = None
             smite = None
             if use_smite and attacker.class_name == "Paladin":
-                smite_slot_level = spend_spell_slot(attacker, minimum_level=1)
-                if smite_slot_level is None:
-                    self.say(f"{self.style_name(attacker)} reaches for divine wrath but has no spell slots left.")
+                if not self.spend_mp_for_spell(attacker, "divine_smite", "Divine Smite"):
+                    self.say(f"{self.style_name(attacker)} reaches for divine wrath, but the light will not answer.")
                 else:
                     smite = self.roll_with_animation_context(
-                        f"{smite_slot_level + 1}d8",
+                        "2d8",
                         critical=critical_hit,
                         style="damage",
                         context_label="Divine Smite",
@@ -499,6 +508,8 @@ class CombatResolutionMixin:
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} hesitates and cannot turn Sacred Flame on an enemy while Charmed.")
             return
+        if not self.spend_mp_for_spell(caster, "sacred_flame", "Sacred Flame"):
+            return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
             play_attack_sound_for(caster)
@@ -524,13 +535,11 @@ class CombatResolutionMixin:
             self.apply_status(target, "reeling", 1, source="radiant force")
 
     def cast_cure_wounds(self, caster, target) -> None:
-        slot_level = spend_spell_slot(caster, minimum_level=1)
-        if slot_level is None:
-            self.say(f"{self.style_name(caster)} is out of spell slots.")
+        if not self.spend_mp_for_spell(caster, "cure_wounds", "Cure Wounds"):
             return
         ability = "CHA" if caster.class_name in {"Bard", "Paladin"} else "WIS"
         amount = self.roll_with_animation_context(
-            f"{slot_level}d8",
+            "1d8",
             style="healing",
             context_label="Cure Wounds",
             outcome_kind="healing",
@@ -542,13 +551,11 @@ class CombatResolutionMixin:
         self.say(f"{self.style_name(caster)} restores {self.style_healing(healed)} hit points to {self.style_name(target)}.")
 
     def cast_healing_word(self, caster, target) -> None:
-        slot_level = spend_spell_slot(caster, minimum_level=1)
-        if slot_level is None:
-            self.say(f"{self.style_name(caster)} is out of spell slots.")
+        if not self.spend_mp_for_spell(caster, "healing_word", "Healing Word"):
             return
         ability = "CHA" if caster.class_name == "Bard" else "WIS"
         amount = self.roll_with_animation_context(
-            f"{slot_level}d4",
+            "1d4",
             style="healing",
             context_label="Healing Word",
             outcome_kind="healing",
@@ -562,6 +569,8 @@ class CombatResolutionMixin:
     def cast_fire_bolt(self, caster, target, dodging) -> None:
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} cannot hurl Fire Bolt at an enemy while Charmed.")
+            return
+        if not self.spend_mp_for_spell(caster, "fire_bolt", "Fire Bolt"):
             return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
@@ -613,6 +622,8 @@ class CombatResolutionMixin:
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} cannot lash out with Produce Flame while Charmed.")
             return
+        if not self.spend_mp_for_spell(caster, "produce_flame", "Produce Flame"):
+            return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
             play_attack_sound_for(caster)
@@ -663,15 +674,13 @@ class CombatResolutionMixin:
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} cannot direct Magic Missile at an enemy while Charmed.")
             return
+        if not self.spend_mp_for_spell(caster, "magic_missile", "Magic Missile"):
+            return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
             play_attack_sound_for(caster)
         try:
-            slot_level = spend_spell_slot(caster, minimum_level=1)
-            if slot_level is None:
-                self.say(f"{self.style_name(caster)} is out of spell slots.")
-                return
-            dart_count = slot_level + 2
+            dart_count = 3
             actual = self.apply_damage(
                 target,
                 self.roll_with_display_bonus(
@@ -691,6 +700,8 @@ class CombatResolutionMixin:
     def cast_vicious_mockery(self, caster, target) -> None:
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} cannot weaponize a cutting remark while Charmed.")
+            return
+        if not self.spend_mp_for_spell(caster, "vicious_mockery", "Vicious Mockery"):
             return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
@@ -723,6 +734,8 @@ class CombatResolutionMixin:
     def cast_eldritch_blast(self, caster, target, dodging) -> None:
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} cannot level Eldritch Blast at an enemy while Charmed.")
+            return
+        if not self.spend_mp_for_spell(caster, "eldritch_blast", "Eldritch Blast"):
             return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
@@ -1400,13 +1413,14 @@ class CombatResolutionMixin:
         active_conditions = [self.status_name(name) for name, value in creature.conditions.items() if value != 0]
         conditions = f" ({', '.join(active_conditions)})" if active_conditions else ""
         temp = f", temp {creature.temp_hp}" if creature.temp_hp else ""
+        mp = f", MP {magic_point_summary(creature)}" if creature.max_resources.get("mp", 0) > 0 else ""
         if creature.dead:
             return f"{self.style_name(creature)}: {self.format_health_bar(0, creature.max_hp)} (dead){conditions}"
         if creature.current_hp == 0 and not creature.dead:
             return f"{self.style_name(creature)}: {self.format_health_bar(0, creature.max_hp)} (down){conditions}"
         return (
             f"{self.style_name(creature)}: {self.format_health_bar(creature.current_hp, creature.max_hp)}, "
-            f"AC {self.effective_armor_class(creature)}{temp}{conditions}"
+            f"AC {self.effective_armor_class(creature)}{temp}{mp}{conditions}"
         )
 
     def handle_defeat(self, reason: str) -> None:

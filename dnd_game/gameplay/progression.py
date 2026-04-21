@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..content import CLASS_LEVEL_PROGRESSION, CLASSES
+from .magic_points import synchronize_magic_points
 from .spell_slots import synchronize_spell_slots
 from ..models import Character
 from .constants import LEVEL_XP_THRESHOLDS
@@ -102,6 +103,7 @@ class ProgressionMixin:
 
     def scale_level_resources(self, actor: Character, *, refill: bool = True) -> None:
         synchronize_spell_slots(actor, refill=refill)
+        synchronize_magic_points(actor, refill=refill)
         if actor.class_name == "Paladin":
             actor.max_resources["lay_on_hands"] = actor.level * 5
             if refill:

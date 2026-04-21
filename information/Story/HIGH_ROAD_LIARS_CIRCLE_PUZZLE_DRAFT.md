@@ -1,6 +1,14 @@
 # High Road Puzzle Draft: The Liars' Circle
 
-This draft describes an optional wilderness puzzle branch that can be inserted after the High Road ambush and before Phandalin arrival.
+This draft describes the now-implemented optional wilderness puzzle branch after the High Road ambush and before Phandalin arrival.
+
+## Implementation Status
+
+- Implemented scene id: `high_road_liars_circle`
+- The branch unlocks after both High Road ambush waves are cleared.
+- The cleared High Road scene now reopens as a travel menu before Phandalin, offering the south road, `BACKTRACK` when available, and unlocked side branches.
+- The Liar's Circle inspection and answer options use plain action/quoted labels instead of redundant skill tags.
+- Returning from the branch travels to `phandalin_hub` without recording the side branch as the next backtrack node, so later Phandalin backtracking points back to the meaningful High Road route.
 
 ## Placement
 
@@ -31,18 +39,21 @@ liars_curse_active
 
 ## Branch Entry
 
-After the ambush, the party finds a side path cutting away from the churned road. It should feel optional, but tempting.
+After the ambush, the party finds a side path cutting away from the churned road. It should feel optional, but tempting. In the current implementation, the branch is offered from the cleared High Road travel menu after the second wave is beaten.
 
 Suggested choice:
 
 ```text
 The High Road bends south under leaning pines. Past the ambush site, a deer trail slips west through the brush, marked by four old standing stones half-hidden under moss.
 
-1. [WILDERNESS] Follow the deer trail toward the stones.
-2. Keep to the High Road and push for Phandalin.
+1. Follow the High Road to Phandalin.
+2. Backtrack to the previous route node, if history allows it.
+3. Follow the overgrown statue trail into the wilderness.
+4. Investigate the broken roadwarden milemarker, if available.
+5. Challenge the false roadwarden checkpoint, if available.
 ```
 
-If the player ignores the branch, continue to Phandalin normally. The branch can remain available only during this travel beat, or be marked as missed.
+If the player ignores the branch, continue to Phandalin normally. The branch remains available from the cleared High Road menu until resolved or locked.
 
 ## Scene Setup
 
@@ -192,6 +203,7 @@ Liar's Blessing
 +1 Persuasion
 Permanent until death
 Applies to the player only
+200 XP
 ```
 
 Suggested reward message:
@@ -352,13 +364,15 @@ clear_liars_blessing_on_death()
 - The reward is strong but narrow. It makes social builds better without raising combat math.
 - The curse is meaningful but temporary, which keeps the one-answer lock from feeling cruel.
 - Because the branch appears before Phandalin, the blessing can immediately matter in town scenes, Bryn recruitment, and later Blackwake/Act 1 social checks.
-- The branch should not award XP unless implementation later wants puzzle XP. The permanent social buff is already a meaningful reward.
+- The current implementation awards `200 XP` for solving the puzzle. If that proves too generous in playtests, tune the XP first and keep the social buff as the branch's identity reward.
 
 ## Test Checklist
 
 Add tests when implementing:
 
 - The branch appears after the High Road ambush when the player chooses the wilderness detour.
+- The cleared High Road scene offers the side branch before auto-entering Phandalin.
+- The side-branch option is not prefixed with a redundant `[PUZZLE]` tag.
 - Inspecting each statue prints the correct line.
 - Choosing Thief sets `liars_circle_solved` and applies Deception +2 / Persuasion +1 to the player.
 - Choosing Knight, Priest, or King sets `liars_circle_failed`, locks the puzzle, and applies Deception -1 / Persuasion -1.
@@ -367,3 +381,4 @@ Add tests when implementing:
 - Player death removes the blessing.
 - Leaving before answering applies no blessing, no curse, and no lock.
 - The puzzle cannot be solved after it locks.
+- Returning from the branch preserves the High Road as the next meaningful backtrack target instead of preserving `liars_circle`.

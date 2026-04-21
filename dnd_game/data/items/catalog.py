@@ -533,7 +533,7 @@ CONSUMABLE_ITEMS = [
         "weight": 0.3,
         "value": 30,
         "spell_slot_restore": 1,
-        "notes": ["Restores 1 spent spell slot and helps shake off rattled footing in this adaptation."],
+        "notes": ["Restores 4 MP and helps shake off rattled footing in this adaptation."],
     },
     {
         "item_id": "superior_healing_elixir",
@@ -647,7 +647,7 @@ CONSUMABLE_ITEMS = [
         "weight": 0.2,
         "value": 26,
         "spell_slot_restore": 1,
-        "notes": ["Restores 1 spent spell slot."],
+        "notes": ["Restores 4 MP."],
     },
     {
         "item_id": "moonmint_drops",
@@ -703,7 +703,7 @@ SCROLL_EFFECTS = [
     ("scroll_mending_word", "Scroll of Mending Word", "common", "A simple healing prayer written for quick use.", "Shrines, hedge mages, and healer caches.", "1d6", 2, 0, 0, False),
     ("scroll_lesser_restoration", "Scroll of Lesser Restoration", "uncommon", "A clean restorative script that breaks poison and weakness.", "Shrine archives and rare support caches.", None, 0, 0, 0, True),
     ("scroll_revivify", "Scroll of Revivify", "uncommon", "A tightly warded resurrection script for camp rites after a fresh battlefield death.", "Rarely stocked by frontier traders and occasionally recovered from hard-fought battles.", None, 0, 0, 0, False),
-    ("scroll_arcane_refresh", "Scroll of Arcane Refresh", "rare", "An elegant sigil-chain that restores a spent spell slot.", "Wizard satchels, hidden libraries, and rare arcane drops.", None, 0, 0, 1, False),
+    ("scroll_arcane_refresh", "Scroll of Arcane Refresh", "rare", "An elegant sigil-chain that restores a surge of MP.", "Wizard satchels, hidden libraries, and rare arcane drops.", None, 0, 0, 1, False),
     ("scroll_echo_step", "Scroll of Echo Step", "rare", "A delicate step-script that blurs the reader between falling dust and reflected sound.", "Wave Echo script tubes, hidden survey lockers, and expert scout caches.", None, 0, 0, 0, False),
     ("scroll_quell_the_deep", "Scroll of Quell the Deep", "rare", "A warding litany copied by priests and delvers who learned that some caverns answer back.", "Temple satchels, ruined chapels, and counter-cult ward caches.", "2d6", 2, 0, 0, False),
     ("scroll_forge_shelter", "Scroll of Forge Shelter", "rare", "A layered sigil-sheet that kindles a protective halo like banked coals around the reader.", "Forge of Spells annexes, dwarven vault doors, and late-act expedition rewards.", None, 0, 8, 0, False),
@@ -1934,7 +1934,7 @@ def item_rules_text(item: Item) -> str:
     if item.temp_hp:
         rules.append(f"{item.temp_hp} temp HP")
     if item.spell_slot_restore:
-        rules.append(f"restores {item.spell_slot_restore} spell slot")
+        rules.append(f"restores {item.spell_slot_restore * 4} MP")
     if item.skill_bonuses:
         rules.append("skills " + ", ".join(f"{name} +{value}" for name, value in item.skill_bonuses.items()))
     if item.save_bonuses:

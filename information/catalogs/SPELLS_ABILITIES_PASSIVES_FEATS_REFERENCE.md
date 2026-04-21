@@ -1,6 +1,6 @@
 # Spells, Abilities, Passives, And Feats Reference
 
-Last updated: 2026-04-15
+Last updated: 2026-04-21
 
 This document is a mechanical reference for the level-1-to-8 progression draft. It is written for implementation work in this repo, not for player-facing rulebook text.
 
@@ -10,6 +10,7 @@ Important note:
 - I am intentionally not reproducing long rules text verbatim.
 - Where tabletop D&D and BG3 differ, I call that out in a `BG3 note`.
 - The scope here is the content most useful for this game's level-8 roadmap: the BG3 feat list, the core class abilities and passives that matter through level 8, and a high-priority spell pool for implementation.
+- Current repo adaptation: implemented combat spells now spend Magic Points (`MP`) instead of player-facing spell slots. The spell-slot tables below remain BG3/backbone references for future spell-list and upcasting work.
 
 ## Source Backbone
 
@@ -29,14 +30,14 @@ Important note:
 
 ### Shared Concepts
 
-- Cantrips are level-0 spells and normally do not consume spell slots.
+- Cantrips are level-0 spells and normally do not consume spell slots in D&D/BG3. In the current repo combat MVP, implemented combat cantrips cost `1 MP`.
 - Spell attacks use `d20 + proficiency bonus + spellcasting ability modifier`.
 - Spell save DC is normally `8 + proficiency bonus + spellcasting ability modifier`.
 - Concentration only supports one active concentration spell at a time.
 - Taking damage can break concentration with a Constitution saving throw against DC 10 or half the damage taken, whichever is higher.
-- Long rests normally restore spell slots.
-- Warlock pact slots also refresh on short rest.
-- Upcasting uses a higher-level spell slot to strengthen a spell if the spell supports scaling.
+- Long rests normally restore spell slots in the reference rules; in the current repo they also refill MP.
+- Warlock pact slots also refresh on short rest in BG3; in the current repo, warlocks refill all MP on short rest.
+- Upcasting uses a higher-level spell slot to strengthen a spell if the spell supports scaling. MP-based upcasting is not implemented yet.
 
 ### BG3 Known And Prepared Spell Model
 
@@ -234,7 +235,7 @@ These entries focus on the core actions, passives, and resources that matter for
 | --- | --- | --- | --- | --- | --- |
 | Wild Shape | Action, resource | Action plus 1 Wild Shape Charge | Short rest | Transform into a beast form with its own hit points, movement profile, attacks, and senses. The form ends when those hit points run out or the druid chooses to revert. | In BG3, basic forms unlock at level 2 and Moon druids get better combat forms. |
 | Wild Shape Charges | Resource | Passive resource pool | Short rest | Tracks how many beast transformations remain. | Needs a dedicated resource, not spell slots. |
-| Natural Recovery | Out-of-combat resource recovery | Out-of-combat action | Once per day or per rest depending on adaptation | Recover expended spell slots. | Strong candidate for Circle of the Land support. |
+| Natural Recovery | Out-of-combat resource recovery | Out-of-combat action | Once per day or per rest depending on adaptation | Reference rules recover expended spell slots. Current MP MVP relies on normal short-rest MP recovery rather than extra MP. | Strong candidate for Circle of the Land support if druids need more pacing help later. |
 | Combat Wild Shape | Bonus action variant | Bonus Action plus charge | Short rest | Faster, more battle-ready Wild Shape access. | Best reserved for Moon druid implementation. |
 | Symbiotic Entity | Action, subclass resource rider | Action plus Wild Shape Charge | Short rest | Converts Wild Shape charges into temporary HP and fungal damage bonuses. | Strong Spores druid identity feature. |
 
@@ -273,7 +274,7 @@ These entries focus on the core actions, passives, and resources that matter for
 | Lay on Hands | Action, healing resource | Action plus Lay on Hands charges | Long rest | Heal a target by spending charges, or spend 2 charges to cure disease or poison. | BG3 differs from tabletop pool math: charge count scales by class table and each charge heals `2 x paladin level`. |
 | Divine Sense | Utility action | Action | Limited use | Detect certain supernatural presences. | Can be simplified into dialogue, scouting, or encounter intel. |
 | Fighting Style | Passive choice | Level-up choice | None | Choose a martial specialization such as Defence, Dueling, Great Weapon Fighting, or Protection. | Same framework as fighter and ranger. |
-| Divine Smite | Hit rider using spell slots | Trigger on melee weapon hit | Uses spell slots | Spend a spell slot after a hit to deal bonus radiant damage. Base damage starts at `2d8`, gains `+1d8` for each slot level above 1, and gains another `+1d8` against fiends or undead. | Great use for higher-level spell slots and crit spikes. |
+| Divine Smite | Hit rider using MP in current repo | Trigger on melee weapon hit | Uses `4 MP` in current repo | Spend the resource after a hit to deal bonus radiant damage. Current implementation uses base `2d8`; reference rules gain `+1d8` for each slot level above 1 and another `+1d8` against fiends or undead. | Good candidate for future MP upcast tuning and crit spikes. |
 | Divine Health | Passive | Passive | None | Immunity or strong resistance to disease. | Easy narrative passive. |
 | Channel Oath | Resource actions | Usually Action plus 1 Channel Oath charge | Short rest | Oath-specific active powers. | Track separately from spell slots. |
 | Aura of Protection | Passive aura | Passive | None | You and nearby allies gain a bonus to saving throws equal to the paladin's CHA modifier. | One of the strongest team passives in this level band; easiest text-game implementation is a 10-ft-style party aura. |
@@ -285,7 +286,7 @@ These entries focus on the core actions, passives, and resources that matter for
 | Favoured Enemy | Passive choice | Character creation or level-up choice | None | Choose a prey specialty that grants utility, proficiencies, or combat perks. | BG3 implements this as a pick package, not just a lore tag. |
 | Natural Explorer | Passive choice | Character creation or level-up choice | None | Choose terrain or wilderness training that grants resistances or utility tools. | BG3 also makes this a pick package. |
 | Fighting Style | Passive choice | Level-up choice | None | Usually Archery, Defence, Dueling, or Two-Weapon Fighting. | Important early choice. |
-| Ranger spellcasting | Spell feature | Uses spell slots | Long rest | Half-caster spell progression for tracking, scouting, and burst damage support. | Use BG3 half-caster ESL mapping. |
+| Ranger spellcasting | Spell feature | Uses MP in current repo once implemented | Long rest / MP recovery rules | Half-caster spell progression for tracking, scouting, and burst damage support. | Use BG3 half-caster ESL mapping for future spell-list work, then map combat costs to MP. |
 | Beast Companion | Summon feature | Action or summon action | Persistent companion | Gain a controllable beast ally. | Strong subclass-defining feature for Beast Master. |
 | Dread Ambusher | Passive combat opener | First round of combat | None | Initiative and opener burst package. | Great Gloom Stalker identity. |
 | Hunter's Prey | Passive rider | Conditional on attacks | None | Gains specialized damage or anti-escape tools. | Hunter subclass identity anchor. |
@@ -310,7 +311,7 @@ These entries focus on the core actions, passives, and resources that matter for
 | --- | --- | --- | --- | --- | --- |
 | Sorcerous Origin | Subclass chassis | Level 1 choice | None | Defines bloodline or innate magic theme. | Should be chosen at level 1. |
 | Font of Magic | Resource system | Passive resource pool | Long rest | Gain Sorcery Points used for metamagic and flexible casting. | Sorcery point count typically tracks sorcerer level. |
-| Sorcery Points | Resource | Passive resource pool | Long rest | Convert into spell slots or spend on metamagic. | Important to track separately from slots. |
+| Sorcery Points | Resource | Passive resource pool | Long rest | Reference rules convert into spell slots or spend on metamagic. | Important to track separately from MP and compatibility slots. |
 | Metamagic | Spell modifier choices | Spend Sorcery Points when casting | Long rest via points | Modify spells with options such as Twinned, Quickened, Distant, Heightened, or Extended. | One of the biggest build-customization systems in the game. |
 | Draconic Resilience | Passive | Passive | None | Improved durability and AC support. | Strong baseline for Draconic Bloodline. |
 | Wild Magic Surge | Triggered wild effect | On spellcast under surge rules | Variable | Random magical side effects occur after certain casts. | Needs a surge table if implemented. |
@@ -320,7 +321,7 @@ These entries focus on the core actions, passives, and resources that matter for
 
 | Feature | Type | Cost / trigger | Recharge | Mechanical summary | BG3 note |
 | --- | --- | --- | --- | --- | --- |
-| Pact Magic | Spell feature | Uses pact slots | Short or long rest | Warlock slots are few, always at the highest available level, and always upcast warlock spells. | Separate from normal Spellcasting slots. |
+| Pact Magic | Spell feature | Uses pact slots in BG3; MP in current repo | Short or long rest | Warlock slots are few, always at the highest available level, and always upcast warlock spells. Current repo models the short-rest identity by refilling all warlock MP on short rest. | Separate from normal Spellcasting slots; map future warlock spell costs into MP. |
 | Eldritch Invocations | Passive or activated picks | Level-up choices | Varies | Choose passive boons or new castable powers such as Agonising Blast, Repelling Blast, Devil's Sight, Armour of Shadows, or Book of Ancient Secrets. | Very important customization system. |
 | Agonising Blast | Passive invocation | Passive | None | Add CHA modifier to each Eldritch Blast beam's damage. | Signature damage upgrade. |
 | Repelling Blast | Passive invocation | Trigger on Eldritch Blast hit | None | Push target on Eldritch Blast hit. | Great battlefield-control tool. |
@@ -332,7 +333,7 @@ These entries focus on the core actions, passives, and resources that matter for
 
 | Feature | Type | Cost / trigger | Recharge | Mechanical summary | BG3 note |
 | --- | --- | --- | --- | --- | --- |
-| Arcane Recovery | Out-of-combat recovery | Special action | Once per day | Recover expended spell slots after combat. | Great pacing tool for long adventuring days. |
+| Arcane Recovery | Out-of-combat recovery | Special action | Once per day / compatibility slot hook | Reference rules recover expended spell slots after combat. Current MP MVP does not grant extra MP beyond normal short-rest recovery. | Revisit only if wizard pacing feels too constrained. |
 | Spell Scribing | Spellbook system | Spend scroll and gold if used | Permanent | Learn extra wizard spells from scrolls. | Very BG3-feeling system and worth preserving. |
 | Arcane Tradition | Subclass chassis | Level 2 choice | None | Choose a wizard school such as Abjuration, Divination, Evocation, or Bladesinging. | Major build-defining choice. |
 | Arcane Ward | Passive shield | Triggered by abjuration magic | Refreshed by abjuration casting | Generate and refresh a protective ward. | Strong Abjuration identity feature. |
@@ -372,7 +373,7 @@ These are the high-value sub-choices that repeatedly appear inside level-up flow
 | Agonising Blast | Add CHA modifier to each Eldritch Blast beam's damage. | Staple damage invocation. |
 | Repelling Blast | Push targets struck by Eldritch Blast. | Great positioning and hazard combo tool. |
 | Devil's Sight | See normally in darkness, including magical darkness. | Enables Darkness combos. |
-| Armour of Shadows | Cast Mage Armor at will without spending a spell slot. | Great on lightly protected warlocks. |
+| Armour of Shadows | Cast Mage Armor at will without spending a spell slot in reference rules. | If implemented under MP, decide whether this stays free as invocation utility. |
 | Beguiling Influence | Gain proficiency in Deception and Persuasion. | Strong social invocation. |
 | Book of Ancient Secrets | Gain ritual utility tied to Pact of the Tome. | Good long-form exploration support. |
 

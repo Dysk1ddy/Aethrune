@@ -194,7 +194,7 @@ These items have been added to the catalog source so future encounter, quest, an
 | `miners_ration_tin` | Miner's Ration Tin | supply | denser expedition food than Act 1 road provisions | survey packs, dwarf camps, and mine lockers |
 | `mushroom_broth_flask` | Mushroom Broth Flask | supply | warm underground comfort item for camp flavor | ruined kitchens, watchfires, and miner stores |
 | `delvers_amber` | Delver's Amber | consumable | temp HP and anti-fear support for cave descents | Stonehollow and expedition caches |
-| `resonance_tonic` | Resonance Tonic | consumable | anti-reeling / spell slot support for ruin casters | Agatha lead rewards and arcane vaults |
+| `resonance_tonic` | Resonance Tonic | consumable | anti-reeling / MP support for ruin casters | Agatha lead rewards and arcane vaults |
 | `forge_blessing_elixir` | Forge-Blessing Elixir | consumable | late-act courage draught with blessed synergy | forge reliquaries and elite cult loot |
 | `thoughtward_draught` | Thoughtward Draught | consumable | anti-charm / anti-fear counterplay for whisper magic | ward caches and prisoner escape kits |
 | `scroll_echo_step` | Scroll of Echo Step | scroll | stealth / escape tool that rewards smart disengage play | scout tubes and hidden script lockers |

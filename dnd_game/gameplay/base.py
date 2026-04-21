@@ -546,6 +546,14 @@ class GameBase:
             self.state = None
 
     def skill_tag(self, tag: str, text: str) -> str:
+        normalized_tag = tag.strip().upper()
+        if normalized_tag.startswith("BACKTRACK"):
+            return f"[{tag}] {text}"
+        normalized_text = strip_ansi(text).lower()
+        tag_words = re.findall(r"[a-z0-9']+", tag.lower())
+        text_words = set(re.findall(r"[a-z0-9']+", normalized_text))
+        if tag_words and all(word in text_words for word in tag_words):
+            return text
         return f"[{tag}] {text}"
 
     def quoted_option(self, tag: str, text: str) -> str:
@@ -2495,7 +2503,7 @@ class GameBase:
                 "menu": "Single-use items that heal, restore, protect, or clear conditions.",
                 "text": (
                     "Consumables are one-use resources modeled after the official idea of potions, elixirs, and other "
-                    "adventuring aids. In this game they usually restore hit points, temporary hit points, spell slots, "
+                    "adventuring aids. In this game they usually restore hit points, temporary hit points, MP, "
                     "or remove harmful conditions.\n\n"
                     "Most are best saved for emergencies because they are consumed immediately on use. Healing potions "
                     "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is faster "
