@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..content import create_enemy
+from ..data.story.public_terms import marks_label
 from .encounter import Encounter
 
 
@@ -150,7 +151,7 @@ class RandomEncounterMixin:
         assert self.state is not None
         if gold > 0:
             self.state.gold += gold
-            self.say(f"You secure {gold} gp from {reason}.")
+            self.say(f"You secure {marks_label(gold)} from {reason}.")
             self.pause_for_loot_reveal()
         for item_id, quantity in (items or {}).items():
             added = self.add_inventory_item(item_id, quantity, source=reason)
@@ -213,7 +214,7 @@ class RandomEncounterMixin:
                 self.state.gold -= gold_loss
                 self.say(
                     setback_text
-                    or f"The side skirmish leaves the party bloodied, and the victors strip away {gold_loss} gp before scattering."
+                    or f"The side skirmish leaves the party bloodied, and the victors strip away {marks_label(gold_loss)} before scattering."
                 )
             else:
                 self.say(setback_text or "The side skirmish leaves the party bloodied, but the attackers vanish before they can do worse.")
@@ -825,7 +826,7 @@ class RandomEncounterMixin:
             else:
                 self.resolve_random_encounter_fight(
                     title="Cornered Wolf",
-                    description="Your threat only convinces the wolf to charge before you can press the advantage.",
+                    description="Your threat only convinces the wolf to charge before you can press the edge.",
                     enemies=[create_enemy("wolf")],
                     allow_parley=False,
                     parley_dc=99,
@@ -944,7 +945,7 @@ class RandomEncounterMixin:
         elif choice == 2:
             if self.state.gold > 0:
                 self.state.gold -= 1
-                self.say("You leave 1 gp in the bowl and take the quiet blessing of moving on with a clean conscience.")
+                self.say("You leave 1 mark in the bowl and take the quiet blessing of moving on with a clean conscience.")
             else:
                 self.say("You reach for a coin you do not have and settle for a respectful nod instead.")
         else:

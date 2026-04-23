@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from ....models import Armor, Weapon
+from ..public_terms import class_option_label, rules_text
 
 
 CLASSES = {
     "Barbarian": {
-        "description": "Savage front-liners who turn fury into momentum, punishment, and raw battlefield control.",
+        "description": "Breach-holders who turn pressure, pain tolerance, and hard momentum into battlefield control.",
         "hit_die": 12,
         "saving_throws": ["STR", "CON"],
         "skill_choices": ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"],
@@ -18,7 +19,7 @@ CLASSES = {
         "spellcasting_ability": None,
     },
     "Bard": {
-        "description": "Silver-tongued performers who twist a scene with charm, rhythm, and quick magic.",
+        "description": "Signal-readers and morale architects who bend a scene with voice, rhythm, and timing.",
         "hit_die": 8,
         "saving_throws": ["DEX", "CHA"],
         "skill_choices": ["Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception", "History", "Insight", "Intimidation", "Investigation", "Medicine", "Nature", "Perception", "Performance", "Persuasion", "Religion", "Sleight of Hand", "Stealth", "Survival"],
@@ -31,7 +32,7 @@ CLASSES = {
         "spellcasting_ability": "CHA",
     },
     "Cleric": {
-        "description": "Divine casters who anchor the party with faith, radiant power, and healing.",
+        "description": "Lantern-trained channelers who anchor the party with doctrine, healing, and protective force.",
         "hit_die": 8,
         "saving_throws": ["WIS", "CHA"],
         "skill_choices": ["History", "Insight", "Medicine", "Persuasion", "Religion"],
@@ -44,7 +45,7 @@ CLASSES = {
         "spellcasting_ability": "WIS",
     },
     "Druid": {
-        "description": "Wardens of the wild who answer threats with flame, healing, and old wisdom.",
+        "description": "Druids who answer threats with living systems, weather sense, flame, and old wisdom.",
         "hit_die": 8,
         "saving_throws": ["INT", "WIS"],
         "skill_choices": ["Animal Handling", "Arcana", "Insight", "Medicine", "Nature", "Perception", "Religion", "Survival"],
@@ -57,7 +58,7 @@ CLASSES = {
         "spellcasting_ability": "WIS",
     },
     "Fighter": {
-        "description": "Front-line warriors who rely on armor, steel, and disciplined technique.",
+        "description": "Disciplined fighters who hold the line with steel, shell, timing, and reliable technique.",
         "hit_die": 10,
         "saving_throws": ["STR", "CON"],
         "skill_choices": ["Acrobatics", "Animal Handling", "Athletics", "History", "Insight", "Intimidation", "Perception", "Survival"],
@@ -70,7 +71,7 @@ CLASSES = {
         "spellcasting_ability": None,
     },
     "Monk": {
-        "description": "Disciplined strikers who rely on speed, balance, and precision instead of armor.",
+        "description": "Focused monks who rely on speed, balance, and precision instead of heavy shell.",
         "hit_die": 8,
         "saving_throws": ["STR", "DEX"],
         "skill_choices": ["Acrobatics", "Athletics", "History", "Insight", "Religion", "Stealth"],
@@ -83,7 +84,7 @@ CLASSES = {
         "spellcasting_ability": None,
     },
     "Paladin": {
-        "description": "Holy champions who combine armor, healing, and radiant force in close combat.",
+        "description": "Paladins who bind shell, restorative force, and sworn conviction into close combat.",
         "hit_die": 10,
         "saving_throws": ["WIS", "CHA"],
         "skill_choices": ["Athletics", "Insight", "Intimidation", "Medicine", "Persuasion", "Religion"],
@@ -96,7 +97,7 @@ CLASSES = {
         "spellcasting_ability": "CHA",
     },
     "Ranger": {
-        "description": "Watchful hunters who excel with bows, trailcraft, and controlled skirmishing.",
+        "description": "Rangers who excel with bows, trailcraft, route sense, and controlled skirmishing.",
         "hit_die": 10,
         "saving_throws": ["STR", "DEX"],
         "skill_choices": ["Animal Handling", "Athletics", "Insight", "Investigation", "Nature", "Perception", "Stealth", "Survival"],
@@ -109,7 +110,7 @@ CLASSES = {
         "spellcasting_ability": "WIS",
     },
     "Rogue": {
-        "description": "Scouts and tricksters who win by precision, timing, and nerve.",
+        "description": "Rogues who win with precision, timing, misdirection, and nerve.",
         "hit_die": 8,
         "saving_throws": ["DEX", "INT"],
         "skill_choices": ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Performance", "Persuasion", "Sleight of Hand", "Stealth"],
@@ -122,7 +123,7 @@ CLASSES = {
         "spellcasting_ability": None,
     },
     "Sorcerer": {
-        "description": "Innate arcane casters who shape volatile magic through force of personality and instinct.",
+        "description": "Sorcerers who shape volatile inner power through instinct and force of personality.",
         "hit_die": 6,
         "saving_throws": ["CON", "CHA"],
         "skill_choices": ["Arcana", "Deception", "Insight", "Intimidation", "Persuasion", "Religion"],
@@ -135,7 +136,7 @@ CLASSES = {
         "spellcasting_ability": "CHA",
     },
     "Warlock": {
-        "description": "Deal-makers and occultists who bring uncanny force, grim confidence, and strange patron power.",
+        "description": "Warlocks who carry uncanny force through bargain, imprint, obligation, or old contact.",
         "hit_die": 8,
         "saving_throws": ["WIS", "CHA"],
         "skill_choices": ["Arcana", "Deception", "History", "Intimidation", "Investigation", "Nature", "Religion"],
@@ -148,7 +149,7 @@ CLASSES = {
         "spellcasting_ability": "CHA",
     },
     "Wizard": {
-        "description": "Arcane scholars whose spellcraft bends a fight before steel can close.",
+        "description": "Wizards whose studied channel patterns bend a fight before steel can close.",
         "hit_die": 6,
         "saving_throws": ["INT", "WIS"],
         "skill_choices": ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"],
@@ -163,21 +164,21 @@ CLASSES = {
 }
 
 CLASS_LEVEL_PROGRESSION = {
-    "Barbarian": {2: {"features": [("Reckless Pressure", "Gain +1 weapon damage and +1 initiative from ruthless momentum.")], "feature_ids": ["reckless_pressure"], "equipment_bonuses": {"damage": 1, "initiative": 1}}, 3: {"features": [("Primal Tenacity", "Gain +1 Armor Class while unarmored.")], "feature_ids": ["primal_tenacity"], "equipment_bonuses": {"AC": 1}}, 4: {"features": [("Ferocious Presence", "Gain +1 Intimidation and +1 Constitution saves.")], "feature_ids": ["ferocious_presence"], "equipment_bonuses": {"Intimidation": 1, "CON_save": 1}}},
-    "Bard": {2: {"features": [("Cutting Wit", "Your mocking magic gains sharper bite, adding +1 spell damage.")], "feature_ids": ["cutting_wit"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Silver Tongue", "Gain +1 Persuasion and +1 Deception.")], "feature_ids": ["silver_tongue_bard"], "equipment_bonuses": {"Persuasion": 1, "Deception": 1}}, 4: {"features": [("Stage Courage", "Gain +1 initiative and +1 Wisdom saves.")], "feature_ids": ["stage_courage"], "equipment_bonuses": {"initiative": 1, "WIS_save": 1}}},
-    "Cleric": {2: {"features": [("Channel Divinity", "Gain one use of Channel Divinity per rest for a radiant burst attack.")], "feature_ids": ["channel_divinity"], "resources": {"channel_divinity": 1}}, 3: {"features": [("Disciple of Life", "Healing spells restore 2 additional hit points.")], "feature_ids": ["disciple_of_life"], "equipment_bonuses": {"healing": 2}}, 4: {"features": [("Radiant Potency", "Your divine offense gains +1 spell damage.")], "feature_ids": ["radiant_potency"], "equipment_bonuses": {"spell_damage": 1}}},
-    "Druid": {2: {"features": [("Natural Recovery", "Short rests restore your spellcasting stamina under the MP recovery rules.")], "feature_ids": ["natural_recovery"]}, 3: {"features": [("Wildfire Adept", "Your nature spells gain +1 damage and +1 healing.")], "feature_ids": ["wildfire_adept"], "equipment_bonuses": {"spell_damage": 1, "healing": 1}}, 4: {"features": [("Land's Embrace", "Gain +1 Armor Class and +1 Wisdom saving throws.")], "feature_ids": ["lands_embrace"], "equipment_bonuses": {"AC": 1, "WIS_save": 1}}},
-    "Fighter": {2: {"features": [("Action Surge", "Gain `Action Surge`, letting you take one extra weapon action per short rest.")], "feature_ids": ["action_surge"], "resources": {"action_surge": 1}}, 3: {"features": [("Improved Critical", "Weapon attacks now score a critical hit on a roll of 19 or 20.")], "feature_ids": ["improved_critical"]}, 4: {"features": [("Martial Mastery", "Gain +1 to weapon attack rolls and weapon damage.")], "feature_ids": ["martial_mastery"], "equipment_bonuses": {"attack": 1, "damage": 1}}},
-    "Monk": {2: {"features": [("Ki", "Gain 2 ki points and unlock Flurry of Blows, Patient Defense, and Step of the Wind."), ("Unarmored Focus", "Gain +1 Armor Class and +1 initiative through disciplined movement.")], "feature_ids": ["ki", "flurry_of_blows", "patient_defense", "step_of_the_wind", "unarmored_focus"], "resources": {"ki": 2}, "equipment_bonuses": {"AC": 1, "initiative": 1}}, 3: {"features": [("Open Hand Timing", "Your martial arts strike gains +1 damage.")], "feature_ids": ["open_hand_timing"], "equipment_bonuses": {"damage": 1}}, 4: {"features": [("Centered Spirit", "Gain +1 Wisdom saves and +1 Insight.")], "feature_ids": ["centered_spirit"], "equipment_bonuses": {"WIS_save": 1, "Insight": 1}}},
-    "Paladin": {2: {"features": [("Divine Health", "Gain +1 to Constitution and Wisdom saving throws.")], "feature_ids": ["divine_health"], "equipment_bonuses": {"CON_save": 1, "WIS_save": 1}}, 3: {"features": [("Aura of Resolve", "Gain +1 Armor Class from steadfast presence.")], "feature_ids": ["aura_of_resolve"], "equipment_bonuses": {"AC": 1}}, 4: {"features": [("Radiant Strikes", "Your weapon attacks deal +1 extra damage.")], "feature_ids": ["radiant_strikes"], "equipment_bonuses": {"damage": 1}}},
+    "Barbarian": {2: {"features": [("Reckless Pressure", "Gain +1 weapon damage and +1 initiative from ruthless momentum.")], "feature_ids": ["reckless_pressure"], "equipment_bonuses": {"damage": 1, "initiative": 1}}, 3: {"features": [("Primal Tenacity", "Gain +1 Guard while unarmored.")], "feature_ids": ["primal_tenacity"], "equipment_bonuses": {"AC": 1}}, 4: {"features": [("Ferocious Presence", "Gain +1 Intimidation and +1 Endurance resists.")], "feature_ids": ["ferocious_presence"], "equipment_bonuses": {"Intimidation": 1, "CON_save": 1}}},
+    "Bard": {2: {"features": [("Cutting Wit", "Your cutting cadence gains sharper bite, adding +1 channel damage.")], "feature_ids": ["cutting_wit"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Silver Tongue", "Gain +1 Persuasion and +1 Deception.")], "feature_ids": ["silver_tongue_bard"], "equipment_bonuses": {"Persuasion": 1, "Deception": 1}}, 4: {"features": [("Stage Courage", "Gain +1 initiative and +1 Wisdom resists.")], "feature_ids": ["stage_courage"], "equipment_bonuses": {"initiative": 1, "WIS_save": 1}}},
+    "Cleric": {2: {"features": [("Lantern Surge", "Gain one use of Lantern Surge per rest for a radiant burst strike.")], "feature_ids": ["channel_divinity"], "resources": {"channel_divinity": 1}}, 3: {"features": [("Field Medic Doctrine", "Healing channels restore 2 additional hit points.")], "feature_ids": ["disciple_of_life"], "equipment_bonuses": {"healing": 2}}, 4: {"features": [("Lantern Potency", "Your lantern offense gains +1 channel damage.")], "feature_ids": ["radiant_potency"], "equipment_bonuses": {"spell_damage": 1}}},
+    "Druid": {2: {"features": [("Natural Recovery", "Short rests restore your channeling stamina under the reserve recovery rules.")], "feature_ids": ["natural_recovery"]}, 3: {"features": [("Wildfire Adept", "Your nature channels gain +1 damage and +1 healing.")], "feature_ids": ["wildfire_adept"], "equipment_bonuses": {"spell_damage": 1, "healing": 1}}, 4: {"features": [("Land's Embrace", "Gain +1 Guard and +1 Wisdom resists.")], "feature_ids": ["lands_embrace"], "equipment_bonuses": {"AC": 1, "WIS_save": 1}}},
+    "Fighter": {2: {"features": [("Battle Surge", "Gain Battle Surge, letting you take one extra weapon action per short rest.")], "feature_ids": ["action_surge"], "resources": {"action_surge": 1}}, 3: {"features": [("Keen Critical", "Weapon strikes now score a critical hit on a roll of 19 or 20.")], "feature_ids": ["improved_critical"]}, 4: {"features": [("Martial Mastery", "Gain +1 to weapon strike checks and weapon damage.")], "feature_ids": ["martial_mastery"], "equipment_bonuses": {"attack": 1, "damage": 1}}},
+    "Monk": {2: {"features": [("Focus", "Gain 2 focus and unlock Twinflow Strikes, Still Guard, and Wind Step."), ("Unarmored Focus", "Gain +1 Guard and +1 initiative through disciplined movement.")], "feature_ids": ["ki", "flurry_of_blows", "patient_defense", "step_of_the_wind", "unarmored_focus"], "resources": {"ki": 2}, "equipment_bonuses": {"AC": 1, "initiative": 1}}, 3: {"features": [("Open-Hand Timing", "Your Close Form strike gains +1 damage.")], "feature_ids": ["open_hand_timing"], "equipment_bonuses": {"damage": 1}}, 4: {"features": [("Centered Spirit", "Gain +1 Wisdom resists and +1 Insight.")], "feature_ids": ["centered_spirit"], "equipment_bonuses": {"WIS_save": 1, "Insight": 1}}},
+    "Paladin": {2: {"features": [("Oath Health", "Gain +1 to Endurance and Wisdom resists.")], "feature_ids": ["divine_health"], "equipment_bonuses": {"CON_save": 1, "WIS_save": 1}}, 3: {"features": [("Resolve Aura", "Gain +1 Guard from steadfast presence.")], "feature_ids": ["aura_of_resolve"], "equipment_bonuses": {"AC": 1}}, 4: {"features": [("Oathlit Strikes", "Your weapon strikes deal +1 extra damage.")], "feature_ids": ["radiant_strikes"], "equipment_bonuses": {"damage": 1}}},
     "Ranger": {2: {"features": [("Hunter's Quarry", "Your weapon attacks deal +1 extra damage.")], "feature_ids": ["hunters_quarry"], "equipment_bonuses": {"damage": 1}}, 3: {"features": [("Skirmisher's Eye", "Gain +2 initiative and +1 Perception.")], "feature_ids": ["skirmisher_eye"], "equipment_bonuses": {"initiative": 2, "Perception": 1}}, 4: {"features": [("Fieldcraft", "Gain +1 Nature and +1 Survival.")], "feature_ids": ["fieldcraft"], "equipment_bonuses": {"Nature": 1, "Survival": 1}}},
-    "Rogue": {2: {"features": [("Cunning Action", "Gain sharper battlefield movement, adding +2 to initiative and Stealth checks.")], "feature_ids": ["cunning_action"], "equipment_bonuses": {"Stealth": 2, "initiative": 2}}, 3: {"features": [("Deadly Sneak Attack", "Your Sneak Attack improves to 2d6 damage.")], "feature_ids": ["improved_sneak_attack"]}, 4: {"features": [("Evasion", "Gain +2 to Dexterity saving throws.")], "feature_ids": ["evasion"], "equipment_bonuses": {"DEX_save": 2}}},
-    "Sorcerer": {2: {"features": [("Arcane Overflow", "Your offensive spells gain +1 damage.")], "feature_ids": ["arcane_overflow"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Warped Grace", "Gain +1 initiative and +1 Charisma saves.")], "feature_ids": ["warped_grace"], "equipment_bonuses": {"initiative": 1, "CHA_save": 1}}, 4: {"features": [("Focused Will", "Gain +1 spell attack rolls.")], "feature_ids": ["focused_will"], "equipment_bonuses": {"spell_attack": 1}}},
-    "Warlock": {2: {"features": [("Patron's Sting", "Your eldritch offense gains +1 spell damage.")], "feature_ids": ["patrons_sting"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Unnerving Presence", "Gain +1 Intimidation and +1 Wisdom saves.")], "feature_ids": ["unnerving_presence"], "equipment_bonuses": {"Intimidation": 1, "WIS_save": 1}}, 4: {"features": [("Eldritch Precision", "Gain +1 spell attack rolls.")], "feature_ids": ["eldritch_precision"], "equipment_bonuses": {"spell_attack": 1}}},
-    "Wizard": {2: {"features": [("Sculpted Cantrips", "Your arcane cantrips gain +1 damage.")], "feature_ids": ["sculpted_cantrips"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Spellguard", "Gain +1 to Intelligence saving throws and initiative.")], "feature_ids": ["spellguard"], "equipment_bonuses": {"INT_save": 1, "initiative": 1}}, 4: {"features": [("Arcane Focus", "Gain +1 to spell attack rolls.")], "feature_ids": ["arcane_focus"], "equipment_bonuses": {"spell_attack": 1}}},
+    "Rogue": {2: {"features": [("Veil Step", "Gain sharper battlefield movement, adding +2 to initiative and Stealth checks.")], "feature_ids": ["cunning_action"], "equipment_bonuses": {"Stealth": 2, "initiative": 2}}, 3: {"features": [("Deadly Veilstrike", "Your Veilstrike improves to 2d6 damage.")], "feature_ids": ["improved_sneak_attack"]}, 4: {"features": [("Evasion", "Gain +2 to Agility resists.")], "feature_ids": ["evasion"], "equipment_bonuses": {"DEX_save": 2}}},
+    "Sorcerer": {2: {"features": [("Flux Overflow", "Your offensive channels gain +1 damage.")], "feature_ids": ["arcane_overflow"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Warped Grace", "Gain +1 initiative and +1 Charisma resists.")], "feature_ids": ["warped_grace"], "equipment_bonuses": {"initiative": 1, "CHA_save": 1}}, 4: {"features": [("Focused Will", "Gain +1 channel strike checks.")], "feature_ids": ["focused_will"], "equipment_bonuses": {"spell_attack": 1}}},
+    "Warlock": {2: {"features": [("Patron's Sting", "Your warlock offense gains +1 channel damage.")], "feature_ids": ["patrons_sting"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Unnerving Presence", "Gain +1 Intimidation and +1 Wisdom resists.")], "feature_ids": ["unnerving_presence"], "equipment_bonuses": {"Intimidation": 1, "WIS_save": 1}}, 4: {"features": [("Void Precision", "Gain +1 channel strike checks.")], "feature_ids": ["eldritch_precision"], "equipment_bonuses": {"spell_attack": 1}}},
+    "Wizard": {2: {"features": [("Sculpted Minor Channels", "Your scripted minor channels gain +1 damage.")], "feature_ids": ["sculpted_cantrips"], "equipment_bonuses": {"spell_damage": 1}}, 3: {"features": [("Scriptguard", "Gain +1 to Intelligence resists and initiative.")], "feature_ids": ["spellguard"], "equipment_bonuses": {"INT_save": 1, "initiative": 1}}, 4: {"features": [("Channel Focus", "Gain +1 channel strike checks.")], "feature_ids": ["arcane_focus"], "equipment_bonuses": {"spell_attack": 1}}},
 }
 
 
 def format_class_selection(class_name: str) -> str:
     class_data = CLASSES[class_name]
-    return f"{class_name}: d{class_data['hit_die']} hit die. {class_data['description']}"
+    return f"{class_option_label(class_name)}: d{class_data['hit_die']} hit die. {rules_text(class_data['description'])}"

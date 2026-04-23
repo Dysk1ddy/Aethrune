@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from ..runtime.models import (
     DungeonMap,
@@ -101,7 +101,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "phandalin_claims_council": TravelNode(
             node_id="phandalin_claims_council",
             scene_key="act2_claims_council",
-            title="Stonehill Claims Council",
+            title="Iron Hollow Claims Council",
             short_label="CLAIMS",
             kind="story",
             summary="Act 2 opens as a political map before it becomes a cave map.",
@@ -112,7 +112,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             node_id="act2_expedition_hub",
             scene_key="act2_expedition_hub",
             title="Act II Expedition Hub",
-            short_label="PHANDALIN",
+            short_label="IRON HOLLOW",
             kind="hub",
             summary="Operational base where pressure metrics, sponsors, turn-ins, camp, and routes converge.",
             requirement=Requirement(all_flags=("act2_started",)),
@@ -121,8 +121,8 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "conyberry_agatha": TravelNode(
             node_id="conyberry_agatha",
             scene_key="conyberry_agatha",
-            title="Conyberry and Agatha's Circuit",
-            short_label="AGATHA",
+            title="Hushfen and the Pale Circuit",
+            short_label="HUSHFEN",
             kind="dungeon_entry",
             summary="A low-combat truth route threatened by Quiet Choir defilement and restless dead.",
             requirement=Requirement(all_flags=("act2_started",)),
@@ -133,8 +133,8 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "neverwinter_wood_survey_camp": TravelNode(
             node_id="neverwinter_wood_survey_camp",
             scene_key="neverwinter_wood_survey_camp",
-            title="Neverwinter Wood Survey Camp",
-            short_label="WOOD CAMP",
+            title="Greywake Survey Camp",
+            short_label="GREYWAKE",
             kind="dungeon_entry",
             summary="Claim-war skirmish site where rival reavers and Quiet Choir lookouts edit the map.",
             requirement=Requirement(all_flags=("act2_started",)),
@@ -201,7 +201,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             title="Broken Prospect",
             short_label="PROSPECT",
             kind="dungeon_entry",
-            summary="Wave Echo threshold route controlled by Pact guardians, dead labor memory, and rival scouts.",
+            summary="Resonant Vaults threshold route controlled by Meridian Compact guardians, dead labor memory, and rival scouts.",
             requirement=Requirement(all_flags=("phandalin_sabotage_resolved",)),
             enters_dungeon_id="broken_prospect_threshold",
             parent_hub_id="act2_expedition_hub",
@@ -222,7 +222,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "wave_echo_outer_galleries": TravelNode(
             node_id="wave_echo_outer_galleries",
             scene_key="wave_echo_outer_galleries",
-            title="Wave Echo Outer Galleries",
+            title="Resonant Vault Outer Galleries",
             short_label="GALLERIES",
             kind="dungeon_entry",
             summary="Deep mine navigation where predator ecology and false echoes punish poor route control.",
@@ -234,8 +234,8 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "black_lake_causeway": TravelNode(
             node_id="black_lake_causeway",
             scene_key="black_lake_causeway",
-            title="Black Lake Causeway",
-            short_label="BLACK LAKE",
+            title="Blackglass Causeway",
+            short_label="BLACKGLASS",
             kind="dungeon_entry",
             summary="Three-objective crossing: shrine, barracks, or anchors before the forge route opens.",
             requirement=Requirement(all_flags=("wave_echo_outer_cleared",)),
@@ -246,10 +246,10 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "forge_of_spells": TravelNode(
             node_id="forge_of_spells",
             scene_key="forge_of_spells",
-            title="Forge of Spells",
+            title="Meridian Forge",
             short_label="FORGE",
             kind="dungeon_entry",
-            summary="Final resonance dungeon where the Quiet Choir turns the Forge into a listening lens.",
+            summary="Final resonance dungeon where the Quiet Choir turns the Meridian Forge into a listening lens.",
             requirement=Requirement(all_flags=("black_lake_crossed",)),
             enters_dungeon_id="forge_resonance_lens",
             parent_hub_id="act2_expedition_hub",
@@ -268,7 +268,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
     },
     edges=(
         TravelEdge("claims_to_hub", "phandalin_claims_council", "act2_expedition_hub", "Open the expedition table"),
-        TravelEdge("hub_to_agatha", "act2_expedition_hub", "conyberry_agatha", "Seek Agatha's truth"),
+        TravelEdge("hub_to_agatha", "act2_expedition_hub", "conyberry_agatha", "Seek the Pale Witness's truth"),
         TravelEdge("hub_to_wood", "act2_expedition_hub", "neverwinter_wood_survey_camp", "Break the woodland saboteurs"),
         TravelEdge("hub_to_stonehollow", "act2_expedition_hub", "stonehollow_dig", "Enter Stonehollow Dig"),
         TravelEdge("hub_to_glasswater", "act2_expedition_hub", "glasswater_intake", "Investigate Glasswater Intake"),
@@ -289,8 +289,8 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         ),
         TravelEdge("hub_to_broken_prospect", "act2_expedition_hub", "broken_prospect", "Secure Broken Prospect"),
         TravelEdge("hub_to_south_adit", "act2_expedition_hub", "south_adit", "Free the South Adit captives"),
-        TravelEdge("hub_to_galleries", "act2_expedition_hub", "wave_echo_outer_galleries", "Advance through Wave Echo"),
-        TravelEdge("hub_to_black_lake", "act2_expedition_hub", "black_lake_causeway", "Cross Black Lake"),
+        TravelEdge("hub_to_galleries", "act2_expedition_hub", "wave_echo_outer_galleries", "Advance through Resonant Vaults"),
+        TravelEdge("hub_to_black_lake", "act2_expedition_hub", "black_lake_causeway", "Cross Blackglass"),
         TravelEdge("hub_to_forge", "act2_expedition_hub", "forge_of_spells", "Confront the Quiet Choir"),
         TravelEdge("hub_to_complete", "act2_expedition_hub", "act2_scaffold_complete", "Close Act II"),
     ),
@@ -325,7 +325,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             beat_id="forge_route_confirmed",
             title="The Deep Route Locks In",
             host_node_id="act2_expedition_hub",
-            summary="Clearing both late routes turns Wave Echo from a rumor map into the final dungeon chain.",
+            summary="Clearing both late routes turns the Resonant Vaults from a rumor map into the final dungeon chain.",
             requirement=Requirement(all_flags=("broken_prospect_cleared", "south_adit_cleared")),
             grants_flags=("wave_echo_deep_route_confirmed",),
             reveals_node_ids=("wave_echo_outer_galleries",),
@@ -334,7 +334,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
     dungeons={
         "agathas_circuit": DungeonMap(
             dungeon_id="agathas_circuit",
-            title="Agatha's Circuit",
+            title="The Pale Circuit",
             entry_node_id="conyberry_agatha",
             entrance_room_id="coney_road",
             width=4,
@@ -345,7 +345,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             rooms={
                 "coney_road": DungeonRoom(
                     "coney_road",
-                    "Conyberry Road",
+                    "Hushfen Road",
                     0,
                     1,
                     "entrance",
@@ -360,7 +360,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     1,
                     1,
                     "event",
-                    "Read or repair the first dead warning before Agatha manifests.",
+                    "Read or repair the first dead warning before the Pale Witness manifests.",
                     exits=("defiled_sigil", "banshee_bower"),
                     requirement=Requirement(all_flags=("agatha_circuit_entered",)),
                     clear_grants_flags=("agatha_old_vow_named",),
@@ -396,11 +396,11 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     ),
                     clear_grants_flags=("agatha_sigil_scrubbed",),
                     encounter_key="agatha_defiled_sigil",
-                    scene_note="Suggested enemies: gutter_zealot or lantern_fen_wisp; avoid making Agatha herself a standard combat enemy.",
+                    scene_note="Suggested enemies: gutter_zealot or lantern_fen_wisp; avoid making the Pale Witness a standard combat enemy.",
                 ),
                 "banshee_bower": DungeonRoom(
                     "banshee_bower",
-                    "Agatha's Bower",
+                    "Pale Witness Bower",
                     3,
                     1,
                     "boss",
@@ -417,7 +417,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         ),
         "woodland_saboteur_camp": DungeonMap(
             dungeon_id="woodland_saboteur_camp",
-            title="Neverwinter Wood Saboteur Camp",
+            title="Greywake Survey Saboteur Camp",
             entry_node_id="neverwinter_wood_survey_camp",
             entrance_room_id="cut_survey_line",
             width=4,
@@ -538,7 +538,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     0,
                     2,
                     "event",
-                    "Optional Pact ward path for Arcana, Nim setup, and cleaner route control.",
+                    "Optional Meridian Compact ward path for Arcana, Nim setup, and cleaner route control.",
                     exits=("scholar_pocket",),
                     requirement=Requirement(all_flags=("stonehollow_entered",)),
                     clear_grants_flags=("stonehollow_ward_path_read",),
@@ -734,7 +734,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         ),
         "phandalin_sabotage_night": DungeonMap(
             dungeon_id="phandalin_sabotage_night",
-            title="Phandalin Sabotage Night",
+            title="Iron Hollow Sabotage Night",
             entry_node_id="act2_midpoint_convergence",
             entrance_room_id="claims_hall",
             width=4,
@@ -840,7 +840,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             height=3,
             completion_flags=("broken_prospect_cleared", "wave_echo_reached"),
             boss_room_id="foreman_shift",
-            summary="Haunted threshold with Pact constructs, dead labor command, and route-control stakes.",
+            summary="Haunted threshold with Meridian Compact constructs, dead labor command, and route-control stakes.",
             rooms={
                 "broken_shelf": DungeonRoom(
                     "broken_shelf",
@@ -854,7 +854,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                 ),
                 "pact_markers": DungeonRoom(
                     "pact_markers",
-                    "Pact Markers",
+                    "Compact Markers",
                     1,
                     0,
                     "event",
@@ -1015,7 +1015,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         ),
         "wave_echo_outer_gallery_grid": DungeonMap(
             dungeon_id="wave_echo_outer_gallery_grid",
-            title="Wave Echo Outer Galleries",
+            title="Resonant Vault Outer Galleries",
             entry_node_id="wave_echo_outer_galleries",
             entrance_room_id="rail_junction",
             width=5,
@@ -1087,7 +1087,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     4,
                     1,
                     "boss",
-                    "Final gallery pressure before Black Lake opens.",
+                    "Final gallery pressure before Blackglass opens.",
                     exits=(),
                     requirement=Requirement(any_flags=("outer_false_echo_mapped", "outer_crane_reopened", "outer_grimlock_run_cleared")),
                     clear_grants_flags=("wave_echo_outer_cleared",),
@@ -1097,7 +1097,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         ),
         "black_lake_crossing": DungeonMap(
             dungeon_id="black_lake_crossing",
-            title="Black Lake Crossing",
+            title="Blackglass Crossing",
             entry_node_id="black_lake_causeway",
             entrance_room_id="causeway_lip",
             width=5,
@@ -1133,7 +1133,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     1,
                     1,
                     "combat",
-                    "Quiet Choir staging room. Raiding it reduces support at the Forge.",
+                    "Quiet Choir staging room. Raiding it reduces support at the Meridian Forge.",
                     exits=("blackwater_edge",),
                     requirement=Requirement(all_flags=("black_lake_reached",)),
                     clear_grants_flags=("black_lake_barracks_raided",),
@@ -1175,7 +1175,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     4,
                     1,
                     "boss",
-                    "Final causeway fight. Opens the Forge route.",
+                    "Final causeway fight. Opens the Meridian Forge route.",
                     exits=(),
                     requirement=Requirement(all_flags=("black_lake_waterline_cleared",)),
                     clear_grants_flags=("black_lake_crossed",),
@@ -1185,7 +1185,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         ),
         "forge_resonance_lens": DungeonMap(
             dungeon_id="forge_resonance_lens",
-            title="Forge Resonance Lens",
+            title="Meridian Forge Resonance Lens",
             entry_node_id="forge_of_spells",
             entrance_room_id="forge_threshold",
             width=5,
@@ -1218,11 +1218,11 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                 ),
                 "pact_anvil": DungeonRoom(
                     "pact_anvil",
-                    "Pact Anvil",
+                    "Compact Anvil",
                     1,
                     1,
                     "event",
-                    "Craft discipline route. Nim notes or Agatha truth can reduce the DC in integration.",
+                    "Craft discipline route. Nim notes or Pale Witness truth can reduce the DC in integration.",
                     exits=("resonance_lens",),
                     requirement=Requirement(all_flags=("forge_threshold_crossed",)),
                     clear_grants_flags=("forge_pact_rhythm_found",),
@@ -1270,9 +1270,10 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     requirement=Requirement(all_flags=("forge_lens_mapped",)),
                     clear_grants_flags=("caldra_defeated",),
                     encounter_key="boss_sister_caldra_voss",
-                    scene_note="Core enemies: caldra_voss plus choir_adept; support changes with Black Lake and whisper pressure.",
+                    scene_note="Core enemies: caldra_voss plus choir_adept; support changes with Blackglass and whisper pressure.",
                 ),
             },
         ),
     },
 )
+

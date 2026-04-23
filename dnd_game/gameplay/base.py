@@ -21,6 +21,12 @@ from ..content import (
     create_tolan_ironshield,
 )
 from ..data.story.lore import LORE_INTRO, TITLE_LORE_SECTIONS, manual_text_for_entry
+from ..data.story.public_terms import (
+    class_label,
+    d20_edge_label,
+    feature_label,
+    race_label,
+)
 from ..dice import roll
 from ..drafts.map_system import ACT1_HYBRID_MAP, ACT2_ENEMY_DRIVEN_MAP
 from ..items import (
@@ -31,7 +37,10 @@ from ..items import (
     canonical_equipment_slot,
     get_item,
     initial_merchant_stock,
+    item_category_label,
     item_rules_text,
+    item_type_label,
+    marks_label,
     starter_item_ids_for_character,
 )
 from ..models import Character, GameState, SKILL_TO_ABILITY, Weapon
@@ -98,50 +107,50 @@ class GameBase:
         "wayside_luck_shrine": "Wayside Luck Shrine",
         "greywake_triage_yard": "Greywake Yard",
         "greywake_road_breakout": "Greywake Breakout",
-        "neverwinter_briefing": "Neverwinter",
-        "road_ambush": "High Road",
+        "neverwinter_briefing": "Greywake",
+        "road_ambush": "Emberway",
         "high_road_liars_circle": "Liar's Circle",
         "high_road_false_checkpoint": "False Checkpoint",
         "high_road_false_tollstones": "False Tollstones",
-        "phandalin_hub": "Phandalin",
-        "old_owl_well": "Old Owl Well",
-        "wyvern_tor": "Wyvern Tor",
+        "phandalin_hub": "Iron Hollow",
+        "old_owl_well": "Blackglass Well",
+        "wyvern_tor": "Red Mesa Hold",
         "ashfall_watch": "Ashfall Watch",
-        "tresendar_manor": "Tresendar Manor",
+        "tresendar_manor": "Duskmere Manor",
         "emberhall_cellars": "Emberhall Cellars",
-        "act1_complete": "Phandalin",
-        "act2_claims_council": "Stonehill Claims Council",
+        "act1_complete": "Iron Hollow",
+        "act2_claims_council": "Ashlamp Claims Council",
         "act2_expedition_hub": "Act II Expedition Hub",
         "conyberry_agatha": "Conyberry",
-        "neverwinter_wood_survey_camp": "Neverwinter Wood",
+        "neverwinter_wood_survey_camp": "Greywake Wood",
         "stonehollow_dig": "Stonehollow Dig",
         "act2_midpoint_convergence": "Sabotage Night",
         "broken_prospect": "Broken Prospect",
         "south_adit": "South Adit",
-        "wave_echo_outer_galleries": "Wave Echo Cave",
-        "black_lake_causeway": "Black Lake Causeway",
-        "forge_of_spells": "Forge of Spells",
-        "act2_scaffold_complete": "Wave Echo Cave",
+        "wave_echo_outer_galleries": "Resonant Vaults",
+        "black_lake_causeway": "Blackglass Causeway",
+        "forge_of_spells": "Meridian Forge",
+        "act2_scaffold_complete": "Resonant Vaults",
         "act3_ninth_ledger_opens": "Ninth Ledger",
         "act3_ninth_ledger_aftermath": "Ledger Aftermath",
     }
     SCENE_OBJECTIVES = {
         "background_prologue": "Finish your origin story and answer the road's first test.",
-        "wayside_luck_shrine": "Meet Elira Dawnmantle and steady the first wounded travelers.",
+        "wayside_luck_shrine": "Meet Elira Lanternward and steady the first wounded travelers.",
         "greywake_triage_yard": "Stabilize Greywake Yard before the road pressure breaks open.",
         "greywake_road_breakout": "Protect the wounded or the proof when the Ashen Brand attacks.",
         "neverwinter_briefing": "Hear Mira Thann out and take the road south.",
-        "blackwake_crossing": "Trace the Blackwake supply cell before committing to the High Road.",
-        "road_decision_post_blackwake": "Choose whether to report back to Neverwinter or press south after Blackwake.",
-        "road_ambush": "Survive the High Road attack and reach Phandalin.",
+        "blackwake_crossing": "Trace the Blackwake supply cell before committing to the Emberway.",
+        "road_decision_post_blackwake": "Choose whether to report back to Greywake or press south after Blackwake.",
+        "road_ambush": "Survive the Emberway attack and reach Iron Hollow.",
         "high_road_liars_circle": "Solve the four-statue liar's puzzle or leave the circle alone.",
         "high_road_false_checkpoint": "Expose or outtalk the fake roadwardens demanding travel papers.",
         "high_road_false_tollstones": "Break or outtalk the false roadwarden toll at the broken milemarker.",
-        "phandalin_hub": "Choose which pressure in Phandalin to answer next.",
-        "old_owl_well": "Break the grave-salvage line at Old Owl Well.",
-        "wyvern_tor": "Break the Wyvern Tor raiders.",
+        "phandalin_hub": "Choose which pressure in Iron Hollow to answer next.",
+        "old_owl_well": "Break the grave-salvage line at Blackglass Well.",
+        "wyvern_tor": "Break the Red Mesa Hold raiders.",
         "ashfall_watch": "Break Ashfall Watch and reopen the road.",
-        "tresendar_manor": "Push through Tresendar Manor.",
+        "tresendar_manor": "Push through Duskmere Manor.",
         "emberhall_cellars": "Finish the fight beneath Emberhall.",
         "act1_complete": "Close out Act I and prepare for the next march.",
         "act2_claims_council": "Hold the claims council together and set the expedition's direction.",
@@ -149,13 +158,13 @@ class GameBase:
         "conyberry_agatha": "Learn what Conyberry's dead still remember.",
         "neverwinter_wood_survey_camp": "Secure the survey route through the woods.",
         "stonehollow_dig": "Stabilize Stonehollow and recover the missing team.",
-        "act2_midpoint_convergence": "Keep Phandalin from tearing itself apart overnight.",
-        "broken_prospect": "Push deeper toward Wave Echo's broken claim.",
+        "act2_midpoint_convergence": "Keep Iron Hollow from tearing itself apart overnight.",
+        "broken_prospect": "Push deeper toward the Resonant Vaults' broken claim.",
         "south_adit": "Free the prisoners from the South Adit.",
         "wave_echo_outer_galleries": "Break into the deeper galleries safely.",
-        "black_lake_causeway": "Cross the Black Lake route and keep the line intact.",
+        "black_lake_causeway": "Cross the Blackglass route and keep the line intact.",
         "forge_of_spells": "Break the Quiet Choir's hold on the Forge.",
-        "act2_scaffold_complete": "Bring the truth back out of Wave Echo Cave.",
+        "act2_scaffold_complete": "Bring the truth back out of the Resonant Vaults.",
         "act3_ninth_ledger_opens": "Expose the route that Varyn did not design.",
         "act3_ninth_ledger_aftermath": "Track revealed Ledger pressure and unrecorded choices.",
     }
@@ -173,15 +182,25 @@ class GameBase:
     STORY_SKILL_MODIFIER_KEY = "story_skill_modifiers"
     LIARS_BLESSING_MODIFIER_ID = "liars_blessing"
     LIARS_CURSE_MODIFIER_ID = "liars_curse"
+    PUBLIC_CHARACTER_NAMES = {
+        "Elira Dawnmantle": "Elira Lanternward",
+        "Barthen": "Hadrik",
+        "Halia Thornton": "Halia Vey",
+        "Daran Edermath": "Daran Orchard",
+        "Linene Graywind": "Linene Ironward",
+        "Mara Stonehill": "Mara Ashlamp",
+    }
     NAMED_CHARACTER_INTROS = {
-        "Mira Thann": "Mira Thann is a sharp-eyed Neverwinter officer who wears quiet authority like armor and studies every answer for weakness or leverage.",
-        "Tessa Harrow": "Tessa Harrow is Phandalin's exhausted steward, all ink-stained hands, sleepless focus, and frontier resolve held together by sheer will.",
+        "Mira Thann": "Mira Thann is a sharp-eyed Greywake officer who wears quiet authority like armor and studies every answer for weakness or leverage.",
+        "Tessa Harrow": "Tessa Harrow is Iron Hollow's exhausted steward, all ink-stained hands, sleepless focus, and frontier resolve held together by sheer will.",
         "Bryn Underbough": "Bryn Underbough is a halfling trail scout with quick eyes, a quicker tongue, and the watchful stillness of someone who trusts exits before promises.",
-        "Elira Dawnmantle": "Elira Dawnmantle is a priestess of Tymora whose steady hands and road-worn faith make the shrine feel more like a field hospital than a sanctuary.",
-        "Barthen": "Barthen is a broad-shouldered provisioner with a merchant's apron, a teamster's worry, and the tired patience of a man rationing hope as carefully as flour.",
-        "Halia Thornton": "Halia Thornton is a polished guild agent with perfectly measured calm, sharp ledgers, and the kind of smile that always seems to know one more thing than it says.",
-        "Daran Edermath": "Daran Edermath is a retired half-elf adventurer tending his orchard like a quiet fortification, all old reflexes, weathered patience, and the easy economy of someone who has survived uglier frontiers.",
-        "Linene Graywind": "Linene Graywind is a hard-edged quartermaster who keeps her post like a disciplined armory, missing nothing and trusting earned results over charm.",
+        "Elira Dawnmantle": "Elira Lanternward is a priestess of the Lantern whose steady hands and road-worn faith make the shrine feel more like a field hospital than a sanctuary.",
+        "Elira Lanternward": "Elira Lanternward is a priestess of the Lantern whose steady hands and road-worn faith make the shrine feel more like a field hospital than a sanctuary.",
+        "Hadrik": "Hadrik is a broad-shouldered provisioner with a merchant's apron, a teamster's worry, and the tired patience of a man rationing hope as carefully as flour.",
+        "Halia Vey": "Halia Vey is a polished guild agent with perfectly measured calm, sharp ledgers, and the kind of smile that always seems to know one more thing than it says.",
+        "Daran Orchard": "Daran Orchard is a retired half-elf adventurer tending his orchard like a quiet fortification, all old reflexes, weathered patience, and the easy economy of someone who has survived uglier frontiers.",
+        "Linene Ironward": "Linene Ironward is a hard-edged quartermaster who keeps her post like a disciplined armory, missing nothing and trusting earned results over charm.",
+        "Mara Ashlamp": "Mara Ashlamp is a hard-eyed innkeeper whose patience has edges, reading every table like weather before the room can turn dangerous.",
         "Kaelis Starling": "Kaelis Starling is a lean half-elf ranger whose attention never stops moving, as if every doorway and hedgeline is already a map in his head.",
         "Rhogar Valeguard": "Rhogar Valeguard is a bronze-scaled dragonborn paladin who carries himself like a sworn roadwarden, proud-backed and visibly made of vows.",
         "Tolan Ironshield": "Tolan Ironshield is a battle-scarred dwarven caravan guard with a wall of a shield, a gravel voice, and the look of someone who has outlived too many ambushes.",
@@ -201,6 +220,9 @@ class GameBase:
         "Ashen Brand Enforcer": "The Ashen Brand Enforcer is a thick-shouldered bruiser in scavenged gear, built to hold a doorway and make fear do half the work.",
         "Goblin Scavenger": "The Goblin Scavenger is a soot-streaked little raider with a sack on one shoulder and the quick, hungry stare of something that lives off battle's leftovers.",
     }
+
+    def public_character_name(self, name: object) -> str:
+        return self.PUBLIC_CHARACTER_NAMES.get(str(name), str(name))
 
     def __init__(
         self,
@@ -474,9 +496,9 @@ class GameBase:
                 "Quit",
             ]
             title_option_details = {
-                "Start a new game": "Build a new character and ride south toward Phandalin.",
+                "Start a new game": "Build a new character and ride the Emberway toward Iron Hollow.",
                 "Save Files": "Browse save files, load a run, or delete old journals.",
-                "Read the lore notes": "Browse Forgotten Realms context, rules guidance, and item basics.",
+                "Read the lore notes": "Browse Aethrune context, mechanics guidance, and item basics.",
                 "Settings": "Adjust audio, animations, typed narration, and presentation pacing.",
                 "Quit": "Leave the frontier for now.",
             }
@@ -490,8 +512,8 @@ class GameBase:
                         "Roads That Remember",
                         "Acts I-II: Frontier Roads and Echoing Depths",
                         (
-                            "A choice-driven D&D-inspired text adventure spanning the road from "
-                            "Neverwinter to Phandalin and the dangers beneath Wave Echo Cave."
+                            "An original choice-driven fantasy text adventure across the "
+                            "Emberway, Iron Hollow, and the Resonant Vaults."
                         ),
                         title_options,
                         option_details=title_option_details,
@@ -641,7 +663,7 @@ class GameBase:
         )
 
     def format_magic_bar(self, current_mp: int, max_mp: int, *, width: int | None = None) -> str:
-        return self.format_resource_bar("MP", current_mp, max_mp, width=width, fill_color="blue")
+        return self.format_resource_bar("Channel", current_mp, max_mp, width=width, fill_color="blue")
 
     def format_member_magic_bar(self, member, *, width: int | None = None) -> str | None:
         max_mp = maximum_magic_points(member)
@@ -908,10 +930,10 @@ class GameBase:
     def dice_animation_theme(self, kind: str, style: str | None) -> tuple[str, str]:
         style_key = style or ("attack" if kind == "d20" else "utility")
         themes = {
-            "attack": ("Attack Roll", "light_red"),
+            "attack": ("Strike Check", "light_red"),
             "damage": ("Damage Roll", "light_red"),
             "healing": ("Healing Roll", "light_green"),
-            "save": ("Saving Throw", "light_yellow"),
+            "save": ("Resist Check", "light_yellow"),
             "skill": ("Skill Check", "light_aqua"),
             "initiative": ("Initiative", "yellow"),
             "utility": ("Dice Roll", "light_yellow"),
@@ -929,15 +951,14 @@ class GameBase:
     ) -> str:
         if kind == "d20":
             base_label = {
-                "attack": "Attack roll",
-                "save": "Saving throw",
+                "attack": "Strike check",
+                "save": "Resist check",
                 "skill": "Skill check",
                 "initiative": "Initiative",
             }.get(style or "", "Rolling d20")
-            if advantage_state > 0:
-                return f"{base_label} (advantage)"
-            if advantage_state < 0:
-                return f"{base_label} (disadvantage)"
+            edge = d20_edge_label(advantage_state)
+            if edge:
+                return f"{base_label} ({edge})"
             return base_label
         if style == "damage":
             return "Rolling damage"
@@ -958,15 +979,14 @@ class GameBase:
     ) -> str:
         if kind == "d20":
             base_label = {
-                "attack": "Attack roll",
-                "save": "Saving throw",
+                "attack": "Strike check",
+                "save": "Resist check",
                 "skill": "Skill check",
                 "initiative": "Initiative",
             }.get(style or "", "Rolled d20")
-            if advantage_state > 0:
-                return f"{base_label} (advantage)"
-            if advantage_state < 0:
-                return f"{base_label} (disadvantage)"
+            edge = d20_edge_label(advantage_state)
+            if edge:
+                return f"{base_label} ({edge})"
             return base_label
         if style == "damage":
             return "Damage roll"
@@ -2106,7 +2126,7 @@ class GameBase:
     def add_developer_gold(self, amount: int = 10_000) -> int:
         assert self.state is not None
         self.state.gold += amount
-        self.say(f"Developer tools add {amount:,} gp. Total gold: {self.state.gold:,} gp.")
+        self.say(f"Developer tools add {amount:,} marks. Total marks: {self.state.gold:,}.")
         return self.state.gold
 
     def level_up_party_instantly(self, *, target_level: int | None = None, randomize_skill_choices: bool = True) -> int | None:
@@ -2174,7 +2194,7 @@ class GameBase:
         self.state.completed_acts = [1]
         self.state.clues = []
         self.state.journal = [
-            "You broke the Ashen Brand and secured Phandalin through the end of Act 1.",
+            "You broke the Ashen Brand and secured Iron Hollow through the end of Act 1.",
         ]
         self.state.quests = {}
 
@@ -2195,7 +2215,7 @@ class GameBase:
     def console_command_reference(self) -> list[str]:
         return [
             "give <item id> [quantity] - add item(s) to the shared inventory; quantity defaults to 1",
-            "give gold [quantity] - add gold; quantity defaults to 1,000 gp",
+            "give marks [quantity] - add marks; quantity defaults to 1,000",
             "god - toggle party god mode",
             "heal - heal every living active party member to full HP",
             "revive - revive every dead or downed active party member at 1 HP",
@@ -2327,17 +2347,17 @@ class GameBase:
 
     def execute_give_console_command(self, tokens: list[str]) -> bool:
         if len(tokens) < 2 or len(tokens) > 3:
-            self.say("Usage: give <item id> [quantity] or give gold [quantity].")
+            self.say("Usage: give <item id> [quantity] or give marks [quantity].")
             return False
         if not self.active_console_state_available():
             return False
         target = tokens[1]
-        if target.lower() == "gold":
+        if target.lower() in {"gold", "marks"}:
             quantity = self.parse_console_quantity(tokens[2] if len(tokens) == 3 else None, default=1_000)
             if quantity is None:
                 return False
             self.state.gold += quantity
-            self.say(f"Console grants {quantity:,} gp. Total gold: {self.state.gold:,} gp.")
+            self.say(f"Console grants {quantity:,} marks. Total marks: {self.state.gold:,}.")
             return False
         quantity = self.parse_console_quantity(tokens[2] if len(tokens) == 3 else None, default=1)
         if quantity is None:
@@ -2568,14 +2588,14 @@ class GameBase:
         except KeyError:
             self.say(f"Unknown item id: {tokens[1]}.")
             return
-        rules = item_rules_text(item) or "No special rules."
+        rules = item_rules_text(item) or "No special field rules."
         self.banner(f"Identify: {item.name}")
         self.say(f"ID: {item.item_id}")
         if item.legacy_id:
             self.say(f"Legacy ID: {item.legacy_id}")
-        self.say(f"Category: {item.category} / {item.item_type}")
+        self.say(f"Category: {item_category_label(item.category)} / {item_type_label(item.item_type)}")
         self.say(f"Rarity: {item.rarity_title}")
-        self.say(f"Value: {item.value} gp | Weight: {item.weight:.1f} lb")
+        self.say(f"Value: {marks_label(item.value)} | Weight: {item.weight:.1f} lb")
         self.say(f"Description: {item.description}")
         self.say(f"Rules: {rules}")
         self.say(f"Source: {item.source}")
@@ -2590,7 +2610,7 @@ class GameBase:
             options = [
                 f"Toggle god mode for the party [{'ON' if self.god_mode_enabled() else 'OFF'}]",
                 f"Toggle pass every dice check [{'ON' if self.always_pass_dice_checks_enabled() else 'OFF'}]",
-                "Add 10,000 gp instantly",
+                "Add 10,000 marks instantly",
                 "Level up the company instantly",
                 "Jump to the start of Act II with a level 4 test company",
                 "Back",
@@ -2825,7 +2845,7 @@ class GameBase:
             return
 
     def emit_dialogue_line(self, speaker_name: str, text: str, *, color: str, typed: bool = True) -> None:
-        styled_name = self.style_text(speaker_name, color)
+        styled_name = self.style_text(self.public_character_name(speaker_name), color)
         if typed and self.type_dialogue:
             self.typewrite_dialogue_line(styled_name, text)
             return
@@ -2887,7 +2907,7 @@ class GameBase:
                 return notes[0]
             if getattr(subject, "tags", None) and "leader" in subject.tags:
                 return (
-                    f"{name} stands out immediately: a {subject.race.lower()} {subject.class_name.lower()} "
+                    f"{name} stands out immediately: a {race_label(subject.race).lower()} {class_label(subject.class_name).lower()} "
                     f"carrying themselves like the center of the whole fight."
                 )
         else:
@@ -2917,63 +2937,63 @@ class GameBase:
                 self.introduce_character(enemy)
 
     def format_feature_name(self, feature: str) -> str:
-        return feature.replace("_", " ").title()
+        return feature_label(feature)
 
     def lore_menu_label(self, name: str, entry: dict[str, str]) -> str:
+        display_name = entry.get("label", name).strip() or name
         menu = entry.get("menu", "").strip()
-        return f"{name}: {menu}" if menu else name
+        return f"{display_name}: {menu}" if menu else display_name
 
     def item_manual_entries(self) -> dict[str, dict[str, str]]:
         return {
             "Weapons": {
-                "menu": "Held in hand and used for attack rolls and weapon damage.",
+                "menu": "Held in hand and used for strike checks and weapon damage.",
                 "text": (
-                    "Weapons are used for melee or ranged attacks and follow the core 5e idea that you wield them in "
-                    "one or two hands depending on the weapon. In this game, weapons set your main attack profile, "
-                    "including damage dice, attack stat, and any magical hit or damage bonuses.\n\n"
+                    "Weapons are used for melee or ranged strikes and define how a character turns training into "
+                    "damage. In this game, weapons set your main attack profile, including damage dice, attack stat, "
+                    "hand use, reach, and any relic bonuses.\n\n"
                     "Light one-handed weapons can support off-hand fighting, while two-handed weapons lock out the "
-                    "off-hand slot. Ranged weapons and finesse weapons still follow their normal identity: bows shoot "
-                    "from range, and finesse weapons can reward Dexterity-focused builds."
+                    "off-hand slot. Ranged weapons and finesse weapons keep their familiar roles: bows pressure from "
+                    "range, and finesse weapons reward Agility-focused builds."
                 ),
             },
             "Armor and Shields": {
-                "menu": "Armor sets base AC, while shields protect the off hand.",
+                "menu": "Armor sets base Guard, while shields protect the off hand.",
                 "text": (
-                    "Armor works like the official 5e categories: it defines your base Armor Class and may limit how "
-                    "much Dexterity helps. Shields are handled separately in the off-hand slot and improve survivability "
-                    "when your other hand is free.\n\n"
-                    "Heavy or two-handed weapon setups can conflict with shields, so the game checks those hand-use rules "
-                    "when gear is equipped. Magical armor and shields can also add resistances or extra defensive traits."
+                    "Armor defines your base Guard and may limit how much Agility helps. Shields are handled separately "
+                    "in the off-hand slot and improve survivability when your other hand is free.\n\n"
+                    "Heavy or two-handed weapon setups can conflict with shields, so the game checks hand-use rules "
+                    "when gear is equipped. Relic armor and shields can also add resistances or extra defensive traits."
                 ),
             },
             "Worn Equipment": {
                 "menu": "Head, neck, rings, gloves, boots, chest, and cape pieces add passive bonuses.",
                 "text": (
-                    "Worn gear follows the same general logic as official D&D magic items: boots go on the feet, gloves "
-                    "on the hands, rings on the fingers, a cloak or cape on the shoulders, and similar items only work "
-                    "when worn in the right place. This game simplifies that into clear slots for head, neck, chest, "
+                    "Worn gear follows clear body slots: boots go on the feet, gloves on the hands, rings on the "
+                    "fingers, a cloak or cape on the shoulders, and similar pieces only work when worn in the right "
+                    "place. This game simplifies that into clear slots for head, neck, chest, "
                     "gloves, boots, cape, and two ring slots.\n\n"
-                    "Most of these pieces grant passive bonuses such as Armor Class, skill bonuses, saving throw boosts, "
+                    "Most of these pieces grant passive bonuses such as Guard, skill bonuses, resist boosts, "
                     "initiative bonuses, resistances, or other always-on utility effects."
                 ),
             },
-            "Consumables and Potions": {
+            "Consumables and Draughts": {
                 "menu": "Single-use items that heal, restore, protect, or clear conditions.",
                 "text": (
-                    "Consumables are one-use resources modeled after the official idea of potions, elixirs, and other "
-                    "adventuring aids. In this game they usually restore hit points, temporary hit points, MP, "
-                    "or remove harmful conditions.\n\n"
-                    "Most are best saved for emergencies because they are consumed immediately on use. Healing potions "
-                    "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is faster "
-                    "than administering one to someone else."
+                    "Consumables are one-use resources such as draughts, field tonics, and travel aids. In this game "
+                    "they usually restore hit points, temporary hit points, channel reserves, or remove harmful "
+                    "conditions.\n\n"
+                    "Most are best saved for emergencies because they are consumed immediately on use. Healing draughts "
+                    "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is "
+                    "faster than administering one to someone else."
                 ),
             },
-            "Scrolls": {
-                "menu": "Single-use magical effects that release a spell-like burst or support effect.",
+            "Scripts": {
+                "menu": "Single-use channeling patterns that release a focused effect.",
                 "text": (
-                    "Scrolls are disposable magical items inspired by official D&D spell scrolls. Instead of teaching a "
-                    "full spell list system, this game uses named scrolls as focused one-use effects such as healing, "
-                    "resource restoration, protection, or camp-only resurrection.\n\n"
+                    "Scripts are disposable channeling patterns. Instead of teaching a full channel pool, this game "
+                    "uses named scripts as focused one-use effects such as healing, resource restoration, protection, "
+                    "or camp-only revival.\n\n"
                     "They are consumed when activated and are best treated like strategic emergency tools rather than "
                     "ordinary gear."
                 ),
@@ -2981,9 +3001,9 @@ class GameBase:
             "Supplies and Trade Goods": {
                 "menu": "Food, camp staples, and practical inventory items that support travel and resting.",
                 "text": (
-                    "Not every important item is combat gear. Supplies represent the broader 5e adventuring idea of rations, "
-                    "packs, and practical travel resources. In this game they matter for carrying weight, supply value, and "
-                    "long-rest readiness.\n\n"
+                    "Not every important item is combat gear. Supplies represent food, packs, repair bits, fuel, "
+                    "and practical travel resources. In this game they matter for carrying weight, supply value, and "
+                    "camp readiness.\n\n"
                     "Trade goods and mundane items may also matter for merchants, quest rewards, and inventory economy even "
                     "when they do not give direct combat bonuses."
                 ),
@@ -3031,7 +3051,8 @@ class GameBase:
             self.say("Please enter a listed number.")
 
     def show_lore_entry(self, section_title: str, entry_name: str, entry: dict[str, str]) -> bool:
-        self.banner(f"{section_title}: {entry_name}")
+        display_name = entry.get("label", entry_name).strip() or entry_name
+        self.banner(f"{section_title}: {display_name}")
         self.say(entry["text"])
         manual_text = manual_text_for_entry(section_title, entry_name)
         if manual_text:
@@ -3051,9 +3072,9 @@ class GameBase:
             self.banner("Lore Codex")
             self.say(LORE_INTRO)
             self.say(
-                "Mechanically, the game still follows core 2014 D&D 5e structure for ability checks, "
-                "proficiency, initiative, attack rolls, saving throws, spell save DCs, conditions, "
-                "weapon damage, healing, potions, and death saves, while compressing positioning and "
+                "Under the hood, the game still uses an SRD-derived d20 chassis for ability checks, "
+                "proficiency, initiative, strike checks, resist checks, channel difficulty, conditions, "
+                "weapon damage, healing, draughts, and death saves, while compressing positioning and "
                 "encounter flow to fit a text adventure."
             )
             self.say(

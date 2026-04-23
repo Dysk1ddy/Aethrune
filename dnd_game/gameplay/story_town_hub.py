@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..content import create_bryn_underbough, create_tolan_ironshield
+from ..data.story.public_terms import marks_label
 from .constants import LEVEL_XP_THRESHOLDS
 
 
@@ -13,45 +14,45 @@ class StoryTownHubMixin:
         resolution = self.state.flags.get("blackwake_resolution")
         if resolution == "rescue":
             self.say(
-                "Blackwake's rescued teamsters have already become road-talk by the time you reach Phandalin. "
+                "Blackwake's rescued teamsters have already become road-talk by the time you reach Iron Hollow. "
                 "A few townsfolk look at you less like hired steel and more like someone who might actually bring people home."
             )
         elif resolution == "evidence":
             self.say(
-                "The copied seals and ledgers from Blackwake make Phandalin's route permits look less like paperwork and more like a battlefield. "
+                "The copied seals and ledgers from Blackwake make Iron Hollow's route permits look less like paperwork and more like a battlefield. "
                 "Merchants notice the proof before they trust the promise behind it."
             )
         elif resolution == "sabotage":
             self.say(
-                "Rumor reaches Phandalin ahead of you: a riverside cache burned, and the Ashen Brand's northbound supply rhythm stumbled. "
+                "Rumor reaches Iron Hollow ahead of you: a riverside cache burned, and the Ashen Brand's northbound supply rhythm stumbled. "
                 "The town does not know whether to call it rescue, warning, or war."
             )
         else:
             self.say(
-                "The Blackwake crossing follows you into town as a rumor of smoke, false seals, and caravans disappearing before Phandalin ever saw them."
+                "The Blackwake crossing follows you into town as a rumor of smoke, false seals, and caravans disappearing before Iron Hollow ever saw them."
             )
         if self.state.flags.get("blackwake_sereth_fate") == "escaped":
             self.say("One road hand lowers their voice over Sereth Vane's name, as if saying it too clearly might invite him south.")
 
     def scene_phandalin_hub(self) -> None:
         assert self.state is not None
-        self.banner("Phandalin")
+        self.banner("Iron Hollow")
         if not self.state.flags.get("phandalin_arrived"):
             self.say(
-                "Phandalin rises from rocky foothills in a scatter of simple homes, muddy lanes, and broken "
+                "Iron Hollow rises from rocky foothills in a scatter of simple homes, muddy lanes, and broken "
                 "stonework left behind by an older, larger town. There are no real walls, no proper garrison, "
                 "and too many people keeping weapons close at hand.",
                 typed=True,
             )
             self.state.flags["phandalin_arrived"] = True
-            self.add_journal("You reached Phandalin, a resettled frontier town under pressure from the Ashen Brand.")
+            self.add_journal("You reached Iron Hollow, a resettled frontier town under pressure from the Ashen Brand.")
             if self.state.flags.get("blackwake_completed"):
                 self.describe_blackwake_phandalin_arrival()
             choice = self.scenario_choice(
                 "How do you enter town?",
                 [
                     self.quoted_option("INSIGHT", "I want to read the mood of the town before I speak."),
-                    self.quoted_option("PERSUASION", "Let them know Neverwinter sent help."),
+                    self.quoted_option("PERSUASION", "Let them know Greywake sent help."),
                     self.skill_tag("INVESTIGATION", self.action_option("Survey the tracks, barricades, and weak points first.")),
                 ]
                 + [text for _, text in self.scene_identity_options("phandalin_arrival")],
@@ -68,16 +69,16 @@ class StoryTownHubMixin:
                 if success:
                     self.say("You catch the way fear keeps pulling the crowd's attention toward the old ruins whenever the gang is mentioned.")
                     self.add_clue("The crowd keeps glancing toward the old manor ruins whenever the Ashen Brand is named.")
-                    self.reward_party(xp=10, reason="reading Phandalin's mood on arrival")
+                    self.reward_party(xp=10, reason="reading Iron Hollow's mood on arrival")
                 else:
                     self.say("The town's fear is real, but too tangled and contradictory for one quick read to untangle.")
                 self.run_dialogue_input("phandalin_arrival_insight")
             elif choice == 2:
-                self.player_speaker("Let them know Neverwinter sent help.")
+                self.player_speaker("Let them know Greywake sent help.")
                 success = self.skill_check(self.state.player, "Persuasion", 12, context="to steady the town's nerves")
                 if success:
                     self.say("A few shoulders ease as your words cut through the panic and sound like a promise worth believing.")
-                    self.reward_party(xp=10, gold=6, reason="reassuring Phandalin on arrival")
+                    self.reward_party(xp=10, gold=6, reason="reassuring Iron Hollow on arrival")
                     self.say("A grateful merchant presses a few coins into your hand for road expenses.")
                 else:
                     self.say("Your words land, but suspicion clings harder than hope in a town this strained.")
@@ -88,13 +89,13 @@ class StoryTownHubMixin:
                 if success:
                     self.say("Fresh ruts, hurried repairs, and trampled lanes start to line up into a pattern you can actually use.")
                     self.add_clue("Fresh wagon ruts and bootprints suggest the gang watches the manor-side lanes closely.")
-                    self.reward_party(xp=10, reason="surveying Phandalin's defenses")
+                    self.reward_party(xp=10, reason="surveying Iron Hollow's defenses")
                 else:
                     self.say("Too many wagon ruts and bootprints overlap for a clean read before the trail goes cold.")
                 self.run_dialogue_input("phandalin_arrival_investigation")
         elif self.state.flags.get("ashfall_watch_cleared") and not self.state.flags.get("phandalin_after_watch_seen"):
             self.say(
-                "When you return from Ashfall Watch, Phandalin feels changed in all the small ways that matter. "
+                "When you return from Ashfall Watch, Iron Hollow feels changed in all the small ways that matter. "
                 "Doors open faster, wagon talk replaces funeral whispers, and more than one townsman studies the road "
                 "east like it might finally belong to honest travelers again.",
                 typed=True,
@@ -113,13 +114,13 @@ class StoryTownHubMixin:
             options: list[tuple[str, str]] = []
             if self.has_steward_interactions():
                 options.append(("steward", self.action_option("Report to Steward Tessa Harrow")))
-            options.append(("inn", self.action_option("Visit the Stonehill Inn")))
+            options.append(("inn", self.action_option("Visit the Ashlamp Inn")))
             if self.has_shrine_interactions():
-                options.append(("shrine", self.action_option("Stop by the shrine of Tymora")))
+                options.append(("shrine", self.action_option("Stop by the Lantern Shrine")))
             options.extend(
                 [
-                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
-                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
+                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Hadrik's Provisions"))),
+                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Ironward at the Ironbound trading post"))),
                     ("camp", self.action_option("Return to camp")),
                     ("rest", self.action_option("Take a short rest")),
                     ("ashfall", ready_text),
@@ -185,7 +186,7 @@ class StoryTownHubMixin:
             if self.state.flags.get("blackwake_completed") and not self.state.flags.get("steward_blackwake_asked"):
                 options.append(("blackwake", self.action_option("Share what happened at Blackwake Crossing.")))
             if not self.state.flags.get("steward_vow_made") and self.quest_status("secure_miners_road") == "active":
-                options.append(("vow", "\"I'll break their grip on Phandalin.\""))
+                options.append(("vow", "\"I'll break their grip on Iron Hollow.\""))
             options.append(("leave", self.action_option("Leave Tessa to her work and move on.")))
             choice = self.scenario_choice("Choose what you say to Tessa.", [text for _, text in options])
             selection_key, _ = options[choice - 1]
@@ -227,10 +228,10 @@ class StoryTownHubMixin:
                 if resolution == "evidence":
                     self.speaker(
                         "Tessa Harrow",
-                        "False seals this close to Neverwinter changes every petition on my desk. Give me names and route marks, and I can make officials answer a harder question than 'why are you afraid?'",
+                        "False seals this close to Greywake changes every petition on my desk. Give me names and route marks, and I can make officials answer a harder question than 'why are you afraid?'",
                     )
                     self.add_clue("Tessa can use the Blackwake ledgers to argue that the Ashen Brand is corrupting route authority, not merely raiding wagons.")
-                    self.reward_party(gold=8, reason="sharing Blackwake proof with Phandalin's steward")
+                    self.reward_party(gold=8, reason="sharing Blackwake proof with Iron Hollow's steward")
                 elif resolution == "rescue":
                     self.speaker(
                         "Tessa Harrow",
@@ -242,7 +243,7 @@ class StoryTownHubMixin:
                         "Tessa Harrow",
                         "A burned cache buys us time even if it leaves me with fewer papers to wave in a magistrate's face. I'll take time. Time lets a town move grain, tools, and children.",
                     )
-                    self.add_clue("Blackwake's destroyed cache may weaken Ashen Brand supply pressure south of Neverwinter.")
+                    self.add_clue("Blackwake's destroyed cache may weaken Ashen Brand supply pressure south of Greywake.")
                 else:
                     self.speaker(
                         "Tessa Harrow",
@@ -253,10 +254,10 @@ class StoryTownHubMixin:
                 self.run_dialogue_input("steward_blackwake")
             elif selection_key == "vow":
                 self.state.flags["steward_vow_made"] = True
-                self.player_speaker("I'll break their grip on Phandalin.")
+                self.player_speaker("I'll break their grip on Iron Hollow.")
                 self.speaker(
                     "Tessa Harrow",
-                    "Then give me a result I can build a safer week on, and Phandalin will remember your name for the right reason.",
+                    "Then give me a result I can build a safer week on, and Iron Hollow will remember your name for the right reason.",
                 )
                 self.run_dialogue_input("steward_vow")
             else:
@@ -270,7 +271,7 @@ class StoryTownHubMixin:
         if callable(play_music_for_context):
             play_music_for_context("inn", restart=True)
         try:
-            self.banner("Stonehill Inn")
+            self.banner("Ashlamp Inn")
             if not self.state.flags.get("inn_seen"):
                 self.say(
                     "The inn smells of stew, wet wool, and the kind of caution that settles into a room after too many bad nights. "
@@ -291,9 +292,9 @@ class StoryTownHubMixin:
                     options.append(("blackwake", "\"What are people saying about Blackwake Crossing?\""))
                 if self.stonehill_has_mara_interactions():
                     if self.quest_is_ready("marked_keg_investigation"):
-                        options.append(("mara", self.action_option("Tell Mara Stonehill what you found about the marked keg.")))
+                        options.append(("mara", self.action_option("Tell Mara Ashlamp what you found about the marked keg.")))
                     else:
-                        options.append(("mara", self.action_option("Talk to Mara Stonehill, who is keeping half the room from a fight.")))
+                        options.append(("mara", self.action_option("Talk to Mara Ashlamp, who is keeping half the room from a fight.")))
                 if self.stonehill_has_jerek_interactions():
                     options.append(("jerek", self.action_option("Sit with Jerek Harl and hear what anger has left him.")))
                 if self.quest_is_ready("songs_for_the_missing") and self.stonehill_has_sella_interactions():
@@ -326,7 +327,7 @@ class StoryTownHubMixin:
                     )
                 if self.state.flags.get("tolan_waiting_at_inn") and not self.has_companion("Tolan Ironshield"):
                     options.append(("recruit_tolan", self.action_option("Wave Tolan over and ask him to gear up.")))
-                options.append(("paid_rest", self.action_option("Rent beds for a long rest (10 gp per active party member).")))
+                options.append(("paid_rest", self.action_option("Rent beds for a long rest (10 marks per active party member).")))
                 options.append(("leave", self.action_option("Leave the common room for now.")))
                 choice = self.scenario_choice("The common room quiets for a moment as you enter.", [text for _, text in options])
                 selection_key, _ = options[choice - 1]
@@ -342,7 +343,7 @@ class StoryTownHubMixin:
                     self.player_speaker("Tell me what the roads are saying about the Ashen Brand.")
                     self.speaker(
                         "Bryn Underbough",
-                        "That they rotate scouts between Phandalin and a hillfort called Ashfall Watch, and that the scouts always seem to know which wagons are worth hurting first. "
+                        "That they rotate scouts between Iron Hollow and a hillfort called Ashfall Watch, and that the scouts always seem to know which wagons are worth hurting first. "
                         "If the gang has a spine, that's where it'll be. Break that, and the rest starts looking mortal.",
                     )
                     self.add_clue("Bryn confirms Ashfall Watch is the gang's field base.")
@@ -352,26 +353,26 @@ class StoryTownHubMixin:
                     resolution = self.state.flags.get("blackwake_resolution")
                     if resolution == "rescue":
                         self.speaker(
-                            "Stonehill Teamster",
+                            "Ashlamp Teamster",
                             "That some folk walked out of smoke who had no right surviving it. People remember that kind of help, even when they pretend they only care about freight.",
                         )
                     elif resolution == "evidence":
                         self.speaker(
-                            "Stonehill Teamster",
+                            "Ashlamp Teamster",
                             "That the stolen seals were real enough to fool honest clerks. If you've got proof, keep it dry and close. Paper scares cowards when steel can't reach them yet.",
                         )
                     elif resolution == "sabotage":
                         self.speaker(
-                            "Stonehill Teamster",
+                            "Ashlamp Teamster",
                             "That someone taught the Brand what a supply loss feels like. Makes the room nervous, that does, but not all nervous is bad.",
                         )
                     else:
                         self.speaker(
-                            "Stonehill Teamster",
+                            "Ashlamp Teamster",
                             "That Blackwake was never just a burned crossing. It was a door, and somebody mean was deciding who got through.",
                         )
                     if self.state.flags.get("blackwake_sereth_fate") == "escaped":
-                        self.speaker("Stonehill Teamster", "Also heard a name: Sereth Vane. Folk say he leaves clean desks and dirty roads behind him.")
+                        self.speaker("Ashlamp Teamster", "Also heard a name: Sereth Vane. Folk say he leaves clean desks and dirty roads behind him.")
                 elif selection_key == "mara":
                     self.stonehill_talk_mara()
                 elif selection_key == "jerek":
@@ -421,8 +422,8 @@ class StoryTownHubMixin:
                     self.recruit_companion(create_tolan_ironshield())
                     self.speaker("Tolan Ironshield", "About time. I was getting tired of waiting on soup.")
                 elif selection_key == "paid_rest":
-                    self.player_action("Rent beds at the Stonehill Inn for the company.")
-                    self.paid_inn_long_rest("Stonehill Inn")
+                    self.player_action("Rent beds at the Ashlamp Inn for the company.")
+                    self.paid_inn_long_rest("Ashlamp Inn")
                 else:
                     self.player_action("You leave the common room for now.")
                     return
@@ -510,7 +511,7 @@ class StoryTownHubMixin:
         if not self.state.flags.get("stonehill_mara_met"):
             self.state.flags["stonehill_mara_met"] = True
             self.speaker(
-                "Mara Stonehill",
+                "Mara Ashlamp",
                 "If you're here to save the town, good. If you're here to practice on it, finish your drink outside. I can carry trays or trouble on a bad night, but not both.",
             )
         while True:
@@ -525,15 +526,15 @@ class StoryTownHubMixin:
             if not self.state.flags.get("stonehill_mara_order_asked"):
                 options.append(("order", "\"How are you keeping this room from breaking?\""))
             options.append(("leave", self.action_option("Leave Mara to the floor and step back into the room.")))
-            choice = self.scenario_choice("Choose what you say to Mara Stonehill.", [text for _, text in options])
+            choice = self.scenario_choice("Choose what you say to Mara Ashlamp.", [text for _, text in options])
             selection_key, _ = options[choice - 1]
             if selection_key == "turn_in":
                 self.player_action("Tell Mara who marked the keg and why.")
-                self.turn_in_quest("marked_keg_investigation", giver="Mara Stonehill")
+                self.turn_in_quest("marked_keg_investigation", giver="Mara Ashlamp")
             elif selection_key == "quest":
                 self.player_speaker("What has you watching the kegs instead of the door?")
                 self.speaker(
-                    "Mara Stonehill",
+                    "Mara Ashlamp",
                     "Because one cask near the back wall is wearing fresh chalk no cellar hand will claim. Somebody wants this room louder, meaner, and easier to steer. Name that hand for me before the whole place starts pretending the first flying chair was inevitable.",
                 )
                 self.grant_quest(
@@ -546,7 +547,7 @@ class StoryTownHubMixin:
                 self.state.flags["stonehill_mara_order_asked"] = True
                 self.player_speaker("How are you keeping this room from breaking?")
                 self.speaker(
-                    "Mara Stonehill",
+                    "Mara Ashlamp",
                     "By learning who came in grieving, who came in lying, and who came in hoping grief would do the lying for them. On nights like this the difference keeps more people alive than the stew.",
                 )
             else:
@@ -598,8 +599,8 @@ class StoryTownHubMixin:
                 "The answer comes cleanly once you stop looking at the keg and start looking at the hands. "
                 "One supposed drover still has brewery chalk in the seam of his thumb, and when Mara says his drink is on the house he flinches like a man who was paid to make a room worse, not stay in it."
             )
-            self.add_clue("A chalk-marked keg at Stonehill was meant to turn common-room fear into a useful riot.")
-            self.add_journal("You exposed the hand behind Stonehill's marked keg before the whole room could be steered by it.")
+            self.add_clue("A chalk-marked keg at the Ashlamp was meant to turn common-room fear into a useful riot.")
+            self.add_journal("You exposed the hand behind the Ashlamp's marked keg before the whole room could be steered by it.")
         else:
             self.state.flags["stonehill_barfight_ready"] = True
             self.say(
@@ -770,9 +771,9 @@ class StoryTownHubMixin:
         self.state.flags["stonehill_quiet_room_intel_decoded"] = True
         self.add_clue("Nera's quiet-room packet reveals an Ashfall countersign and ties Emberhall's ledger chain to the same courier hand.")
         self.add_journal(
-            "In a private room above Stonehill, you decoded the quiet-table packet. The stolen countersign should help wrong-foot Ashfall's command line, and the same courier hand should make Emberhall's ledgers easier to read."
+            "In a private room above the Ashlamp, you decoded the quiet-table packet. The stolen countersign should help wrong-foot Ashfall's command line, and the same courier hand should make Emberhall's ledgers easier to read."
         )
-        self.reward_party(xp=reward_xp, reason="decoding the quiet-room packet above Stonehill")
+        self.reward_party(xp=reward_xp, reason="decoding the quiet-room packet above the Ashlamp")
 
     def stonehill_talk_sella(self) -> None:
         assert self.state is not None
@@ -811,11 +812,11 @@ class StoryTownHubMixin:
                 self.player_speaker("Can a song do anything for the missing?")
                 self.speaker(
                     "Sella Quill",
-                    "Not for the dead. They are past needing help from my sort. But for the living? A true name keeps grief from being flattened into rumor. Bring me three details this room has not made cowardly yet, and I will give them back to Phandalin in a shape worth remembering.",
+                    "Not for the dead. They are past needing help from my sort. But for the living? A true name keeps grief from being flattened into rumor. Bring me three details this room has not made cowardly yet, and I will give them back to Iron Hollow in a shape worth remembering.",
                 )
                 self.grant_quest(
                     "songs_for_the_missing",
-                    note="Sella wants three true details from Stonehill's regulars so the missing stop being reduced to muttered counts and roadside warnings.",
+                    note="Sella wants three true details from the Ashlamp's regulars so the missing stop being reduced to muttered counts and roadside warnings.",
                 )
             elif selection_key == "reminder":
                 missing: list[str] = []
@@ -840,7 +841,7 @@ class StoryTownHubMixin:
                     "Sella Quill",
                     "Like a town trying not to become the story told about it elsewhere. Also like one table in the corner is speaking too softly for honest fear. Soft voices in a frontier inn are either lovers or knives, and nobody over there looks romantic.",
                 )
-                self.add_clue("Sella Quill thinks one quiet Stonehill table is speaking too softly for honest fear.")
+                self.add_clue("Sella Quill thinks one quiet Ashlamp table is speaking too softly for honest fear.")
             elif selection_key == "performance":
                 self.state.flags["stonehill_sella_performance_attempted"] = True
                 self.player_speaker("Let me trade you a verse for a rumor.")
@@ -849,7 +850,7 @@ class StoryTownHubMixin:
                     self.say(
                         "Your verse is not perfect, but it is alive enough to make the room choose listening over muttering for one valuable minute."
                     )
-                    self.reward_party(xp=10, gold=4, reason="winning Stonehill's room for a verse")
+                    self.reward_party(xp=10, gold=4, reason="winning the Ashlamp's room for a verse")
                 else:
                     self.say("The room gives you courtesy, not surrender. Even Sella's smile says that was worth trying once and only once.")
             elif selection_key == "memorial":
@@ -863,7 +864,7 @@ class StoryTownHubMixin:
                     "When Sella takes the room, the second chorus changes. Where the old version counted wagons and weather, the new one names Dain Harl, the blue scarf, and the road that still carried truth home."
                 )
                 self.add_journal(
-                    "Sella changed her Stonehill song after Dain Harl's fate was brought home, giving the room a verse that carried his name instead of another warning."
+                    "Sella changed her Ashlamp song after Dain Harl's fate was brought home, giving the room a verse that carried his name instead of another warning."
                 )
                 self.reward_party(xp=10, reason="hearing Sella change the song for Dain Harl")
             else:
@@ -971,7 +972,7 @@ class StoryTownHubMixin:
                 )
                 self.grant_quest(
                     "quiet_table_sharp_knives",
-                    note="Nera thinks one quiet Stonehill table is buying arguments, editing messages, and steering the room toward useful violence.",
+                    note="Nera thinks one quiet Ashlamp table is buying arguments, editing messages, and steering the room toward useful violence.",
                 )
             elif selection_key == "shadow":
                 self.stonehill_shadow_quiet_table()
@@ -1031,8 +1032,8 @@ class StoryTownHubMixin:
                 "The corner table folds once you get the rhythm of it. One man keeps buying outrage half a sentence at a time, "
                 "nudging miners against mercenaries and couriers against witnesses. When you move on him, his partner bolts first, which tells the rest of the room exactly how honest they were not."
             )
-            self.add_clue("A paid Ashen Brand mouth at Stonehill was trying to keep Phandalin divided and easy to read.")
-            self.add_journal("You exposed the quiet-table scheme inside Stonehill Inn before it could buy a worse night.")
+            self.add_clue("A paid Ashen Brand mouth at the Ashlamp was trying to keep Iron Hollow divided and easy to read.")
+            self.add_journal("You exposed the quiet-table scheme inside Ashlamp Inn before it could buy a worse night.")
             bryn = self.find_companion("Bryn Underbough")
             if bryn is not None:
                 self.adjust_companion_disposition(bryn, 1, "you read the inn before it turned ugly")
@@ -1078,11 +1079,11 @@ class StoryTownHubMixin:
                 )
             )
         options.append(("fight", self.action_option("Join the fight and end it the hard way.")))
-        choice = self.scenario_choice("How do you handle the Stonehill barfight?", [text for _, text in options], allow_meta=False)
+        choice = self.scenario_choice("How do you handle the Ashlamp barfight?", [text for _, text in options], allow_meta=False)
         selection_key, _ = options[choice - 1]
         if selection_key == "persuasion":
             self.player_action("Pull the room back from the edge before the first chair flies.")
-            success = self.skill_check(self.state.player, "Persuasion", 13, context="to keep Stonehill's fear from finding a target")
+            success = self.skill_check(self.state.player, "Persuasion", 13, context="to keep the Ashlamp's fear from finding a target")
         elif selection_key == "insight":
             self.player_action("Name the real instigator and make the room turn the right way.")
             success = self.skill_check(self.state.player, "Insight", 12, context="to expose the paid mouth in the room")
@@ -1111,11 +1112,11 @@ class StoryTownHubMixin:
                 "The room turns all at once once the right pressure point is named. The loudest man in the common room is suddenly not the one holding it. "
                 "A chalk nub, a folded payment note, and one badly timed protest hit the floor in the same breath, and Mara is already moving before the liar finishes deciding whether to run."
             )
-            self.reward_party(xp=15, reason="keeping Stonehill's common room from breaking")
+            self.reward_party(xp=15, reason="keeping the Ashlamp's common room from breaking")
             self.stonehill_adjust_town_fear(-1)
             tolan = self.find_companion("Tolan Ironshield")
             if tolan is not None:
-                self.adjust_companion_disposition(tolan, 1, "you kept order in Stonehill without making civilians pay for it")
+                self.adjust_companion_disposition(tolan, 1, "you kept order in the Ashlamp without making civilians pay for it")
         else:
             self.state.flags["stonehill_barfight_brawled"] = True
             self.say(
@@ -1125,12 +1126,12 @@ class StoryTownHubMixin:
             if self.state.gold > 0:
                 fee = min(2, self.state.gold)
                 self.state.gold -= fee
-                self.say(f"Mara keeps {fee} gp aside for broken crockery and does not apologize for it.")
-            self.reward_party(xp=10, reason="ending the Stonehill barfight the hard way")
+                self.say(f"Mara keeps {marks_label(fee)} aside for broken crockery and does not apologize for it.")
+            self.reward_party(xp=10, reason="ending the Ashlamp barfight the hard way")
 
         if not self.state.flags.get("marked_keg_resolved"):
             self.state.flags["marked_keg_resolved"] = True
-            self.add_journal("The Stonehill barfight exposed the hand behind Mara's marked keg.")
+            self.add_journal("The Ashlamp barfight exposed the hand behind Mara's marked keg.")
         if self.has_quest("quiet_table_sharp_knives") or self.state.flags.get("stonehill_instigator_unmasked"):
             self.state.flags["quiet_table_knives_resolved"] = True
-        self.add_clue("Stonehill's barfight exposed a paid mouth trying to turn Phandalin's fear inward.")
+        self.add_clue("The Ashlamp barfight exposed a paid mouth trying to turn Iron Hollow's fear inward.")

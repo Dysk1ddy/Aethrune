@@ -145,7 +145,7 @@ def spell_slot_summary(actor) -> str:
         if maximum <= 0:
             continue
         current = int(actor.resources.get(spell_slot_resource_name(slot_level), 0))
-        parts.append(f"L{slot_level} {current}/{maximum}")
+        parts.append(f"Band {slot_level} {current}/{maximum}")
     return ", ".join(parts) if parts else "None"
 
 
@@ -155,5 +155,5 @@ def restored_spell_slot_summary(levels: list[int]) -> str:
     counts: dict[int, int] = {}
     for level in levels:
         counts[level] = counts.get(level, 0) + 1
-    parts = [f"{count} level {level} slot{'s' if count != 1 else ''}" for level, count in sorted(counts.items())]
+    parts = [f"{count} charge band {level}{'s' if count != 1 else ''}" for level, count in sorted(counts.items())]
     return ", ".join(parts)

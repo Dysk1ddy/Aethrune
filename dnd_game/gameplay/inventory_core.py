@@ -9,6 +9,8 @@ from ..items import (
     inventory_supply_points,
     inventory_weight,
     item_rules_text,
+    item_type_label,
+    marks_label,
     party_carry_capacity,
     roll_loot_for_enemy,
 )
@@ -26,8 +28,8 @@ from ..ui.rich_render import Panel, RICH_AVAILABLE, Table, Text, box
 class InventoryCoreMixin:
     INVENTORY_FILTER_DEFINITIONS = (
         ("all", "All Items"),
-        ("consumables", "Consumables"),
-        ("scrolls", "Scrolls"),
+        ("consumables", "Draughts"),
+        ("scrolls", "Scripts"),
         ("supplies", "Supplies"),
         ("weapons", "Weapons"),
         ("armor", "Armor and Shields"),
@@ -101,12 +103,12 @@ class InventoryCoreMixin:
         if item.item_type == "shield":
             return "Shield"
         if item.category == "consumable":
-            return "Consumable"
+            return "Draught"
         if item.category == "scroll":
-            return "Scroll"
+            return "Script"
         if item.category == "supply":
             return "Supply"
-        return item.item_type.replace("_", " ").title()
+        return item_type_label(item.item_type).title()
 
     def inventory_item_rules_summary(self, item) -> str:
         return item_rules_text(item) or item.description
@@ -156,7 +158,7 @@ class InventoryCoreMixin:
             row.extend(
                 [
                     f"{item.weight * quantity:.1f} lb",
-                    f"{item.value} gp",
+                    marks_label(item.value),
                     self.inventory_item_rules_summary(item),
                 ]
             )
@@ -318,24 +320,24 @@ class InventoryCoreMixin:
         member_text = "member" if party_size == 1 else "members"
         if self.state.gold < cost:
             self.say(
-                f"A long rest at {inn_name} costs {cost} gp for {party_size} active party {member_text}, "
-                f"but the party only has {self.state.gold} gp."
+                f"A long rest at {inn_name} costs {marks_label(cost)} for {party_size} active party {member_text}, "
+                f"but the party only has {marks_label(self.state.gold)}."
             )
             return False
         resting_members = [member for member in party_members if not member.dead]
         resting_names = ", ".join(member.name for member in resting_members) if resting_members else "no living active party members"
         dead_members = [member.name for member in party_members if member.dead]
-        self.say(f"A long rest at {inn_name} will cost {cost} gp total for {party_size} active party {member_text}.")
+        self.say(f"A long rest at {inn_name} will cost {marks_label(cost)} total for {party_size} active party {member_text}.")
         self.say(f"Will long rest: {resting_names}.")
         if dead_members:
             self.say(f"Will not be restored by resting: {', '.join(dead_members)} (dead).")
-        if not self.confirm(f"Spend {cost} gp at {inn_name} and long rest this company?"):
-            self.say("You keep your gold and do not rent beds.")
+        if not self.confirm(f"Spend {marks_label(cost)} at {inn_name} and long rest this company?"):
+            self.say("You keep your marks and do not rent beds.")
             return False
         self.state.gold -= cost
         self.complete_long_rest_recovery()
-        self.say(f"The party pays {cost} gp for beds at {inn_name} and completes a long rest without using camp supplies.")
-        self.add_journal(f"Paid {cost} gp for a long rest at {inn_name}.")
+        self.say(f"The party pays {marks_label(cost)} for beds at {inn_name} and completes a long rest without using camp supplies.")
+        self.add_journal(f"Paid {marks_label(cost)} for a long rest at {inn_name}.")
         return True
 
     def show_inventory(self, *, filter_key: str = "all") -> None:
@@ -344,7 +346,7 @@ class InventoryCoreMixin:
         self.say(
             f"View: {self.inventory_filter_label(filter_key)} | "
             f"Weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb | "
-            f"Supply points: {self.current_supply_points()} | Gold: {self.state.gold} gp"
+            f"Supply points: {self.current_supply_points()} | Marks: {self.state.gold}"
         )
         if not self.state.inventory:
             self.say("The shared inventory is empty.")
@@ -376,7 +378,7 @@ class InventoryCoreMixin:
     def drink_healing_potion_in_combat(self, actor) -> bool:
         potion = get_item("potion_healing")
         if not self.remove_inventory_item("potion_healing"):
-            self.say("There is no Potion of Healing left in the shared inventory.")
+            self.say(f"There is no {potion.name} left in the shared inventory.")
             return False
         healed = actor.heal(
             self.roll_with_animation_context(
@@ -391,7 +393,7 @@ class InventoryCoreMixin:
         play_heal_sound_for = getattr(self, "play_heal_sound_for", None)
         if healed > 0 and callable(play_heal_sound_for):
             play_heal_sound_for(actor)
-        self.say(f"{self.style_name(actor)} downs a Potion of Healing and restores {self.style_healing(healed)} hit points.")
+        self.say(f"{self.style_name(actor)} downs {potion.name} and restores {self.style_healing(healed)} hit points.")
         return True
 
     def use_item_from_inventory(
@@ -409,7 +411,7 @@ class InventoryCoreMixin:
             if quantity > 0 and get_item(item_id).is_combat_usable()
         ]
         if not item_ids:
-            self.say("You do not have a usable consumable or scroll ready.")
+            self.say("You do not have a usable draught or script ready.")
             return False
         item_ids.sort(key=lambda item_id: (get_item(item_id).rarity, get_item(item_id).name))
         choice = self.choose(
@@ -429,7 +431,7 @@ class InventoryCoreMixin:
         ]
         if not valid_targets:
             if combat and actor is not None and item.legacy_id == "potion_healing":
-                self.say("Drinking a Potion of Healing yourself is a bonus action here. Use the bonus-action option instead.")
+                self.say(f"Drinking {item.name} yourself is a bonus action here. Use the bonus-action option instead.")
             else:
                 self.say(f"There is no valid target for {item.name} right now.")
             return False
@@ -471,7 +473,7 @@ class InventoryCoreMixin:
         if item.spell_slot_restore and target.spellcasting_ability is not None:
             restored_mp = restore_magic_points(target, spell_slot_restore_units_to_mp(item.spell_slot_restore))
             if restored_mp:
-                effects.append(f"restores {restored_mp} MP")
+                effects.append(f"restores {restored_mp} channel reserve")
         if item.cure_poison and "poisoned" in target.conditions:
             target.conditions.pop("poisoned", None)
             effects.append("cures poison")

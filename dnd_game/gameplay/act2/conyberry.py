@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 
 class StoryAct2ConyberryMixin:
@@ -24,7 +24,7 @@ class StoryAct2ConyberryMixin:
     def _conyberry_hushed_pilgrim_road(self, *, delayed: bool) -> None:
         assert self.state is not None
         self.say(
-            "The road to Conyberry is all blown grass, old stone, and the feeling that too many footsteps ended here without ever becoming history. "
+            "The road to Hushfen is all blown grass, old stone, and the feeling that too many footsteps ended here without ever becoming history. "
             "Ahead, a knot of pilgrims, peddlers, and hired carriers stands in the road like people who are ashamed of how frightened they already are.",
             typed=True,
         )
@@ -36,7 +36,7 @@ class StoryAct2ConyberryMixin:
         bryn = self._conyberry_active_companion("Bryn Underbough")
         if elira is not None:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "Panic spreads faster when someone respectable pretends it is caution. Start with the frightened. The rest will follow what the room becomes.",
             )
         if bryn is not None:
@@ -60,10 +60,10 @@ class StoryAct2ConyberryMixin:
                     "Bryn Underbough",
                     "Fair. Just remember half the room will tell the cleanest lie they can once they calm down enough to choose one.",
                 )
-            if self.skill_check(self.state.player, "Persuasion", 13, context="to steady the frightened road into Conyberry"):
+            if self.skill_check(self.state.player, "Persuasion", 13, context="to steady the frightened road into Hushfen"):
                 self.state.flags["conyberry_pilgrims_steadied"] = True
                 self._conyberry_shift_circuit_strain(-1)
-                self.reward_party(xp=10, reason="steadying the road into Conyberry")
+                self.reward_party(xp=10, reason="steadying the road into Hushfen")
                 self.say("The fear does not vanish. It just stops performing for itself long enough to let the truth breathe.")
             else:
                 self._conyberry_shift_circuit_strain(1)
@@ -72,7 +72,7 @@ class StoryAct2ConyberryMixin:
             self.player_action("Pull one witness aside and extract the cleanest version before fear edits it again.")
             if elira is not None:
                 self.speaker(
-                    "Elira Dawnmantle",
+                    "Elira Lanternward",
                     "Take the clearest witness if you must. Just do not teach the others that only precise fear is worth answering.",
                 )
             if bryn is not None:
@@ -80,7 +80,7 @@ class StoryAct2ConyberryMixin:
                     "Bryn Underbough",
                     "Good. The truth is usually in the person trying hardest not to sound like they own any.",
                 )
-            if self.skill_check(self.state.player, "Insight", 13, context="to isolate the clean witness on the Conyberry road"):
+            if self.skill_check(self.state.player, "Insight", 13, context="to isolate the clean witness on the Hushfen road"):
                 self.state.flags["conyberry_clean_witness_taken"] = True
                 self.say("One pilgrim stops revising themselves long enough to tell you where the hush in the road first turned deliberate.")
             else:
@@ -90,12 +90,12 @@ class StoryAct2ConyberryMixin:
             self.player_action("Follow the one story that changed in the telling and track the wrongness first.")
             if elira is not None:
                 self.speaker(
-                    "Elira Dawnmantle",
+                    "Elira Lanternward",
                     "Then do it quickly. I will not have the road think we stepped around the living to get to the mystery.",
                 )
-            if self.skill_check(self.state.player, "Survival", 13, context="to track the wrongness moving through Conyberry's road"):
+            if self.skill_check(self.state.player, "Survival", 13, context="to track the wrongness moving through Hushfen's road"):
                 self.state.flags["conyberry_whisper_track_named"] = True
-                self.add_clue("Conyberry's silence has been handled, not merely suffered. Something practical has been teaching the road where to sound wrong.")
+                self.add_clue("Hushfen's silence has been handled, not merely suffered. Something practical has been teaching the road where to sound wrong.")
                 self.say("The wrongness has a route to it. That is worse and more useful than a haunting would have been.")
             else:
                 self._conyberry_shift_circuit_strain(1)
@@ -126,7 +126,7 @@ class StoryAct2ConyberryMixin:
         self.state.flags["conyberry_first_site"] = first_site
         if choice == 1:
             self.player_action("Read it as a warded waymarker and follow the chapel line first.")
-            if self.skill_check(self.state.player, "Religion", 13, context="to read Conyberry's warded waymarker correctly"):
+            if self.skill_check(self.state.player, "Religion", 13, context="to read Hushfen's warded waymarker correctly"):
                 self.state.flags["conyberry_cairn_ward_read"] = True
                 self.say("The cairn stops being abandoned stone and becomes a wounded instruction to keep the lamps in mind.")
             else:
@@ -134,7 +134,7 @@ class StoryAct2ConyberryMixin:
                 self.say("The warding logic is still there, but it reaches you through abrasion rather than clarity.")
         elif choice == 2:
             self.player_action("Read it as funerary routework and take the grave ring first.")
-            if self.skill_check(self.state.player, "History", 13, context="to read Conyberry's grave-route order"):
+            if self.skill_check(self.state.player, "History", 13, context="to read Hushfen's grave-route order"):
                 self.state.flags["conyberry_cairn_grave_read"] = True
                 self.say("The route becomes less mystical and more deliberate. The dead here were organized, not abandoned at random.")
             else:
@@ -142,7 +142,7 @@ class StoryAct2ConyberryMixin:
                 self.say("You still find the grave line, but not before the road makes you work for the difference between memory and concealment.")
         else:
             self.player_action("Read it as a disguised trail correction and follow the tampered line first.")
-            if self.skill_check(self.state.player, "Investigation", 13, context="to read the tampered Conyberry trail logic"):
+            if self.skill_check(self.state.player, "Investigation", 13, context="to read the tampered Hushfen trail logic"):
                 self.state.flags["conyberry_cairn_trail_read"] = True
                 self.say("The false neglect has a pattern to it. Someone wanted the practical route hidden inside the pious ruin of the place.")
             else:
@@ -159,7 +159,7 @@ class StoryAct2ConyberryMixin:
         elira = self._conyberry_active_companion("Elira Dawnmantle")
         if elira is not None:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "This is not ornamental faith. This is maintenance made holy because strangers depended on it.",
             )
         choice = self.scenario_choice(
@@ -173,7 +173,7 @@ class StoryAct2ConyberryMixin:
         )
         if choice == 1:
             self.player_action("Relight the chapel and wake one clean ward.")
-            if self.skill_check(self.state.player, "Religion", 13, context="to relight Conyberry's chapel cleanly"):
+            if self.skill_check(self.state.player, "Religion", 13, context="to relight Hushfen's chapel cleanly"):
                 self.state.flags["conyberry_chapel_relit"] = True
                 self._conyberry_shift_circuit_strain(-1)
                 self.act2_shift_metric(
@@ -187,12 +187,12 @@ class StoryAct2ConyberryMixin:
                 self.say("The wick catches only badly. The chapel does not reject you, but it does not trust the hurry in your hands either.")
         elif choice == 2:
             self.player_action("Take the basin lantern and field wards into the circuit.")
-            if self.skill_check(self.state.player, "Survival", 13, context="to take Conyberry's field lantern without stripping it thoughtlessly"):
+            if self.skill_check(self.state.player, "Survival", 13, context="to take Hushfen's field lantern without stripping it thoughtlessly"):
                 self.state.flags["conyberry_field_lantern_taken"] = True
                 if elira is not None:
                     self.state.flags["elira_field_lantern"] = True
                     self.speaker(
-                        "Elira Dawnmantle",
+                        "Elira Lanternward",
                         "If we carry it, we carry it as responsibility, not salvage.",
                     )
                 self.say("The basin lantern comes free with less protest than you feared, as if the chapel would rather be carried carefully than admired badly.")
@@ -219,7 +219,7 @@ class StoryAct2ConyberryMixin:
         bryn = self._conyberry_active_companion("Bryn Underbough")
         if elira is not None:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "Say the names if you can. The dead should not have to compete with our urgency to stay real.",
             )
         choice = self.scenario_choice(
@@ -233,7 +233,7 @@ class StoryAct2ConyberryMixin:
         )
         if choice == 1:
             self.player_action("Read the markers historically and learn how the dead were organized here.")
-            if self.skill_check(self.state.player, "History", 13, context="to read the grave ring as Pact route memory"):
+            if self.skill_check(self.state.player, "History", 13, context="to read the grave ring as Meridian Compact route memory"):
                 self.state.flags["conyberry_grave_history_read"] = True
                 self.say("The dead here were not simply buried. They were placed under a discipline the living were expected to remember.")
             else:
@@ -253,7 +253,7 @@ class StoryAct2ConyberryMixin:
             if self.skill_check(self.state.player, "Investigation", 13, context="to find the living claim marks hiding in the grave ring"):
                 self.state.flags["conyberry_claim_marks_found"] = True
                 self.state.flags["agatha_claim_cover_suspected"] = True
-                self.add_clue("Someone in the modern claims race has been using Conyberry's dead ground as cover for practical business and hidden handling marks.")
+                self.add_clue("Someone in the modern claims race has been using Hushfen's dead ground as cover for practical business and hidden handling marks.")
                 if bryn is not None:
                     self.speaker(
                         "Bryn Underbough",
@@ -261,7 +261,7 @@ class StoryAct2ConyberryMixin:
                     )
                 if elira is not None:
                     self.speaker(
-                        "Elira Dawnmantle",
+                        "Elira Lanternward",
                         "Then the living have already tried to use grief as cover. That is a smaller sin than murder and closer to the same shape than people admit.",
                     )
             else:
@@ -282,7 +282,7 @@ class StoryAct2ConyberryMixin:
         bryn = self._conyberry_active_companion("Bryn Underbough")
         if elira is not None:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "Look at the neatness of it. Somebody wanted the ward to keep the posture of service while answering the wrong will.",
             )
         if bryn is not None:
@@ -306,7 +306,7 @@ class StoryAct2ConyberryMixin:
                 self._conyberry_shift_circuit_strain(-1)
                 if elira is not None:
                     self.speaker(
-                        "Elira Dawnmantle",
+                        "Elira Lanternward",
                         "Better broken than obedient to the wrong voice.",
                     )
                 self.say("The sigil fails with a sound closer to a breath leaving than a curse breaking.")
@@ -320,7 +320,7 @@ class StoryAct2ConyberryMixin:
                 self._conyberry_shift_circuit_strain(1)
                 if elira is not None:
                     self.speaker(
-                        "Elira Dawnmantle",
+                        "Elira Lanternward",
                         "Be careful. There is a kind of understanding that always pretends it can stay clean.",
                     )
                 self.add_clue("The Quiet Choir has been teaching older roadside wards to keep the posture of service while answering the wrong will.")
@@ -360,7 +360,7 @@ class StoryAct2ConyberryMixin:
         assert self.state is not None
         site_options: list[tuple[str, str]] = []
         if not self.state.flags.get("conyberry_chapel_seen"):
-            site_options.append(("chapel", self.skill_tag("RELIGION", self.action_option("Return the Chapel of Lamps to the circuit before Agatha bears the whole warning."))))
+            site_options.append(("chapel", self.skill_tag("RELIGION", self.action_option("Return the Chapel of Lamps to the circuit before the Pale Witness bears the whole warning."))))
         if not self.state.flags.get("conyberry_grave_seen"):
             site_options.append(("grave", self.skill_tag("HISTORY", self.action_option("Read the Grave Ring so the warning does not travel without its dead."))))
         if not self.state.flags.get("conyberry_sigil_seen"):
@@ -368,10 +368,10 @@ class StoryAct2ConyberryMixin:
         if not site_options:
             return
         self.say(
-            "The circuit does not release you after one answer. Another part of Conyberry pulls at the road, asking whether you want warning with roots or only warning with speed."
+            "The circuit does not release you after one answer. Another part of Hushfen pulls at the road, asking whether you want warning with roots or only warning with speed."
         )
         choice = self.scenario_choice(
-            "Which second part of the circuit do you answer before Agatha speaks?",
+            "Which second part of the circuit do you answer before the Pale Witness speaks?",
             [text for _, text in site_options],
             allow_meta=False,
         )
@@ -386,14 +386,14 @@ class StoryAct2ConyberryMixin:
             return
         if success:
             self.say(
-                "Agatha's warning leaves the circuit with you, but Conyberry still asks what kind of burden truth becomes once the living start carrying it."
+                "The Pale Witness's warning leaves the circuit with you, but Hushfen still asks what kind of burden truth becomes once the living start carrying it."
             )
         else:
             self.say(
                 "Even broken, the warning has enough shape to harm or help depending on who gets to hold it first."
             )
         choice = self.scenario_choice(
-            "How do you carry Agatha's warning out of Conyberry?",
+            "How do you carry the Pale Witness's warning out of Hushfen?",
             [
                 self.quoted_option("PERSUASION", "Share it publicly. Fear travels anyway; truth should not arrive gagged."),
                 self.quoted_option("INSIGHT", "Restrict it to trusted hands until the town can act instead of merely panic."),
@@ -409,12 +409,12 @@ class StoryAct2ConyberryMixin:
             self.act2_shift_metric(
                 "act2_town_stability",
                 1,
-                "Agatha's warning travels openly enough that rumors have less room to pretend they are strategy",
+                "the Pale Witness's warning travels openly enough that rumors have less room to pretend they are strategy",
             )
-            self.speaker("Agatha", "Then let it travel honestly, even if honesty makes cowards of half the room for a while.")
+            self.speaker("Pale Witness", "Then let it travel honestly, even if honesty makes cowards of half the room for a while.")
             elira = self._conyberry_active_companion("Elira Dawnmantle")
             if elira is not None:
-                self.speaker("Elira Dawnmantle", "Good. Fear travels easily enough. Truth should not arrive gagged.")
+                self.speaker("Elira Lanternward", "Good. Fear travels easily enough. Truth should not arrive gagged.")
         elif choice == 2:
             self.player_speaker("Restrict it to trusted hands until the town can act instead of merely panic.")
             self.state.flags["conyberry_warning_exit_choice"] = "trusted"
@@ -422,9 +422,9 @@ class StoryAct2ConyberryMixin:
             self.act2_shift_metric(
                 "act2_route_control",
                 1,
-                "trusted hands carry Agatha's warning as actionable route discipline instead of a rumor every claimant can bend",
+                "trusted hands carry the Pale Witness's warning as actionable route discipline instead of a rumor every claimant can bend",
             )
-            self.speaker("Agatha", "Control is the oldest temptation of anyone who survives hearing too much.")
+            self.speaker("Pale Witness", "Control is the oldest temptation of anyone who survives hearing too much.")
             bryn = self._conyberry_active_companion("Bryn Underbough")
             if bryn is not None:
                 self.speaker(
@@ -439,16 +439,16 @@ class StoryAct2ConyberryMixin:
             self.act2_shift_metric(
                 "act2_route_control",
                 1,
-                "binding Agatha's warning preserves one dangerous edge for later use against the Choir's own route logic",
+                "binding the Pale Witness's warning preserves one dangerous edge for later use against the Choir's own route logic",
             )
             if delayed or not success:
                 self.act2_shift_metric(
                     "act2_whisper_pressure",
                     1,
-                    "binding a bruised warning keeps part of Conyberry's wound active instead of letting it settle",
+                    "binding a bruised warning keeps part of Hushfen's wound active instead of letting it settle",
                 )
             self.speaker(
-                "Agatha",
+                "Pale Witness",
                 "Better bound than cheaply spent. Better shared than hoarded. You are learning why the living kept failing this place.",
             )
 
@@ -457,34 +457,34 @@ class StoryAct2ConyberryMixin:
         delayed = self.state.flags.get("act2_neglected_lead") == "agatha_truth_secured"
         if "conyberry_circuit_strain" not in self.state.flags:
             self.state.flags["conyberry_circuit_strain"] = 1 if delayed else 0
-        self.banner("Conyberry and Agatha's Circuit")
+        self.banner("Hushfen and the Pale Circuit")
         self._conyberry_hushed_pilgrim_road(delayed=delayed)
         self._conyberry_waymarker_cairn()
         self._conyberry_first_branch_site(delayed=delayed)
         self._conyberry_second_branch_site(delayed=delayed)
         self.say("Beyond the last roadside turn, the air stops feeling abandoned and starts feeling expectant.")
-        self.say("Agatha does not rise like a monster out of a tale. She arrives like a grief the air was already carrying.")
-        self.speaker("Agatha", "You are late enough to be dangerous and early enough to matter.")
-        self.speaker("Agatha", "The living always arrive wanting warning clean enough to carry and terrible enough to obey.")
+        self.say("The Pale Witness does not rise like a monster out of a tale. She arrives like a grief the air was already carrying.")
+        self.speaker("Pale Witness", "You are late enough to be dangerous and early enough to matter.")
+        self.speaker("Pale Witness", "The living always arrive wanting warning clean enough to carry and terrible enough to obey.")
         if delayed and self.state.flags.get("agatha_circuit_defiled"):
             self.say(
-                "Silver nails and chalk sigils at the edge of the circuit tell you the Quiet Choir reached here first. Whatever warning Agatha gives now will come through damage."
+                "Silver nails and chalk sigils at the edge of the circuit tell you the Quiet Choir reached here first. Whatever warning Pale Witness gives now will come through damage."
             )
-            self.speaker("Agatha", "They touched the circuit before you did. That is why I sound smaller than the truth.")
+            self.speaker("Pale Witness", "They touched the circuit before you did. That is why I sound smaller than the truth.")
         if self.state.flags.get("conyberry_pilgrims_steadied"):
             self.speaker(
-                "Agatha",
+                "Pale Witness",
                 "At least you did not begin by teaching the frightened that fear must earn eloquence before it deserves mercy.",
             )
         if self.state.flags.get("conyberry_dead_named"):
-            self.speaker("Agatha", "At least you did not begin by forgetting whose road this still is.")
+            self.speaker("Pale Witness", "At least you did not begin by forgetting whose road this still is.")
         if self.state.flags.get("conyberry_chapel_relit"):
-            self.speaker("Agatha", "Someone still remembered the lamps were for service, not display.")
+            self.speaker("Pale Witness", "Someone still remembered the lamps were for service, not display.")
         if self.state.flags.get("conyberry_sigil_copied"):
-            self.speaker("Agatha", "You brought me theft with your reverence and expect me to separate the two.")
+            self.speaker("Pale Witness", "You brought me theft with your reverence and expect me to separate the two.")
         strain = self._conyberry_circuit_strain()
         if strain >= 2 and not delayed:
-            self.speaker("Agatha", "You made the circuit wait like a claimant at a locked office and still expect witness from it.")
+            self.speaker("Pale Witness", "You made the circuit wait like a claimant at a locked office and still expect witness from it.")
             self.say("The circuit is still holding, but not cleanly. The truth here already sounds like it had to cross damage to reach you.")
         dc = 14
         if self.act2_company_has("Elira Dawnmantle"):
@@ -498,7 +498,7 @@ class StoryAct2ConyberryMixin:
             dc += 1
         self.run_dialogue_input("act2_conyberry_entry")
         choice = self.scenario_choice(
-            "How do you approach the banshee's truth?",
+            "How do you approach the Pale Witness's truth?",
             [
                 self.quoted_option("PERSUASION", "We are not here to plunder your dead. We need the warning only you still remember."),
                 self.quoted_option("RELIGION", "Tell me what vow was broken here, and what the living are about to repeat."),
@@ -508,62 +508,64 @@ class StoryAct2ConyberryMixin:
         )
         if choice == 1:
             self.player_speaker("We are not here to plunder your dead. We need the warning only you still remember.")
-            success = self.skill_check(self.state.player, "Persuasion", dc, context="to keep Agatha listening instead of lashing out")
+            success = self.skill_check(self.state.player, "Persuasion", dc, context="to keep Pale Witness listening instead of lashing out")
         elif choice == 2:
             self.player_speaker("Tell me what vow was broken here, and what the living are about to repeat.")
             success = self.skill_check(self.state.player, "Religion", dc, context="to name the old wrong cleanly enough for the dead")
         else:
             self.player_speaker("If the cave's old song is changing, describe the change exactly.")
-            success = self.skill_check(self.state.player, "Arcana", dc, context="to understand Agatha's warning about the cave's altered resonance")
+            success = self.skill_check(self.state.player, "Arcana", dc, context="to understand Pale Witness's warning about the cave's altered resonance")
         if success and not delayed and strain <= 1:
             self.say(
-                "Agatha gives you a clean, terrible truth: Wave Echo's old song is being tuned into something quieter and hungrier, and a southern adit once used for labor now carries the cult's cleanest path."
+                "The Pale Witness gives you a clean, terrible truth: Resonant Vaults' old song is being tuned into something quieter and hungrier, and a southern adit once used for labor now carries the cult's cleanest path."
             )
             self.add_clue(
-                "Agatha confirms the Quiet Choir is using a southern service adit to reach deeper workings beneath Wave Echo Cave."
+                "The Pale Witness confirms the Quiet Choir is using a southern service adit to reach deeper workings beneath the Resonant Vaults."
             )
             self.state.flags["agatha_truth_clear"] = True
             if choice == 1:
                 self.state.flags["agatha_public_warning_known"] = True
             elif choice == 2:
                 self.state.flags["agatha_pact_restraint_known"] = True
-            self.reward_party(xp=60, reason="earning Agatha's full warning")
+            self.reward_party(xp=60, reason="earning the Pale Witness's full warning")
             self.act2_shift_metric(
                 "act2_whisper_pressure",
                 -1,
-                "Agatha's warning gives the company a truer picture of what the mine is doing",
+                "the Pale Witness's warning gives the company a truer picture of what the mine is doing",
             )
             if choice == 3:
                 self.state.flags["agatha_public_warning_known"] = True
                 self.act2_shift_metric(
                     "act2_route_control",
                     1,
-                    "you translate Agatha's warning into usable route logic instead of just dread",
+                    "you translate the Pale Witness's warning into usable route logic instead of just dread",
                 )
         elif success:
             self.say(
-                "Agatha still answers, but the warning reaches you through bruised magic: the southern adit is real, the Forge is being used as a listening lens, "
+                "The Pale Witness still answers, but the warning reaches you through bruised magic: the southern adit is real, the Meridian Forge is being used as a listening lens, "
                 "and whatever touched her circuit has already made the truth harder to hold cleanly."
             )
             self.add_clue(
-                "Even damaged, Agatha confirms the southern adit matters and the Forge is being tuned into something that listens back."
+                "Even damaged, the Pale Witness confirms the southern adit matters and the Meridian Forge is being tuned into something that listens back."
             )
             self.state.flags["agatha_truth_clear"] = False
             if choice == 1:
                 self.state.flags["agatha_public_warning_known"] = True
             elif choice == 2:
                 self.state.flags["agatha_pact_restraint_known"] = True
-            self.reward_party(xp=45, reason="salvaging Agatha's delayed warning")
+            self.reward_party(xp=45, reason="salvaging the Pale Witness's delayed warning")
         else:
             self.say(
-                "Agatha's scream never quite becomes violence, but the answer she leaves you is broken and cold: a warning about a 'quiet choir' and a road that should have stayed collapsed."
+                "The Pale Witness's scream never quite becomes violence, but the answer she leaves you is broken and cold: a warning about a 'quiet choir' and a road that should have stayed collapsed."
             )
             if not delayed:
                 self.act2_shift_metric(
                     "act2_whisper_pressure",
                     1,
-                    "the company leaves Conyberry with fear and fragments instead of a clean warning",
+                    "the company leaves Hushfen with fear and fragments instead of a clean warning",
                 )
         self._conyberry_exit_warning_choice(success=success, delayed=delayed)
         self.state.flags["agatha_truth_secured"] = True
         self.state.current_scene = "act2_expedition_hub"
+
+

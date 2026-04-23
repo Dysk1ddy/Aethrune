@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from ..data.story.public_terms import (
+    ability_label,
+    marks_label,
+    resource_label,
+    skill_option_label,
+    target_guard_label,
+)
 from ..models import ABILITY_ORDER, SKILL_TO_ABILITY
 from ..items import get_item
 from ..ui.colors import rich_style_name, strip_ansi
 from ..ui.rich_render import Columns, Group, Panel, Table, box
-from .magic_points import MAGIC_POINT_RESOURCE
 from .spell_slots import is_spell_slot_resource
 
 
@@ -35,9 +41,7 @@ class JournalMixin:
         if not visible_resources:
             return "None"
         return ", ".join(
-            f"MP {member.resources.get(name, 0)}/{member.max_resources.get(name, 0)}"
-            if name == MAGIC_POINT_RESOURCE
-            else f"{name.replace('_', ' ')} {member.resources.get(name, 0)}/{member.max_resources.get(name, 0)}"
+            f"{resource_label(name).title()} {member.resources.get(name, 0)}/{member.max_resources.get(name, 0)}"
             for name in visible_resources
         )
 
@@ -48,9 +52,9 @@ class JournalMixin:
                 f"Relationship: {self.relationship_label_for(member)} ({member.disposition})"
             )
         details = [
-            self.rich_from_ansi(f"Level {member.level} {member.race} {member.class_name}"),
+            self.rich_from_ansi(f"Level {member.level} {member.public_identity}"),
             self.rich_from_ansi(
-                f"{self.character_health_summary(member)} | AC {member.armor_class} | Temp HP {member.temp_hp}"
+                f"{self.character_health_summary(member)} | {target_guard_label(member.armor_class)} | Temp HP {member.temp_hp}"
             ),
         ]
         magic_bar = self.format_member_magic_bar(member)
@@ -98,11 +102,11 @@ class JournalMixin:
         header = Table.grid(expand=True, padding=(0, 1))
         header.add_column(style=f"bold {rich_style_name('light_yellow')}", width=14)
         header.add_column(ratio=1)
-        header.add_row("Lineage", f"Level {member.level} {member.race} {member.class_name}")
+        header.add_row("People / Role", f"Level {member.level} {member.public_identity}")
         header.add_row("Background", member.background)
         header.add_row("Status", strip_ansi(self.character_health_summary(member)))
-        header.add_row("Armor Class", str(member.armor_class))
-        header.add_row("Proficiency", f"+{member.proficiency_bonus}")
+        header.add_row("Guard", str(member.armor_class))
+        header.add_row("Training", f"+{member.proficiency_bonus}")
         if getattr(member, "companion_id", ""):
             header.add_row("Relationship", f"{self.relationship_label_for(member)} ({member.disposition})")
 
@@ -112,31 +116,31 @@ class JournalMixin:
         abilities.add_column("Mod", justify="center")
         for ability in ABILITY_ORDER:
             score = member.ability_scores[ability]
-            abilities.add_row(ability, str(score), f"{member.ability_mod(ability):+d}")
+            abilities.add_row(ability_label(ability, include_code=True), str(score), f"{member.ability_mod(ability):+d}")
 
         combat = Table.grid(expand=True, padding=(0, 1))
         combat.add_column(style=f"bold {rich_style_name('light_red')}", width=12)
         combat.add_column(ratio=1)
         combat.add_row("Weapon", member.weapon.name)
-        combat.add_row("Attack", f"+{member.attack_bonus()}")
+        combat.add_row("Strike", f"+{member.attack_bonus()}")
         combat.add_row("Damage bonus", f"+{member.damage_bonus()}")
         combat.add_row("Hit die", f"d{member.hit_die}")
         combat.add_row("Temp HP", str(member.temp_hp))
         combat.add_row("Conditions", self.character_condition_summary(member))
         if member.spellcasting_ability is not None:
             spell_attack = self.spell_attack_bonus(member, member.spellcasting_ability)
-            combat.add_row("Spellcasting", member.spellcasting_ability)
-            combat.add_row("Spell attack", f"+{spell_attack}")
+            combat.add_row("Channeling", ability_label(member.spellcasting_ability, include_code=True))
+            combat.add_row("Channel strike", f"+{spell_attack}")
             magic_bar = self.format_member_magic_bar(member)
             if magic_bar is not None:
-                combat.add_row("MP", self.rich_from_ansi(magic_bar))
+                combat.add_row("Reserve", self.rich_from_ansi(magic_bar))
 
         saves = Table(box=box.SIMPLE_HEAVY, expand=True, pad_edge=False)
-        saves.add_column("Save", style=f"bold {rich_style_name('light_aqua')}")
+        saves.add_column("Resist", style=f"bold {rich_style_name('light_aqua')}")
         saves.add_column("Bonus", justify="center")
         for ability in ABILITY_ORDER:
             proficient = "*" if ability in member.saving_throw_proficiencies else ""
-            saves.add_row(f"{ability}{proficient}", f"{member.save_bonus(ability):+d}")
+            saves.add_row(f"{ability_label(ability, include_code=True)}{proficient}", f"{member.save_bonus(ability):+d}")
 
         skills = Table(box=box.SIMPLE_HEAVY, expand=True, pad_edge=False)
         skills.add_column("Skill", style=f"bold {rich_style_name('light_green')}")
@@ -145,10 +149,10 @@ class JournalMixin:
         for skill in sorted(SKILL_TO_ABILITY):
             markers = []
             if skill in member.skill_proficiencies:
-                markers.append("prof")
+                markers.append("trained")
             if skill in member.skill_expertise:
-                markers.append("expertise")
-            skills.add_row(skill, f"{member.skill_bonus(skill):+d}", ", ".join(markers) or "-")
+                markers.append("deep")
+            skills.add_row(skill_option_label(skill), f"{member.skill_bonus(skill):+d}", ", ".join(markers) or "-")
 
         feature_lines = [
             self.rich_text(
@@ -156,7 +160,7 @@ class JournalMixin:
                 "light_yellow",
             ),
             self.rich_text(
-                "Background / bonus proficiencies: "
+                "Background / bonus training: "
                 + (", ".join(member.bonus_proficiencies) if member.bonus_proficiencies else "None"),
                 "light_green",
             ),
@@ -186,7 +190,7 @@ class JournalMixin:
             [
                 (
                     self.character_sheet_panel("Ability Scores", "light_yellow", abilities),
-                    self.character_sheet_panel("Saving Throws", "light_aqua", saves),
+                    self.character_sheet_panel("Resist Checks", "light_aqua", saves),
                 ),
                 (
                     self.character_sheet_panel("Combat", "light_red", combat),
@@ -197,7 +201,7 @@ class JournalMixin:
         detail_grid = self.character_sheet_grid(
             [
                 (
-                    self.character_sheet_panel("Features & Proficiencies", "light_yellow", Group(*feature_lines)),
+                    self.character_sheet_panel("Features & Training", "light_yellow", Group(*feature_lines)),
                     self.character_sheet_panel("Equipment", "light_aqua", Group(*equipment_lines)),
                 ),
             ]
@@ -413,7 +417,7 @@ class JournalMixin:
             summary.add_column(style=f"bold {rich_style_name('light_yellow')}", width=12)
             summary.add_column(ratio=1)
             summary.add_row("Progress", self.xp_progress_summary())
-            summary.add_row("Gold", f"{self.state.gold} gp")
+            summary.add_row("Marks", marks_label(self.state.gold))
             summary.add_row("Short rests", str(self.state.short_rests_remaining))
             summary.add_row(
                 "Carry",
@@ -453,7 +457,7 @@ class JournalMixin:
             ):
                 return
         self.say(
-            f"{self.xp_progress_summary()} | Gold: {self.state.gold} gp | "
+            f"{self.xp_progress_summary()} | Marks: {marks_label(self.state.gold)} | "
             f"Short rests left: {self.state.short_rests_remaining} | "
             f"Carry weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb"
         )
@@ -462,8 +466,8 @@ class JournalMixin:
             conditions = self.character_condition_summary(member)
             temp_hp = f", temp {member.temp_hp}" if member.temp_hp else ""
             self.output_fn(
-                f"- {member.name}: Level {member.level} {member.race} {member.class_name}, "
-                f"{self.character_health_summary(member)}, AC {member.armor_class}{temp_hp}, "
+                f"- {member.name}: Level {member.level} {member.public_identity}, "
+                f"{self.character_health_summary(member)}, {target_guard_label(member.armor_class)}{temp_hp}, "
                 f"conditions [{conditions}]"
             )
             story_modifiers = self.story_skill_modifier_summary(member)
@@ -495,7 +499,7 @@ class JournalMixin:
         else:
             location = "Camp"
         return (
-            f"{member.name}: Level {member.level} {member.race} {member.class_name} | "
+            f"{member.name}: Level {member.level} {member.public_identity} | "
             f"{self.character_health_summary(member)} | {location}"
         )
 
@@ -527,23 +531,23 @@ class JournalMixin:
             ):
                 return
         self.say(
-            f"Level {member.level} {member.race} {member.class_name} | Background: {member.background} | "
-            f"Status: {self.character_health_summary(member)} | AC {member.armor_class} | "
-            f"Proficiency bonus +{member.proficiency_bonus}"
+            f"Level {member.level} {member.public_identity} | Background: {member.background} | "
+            f"Status: {self.character_health_summary(member)} | {target_guard_label(member.armor_class)} | "
+            f"Training bonus +{member.proficiency_bonus}"
         )
         self.output_fn("")
         self.say("Ability Scores:")
         for ability in ABILITY_ORDER:
             score = member.ability_scores[ability]
             modifier = member.ability_mod(ability)
-            self.output_fn(f"- {ability}: {score} ({modifier:+d})")
+            self.output_fn(f"- {ability_label(ability, include_code=True)}: {score} ({modifier:+d})")
         self.output_fn("")
         self.say("Combat:")
-        self.output_fn(f"- Weapon: {member.weapon.name} | attack +{member.attack_bonus()} | damage bonus +{member.damage_bonus()}")
+        self.output_fn(f"- Weapon: {member.weapon.name} | strike +{member.attack_bonus()} | damage bonus +{member.damage_bonus()}")
         self.output_fn(f"- Hit die: d{member.hit_die} | Temp HP: {member.temp_hp} | Conditions: {self.character_condition_summary(member)}")
         if member.spellcasting_ability is not None:
             spell_attack = self.spell_attack_bonus(member, member.spellcasting_ability)
-            spellcasting_line = f"- Spellcasting: {member.spellcasting_ability} | spell attack +{spell_attack}"
+            spellcasting_line = f"- Channeling: {ability_label(member.spellcasting_ability, include_code=True)} | channel strike +{spell_attack}"
             magic_bar = self.format_member_magic_bar(member)
             if magic_bar is not None:
                 spellcasting_line += f" | {magic_bar}"
@@ -555,27 +559,27 @@ class JournalMixin:
             for line in story_modifiers:
                 self.output_fn(f"- {line}")
         self.output_fn("")
-        self.say("Saving Throws:")
+        self.say("Resist Checks:")
         for ability in ABILITY_ORDER:
             proficient = "*" if ability in member.saving_throw_proficiencies else ""
-            self.output_fn(f"- {ability}{proficient}: {member.save_bonus(ability):+d}")
+            self.output_fn(f"- {ability_label(ability, include_code=True)}{proficient}: {member.save_bonus(ability):+d}")
         self.output_fn("")
         self.say("Skills:")
         for skill in sorted(SKILL_TO_ABILITY):
             markers = []
             if skill in member.skill_proficiencies:
-                markers.append("prof")
+                markers.append("trained")
             if skill in member.skill_expertise:
-                markers.append("expertise")
+                markers.append("deep")
             suffix = f" ({', '.join(markers)})" if markers else ""
-            self.output_fn(f"- {skill}: {member.skill_bonus(skill):+d}{suffix}")
+            self.output_fn(f"- {skill_option_label(skill)}: {member.skill_bonus(skill):+d}{suffix}")
         self.output_fn("")
-        self.say("Features & Proficiencies:")
+        self.say("Features & Training:")
         self.output_fn(
             f"- Features: {', '.join(self.format_feature_name(feature) for feature in member.features) if member.features else 'None'}"
         )
         self.output_fn(
-            f"- Background / bonus proficiencies: {', '.join(member.bonus_proficiencies) if member.bonus_proficiencies else 'None'}"
+            f"- Background / bonus training: {', '.join(member.bonus_proficiencies) if member.bonus_proficiencies else 'None'}"
         )
         resources_text = self.member_resource_summary(member)
         if resources_text != "None":

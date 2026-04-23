@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..content import POINT_BUY_COSTS
+from ..data.story.public_terms import ability_label
 from ..models import ABILITY_ORDER
 
 
@@ -17,9 +18,9 @@ class PointBuyCreationMixin:
                 score = self.prompt_point_buy_score(ability, points_left=POINT_BUY_BUDGET - spent)
                 scores[ability] = score
                 spent += POINT_BUY_COSTS[score]
-                self.say(f"{ability} set to {score}. Points left: {POINT_BUY_BUDGET - spent}.")
+                self.say(f"{ability_label(ability, include_code=True)} set to {score}. Points left: {POINT_BUY_BUDGET - spent}.")
 
-            summary = ", ".join(f"{ability} {scores[ability]}" for ability in ABILITY_ORDER)
+            summary = ", ".join(f"{ability_label(ability, include_code=True)} {scores[ability]}" for ability in ABILITY_ORDER)
             self.say(f"Point-buy draft: {summary}.")
             self.say(f"Total spent: {spent} of {POINT_BUY_BUDGET}. Points left: {POINT_BUY_BUDGET - spent}.")
             if self.confirm("Keep these point-buy scores?"):
@@ -30,7 +31,7 @@ class PointBuyCreationMixin:
         while True:
             self.output_fn("")
             self.say(
-                f"Set {ability}. Enter a score from 8 to 15. "
+                f"Set {ability_label(ability, include_code=True)}. Enter a score from 8 to 15. "
                 f"Points left before this pick: {points_left}."
             )
             raw = self.read_input("> ").strip()

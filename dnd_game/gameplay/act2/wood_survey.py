@@ -70,7 +70,7 @@ class StoryAct2WoodSurveyMixin:
             starting_cover -= 1
         self._wood_survey_set_tracks(integrity=starting_integrity, cover=starting_cover)
 
-        self.banner("Neverwinter Wood Survey Camp")
+        self.banner("Greywake Survey Camp")
         self.say(
             "The camp is not destroyed so much as edited. Survey posts are cut low, stores are spoiled just enough to matter, "
             "and the raiders still close enough to smell the damage they made. This time the evidence is breathing: two wounded carriers, "
@@ -80,7 +80,7 @@ class StoryAct2WoodSurveyMixin:
         if delayed:
             self.say(
                 "Because you let this line wait until after sabotage night, the saboteurs are no longer just cutting posts. "
-                "They are cleaning up living witnesses and burning the logistics that tied them to Phandalin's riot."
+                "They are cleaning up living witnesses and burning the logistics that tied them to Iron Hollow's riot."
             )
         self._wood_survey_show_tracks("arrival")
         self.run_dialogue_input("act2_wood_entry")
@@ -174,7 +174,7 @@ class StoryAct2WoodSurveyMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("The woodland sabotage line stays alive and the route back to Phandalin turns dangerous again.")
+            self.handle_defeat("The woodland sabotage line stays alive and the route back to Iron Hollow turns dangerous again.")
             return
         if outcome == "fled":
             self.state.current_scene = "act2_expedition_hub"
@@ -204,7 +204,7 @@ class StoryAct2WoodSurveyMixin:
                 self.act2_shift_metric(
                     "act2_town_stability",
                     1,
-                    "surviving woodland witnesses give Phandalin a human account instead of another rumor",
+                    "surviving woodland witnesses give Iron Hollow a human account instead of another rumor",
                 )
         else:
             self.act2_shift_metric(

@@ -60,13 +60,13 @@ class StoryAct1ExpandedMixin:
             return True
         recommended_level = self.wyvern_tor_recommended_level()
         self.say(
-            f"Wyvern Tor is balanced as a level {recommended_level} route for a full four-person party. "
-            "You can push it early, but the ridge will hit much harder than Old Owl Well."
+            f"Red Mesa Hold is balanced as a level {recommended_level} route for a full four-person party. "
+            "You can push it early, but the ridge will hit much harder than Blackglass Well."
         )
         choice = self.scenario_choice(
-            "Do you still ride for Wyvern Tor?",
+            "Do you still ride for Red Mesa Hold?",
             [
-                self.action_option("Ride for Wyvern Tor anyway."),
+                self.action_option("Ride for Red Mesa Hold anyway."),
                 self.action_option(f"Wait and come back at level {recommended_level}."),
             ],
             allow_meta=False,
@@ -77,11 +77,11 @@ class StoryAct1ExpandedMixin:
         assert self.state is not None
         if self.state.flags.get("phandalin_council_seen") or not self.act1_side_paths_cleared():
             return
-        self.banner("Stonehill War-Room")
+        self.banner("Ashlamp War-Room")
         self.say(
-            "By evening, the Stonehill Inn has half-turned into a frontier war room. Tessa Harrow, Halia Thornton, "
-            "Barthen, Linene Graywind, and Daran Edermath crowd around a beer-stained map while rain taps at the shutters. "
-            "For the first time since your arrival, Phandalin sounds less afraid than focused.",
+            "By evening, the Ashlamp Inn has half-turned into a frontier war room. Tessa Harrow, Halia Vey, "
+            "Hadrik, Linene Ironward, and Daran Orchard crowd around a beer-stained map while rain taps at the shutters. "
+            "For the first time since your arrival, Iron Hollow sounds less afraid than focused.",
             typed=True,
         )
         self.speaker(
@@ -126,7 +126,7 @@ class StoryAct1ExpandedMixin:
                     "The room stops sounding like a list of shortages and starts sounding like a town choosing to stand behind a plan."
                 )
                 self.add_inventory_item("potion_heroism", source="a relieved council table")
-                self.reward_party(xp=20, gold=8, reason="steadying Phandalin before the Ashfall march")
+                self.reward_party(xp=20, gold=8, reason="steadying Iron Hollow before the Ashfall march")
             else:
                 self.say("They listen, but fear still sits in the room like another body at the table.")
         else:
@@ -146,7 +146,7 @@ class StoryAct1ExpandedMixin:
             else:
                 self.say("Rukhar stays frustratingly hard to pin down even in other people's stories.")
         self.add_journal(
-            "A council at Stonehill Inn confirms Ashfall Watch is the next major target once Phandalin's two outer threats are broken."
+            "A council at Ashlamp Inn confirms Ashfall Watch is the next major target once Iron Hollow's two outer threats are broken."
         )
         self.state.flags["phandalin_council_seen"] = True
 
@@ -160,13 +160,13 @@ class StoryAct1ExpandedMixin:
                 self.reward_party(xp=xp_to_level_two, reason="regrouping after Ashfall Watch")
         self.banner("Lantern Vigil")
         self.say(
-            "When you ride back from Ashfall Watch, Phandalin meets you with lanterns, not cheers. Too many people are counting the faces that returned. "
-            "Outside the Stonehill Inn, the town gathers in the road while rescued teamsters and miners trade fractured testimony about old cellars beneath the Tresendar ruins.",
+            "When you ride back from Ashfall Watch, Iron Hollow meets you with lanterns, not cheers. Too many people are counting the faces that returned. "
+            "Outside the Ashlamp Inn, the town gathers in the road while rescued teamsters and miners trade fractured testimony about old cellars beneath the Duskmere ruins.",
             typed=True,
         )
         self.speaker(
-            "Halia Thornton",
-            "Rukhar was moving ledgers, captives, and coin through the manor hill. Whatever sits under Tresendar is where the Ashen Brand keeps the part of itself that thinks.",
+            "Halia Vey",
+            "Rukhar was moving ledgers, captives, and coin through the manor hill. Whatever sits under Duskmere is where the Ashen Brand keeps the part of itself that thinks.",
         )
         choice = self.scenario_choice(
             "What do you do in the middle of the vigil?",
@@ -187,7 +187,7 @@ class StoryAct1ExpandedMixin:
             )
             if success:
                 self.say("The witness gives you a clean memory of a cistern stair beneath the old manor hill and a door opened by soot-black keys.")
-                self.add_clue("A rescued teamster saw a hidden cistern stair beneath Tresendar Manor.")
+                self.add_clue("A rescued teamster saw a hidden cistern stair beneath Duskmere Manor.")
                 self.reward_party(xp=20, reason="stabilizing a rescued witness during the vigil")
             else:
                 self.say("You keep them from slipping under again, but their memory comes back in scattered shards.")
@@ -211,38 +211,38 @@ class StoryAct1ExpandedMixin:
                 self.state.player,
                 "Investigation",
                 13,
-                context="to trace Ashfall's paper trail into Phandalin's buried foundations",
+                context="to trace Ashfall's paper trail into Iron Hollow's buried foundations",
             )
             if success:
                 self.say(
-                    "Under the ash and rain damage, you find repeated references to 'manor intake' and 'Emberhall reserve,' with Tresendar clearly serving as the handoff."
+                    "Under the ash and rain damage, you find repeated references to 'manor intake' and 'Emberhall reserve,' with Duskmere clearly serving as the handoff."
                 )
-                self.add_clue("Rukhar's ledgers show Tresendar Manor as the handoff point to Emberhall deeper below town.")
+                self.add_clue("Rukhar's ledgers show Duskmere Manor as the handoff point to Emberhall deeper below town.")
                 self.reward_party(xp=20, reason="decoding Rukhar's ledgers")
             else:
                 self.say("You salvage enough to confirm the manor matters, but not enough to fully map the chain below it.")
         self.state.flags["phandalin_after_watch_seen"] = True
         self.state.flags["tresendar_revealed"] = True
-        self.add_journal("The lantern vigil turns up a new lead: the Ashen Brand is still moving through hidden cellars beneath Tresendar Manor.")
+        self.add_journal("The lantern vigil turns up a new lead: the Ashen Brand is still moving through hidden cellars beneath Duskmere Manor.")
 
     def scene_phandalin_hub(self) -> None:
         assert self.state is not None
-        self.banner("Phandalin")
+        self.banner("Iron Hollow")
         if not self.state.flags.get("phandalin_arrived"):
             self.say(
-                "Phandalin rises from rocky foothills in a scatter of rebuilt homes, old stone scars, orchard walls, wagon sheds, and lantern-lit mud lanes. "
+                "Iron Hollow rises from rocky foothills in a scatter of rebuilt homes, old stone scars, orchard walls, wagon sheds, and lantern-lit mud lanes. "
                 "There are no proper walls, no garrison worth the name, and too many decent people living one bad week away from disaster.",
                 typed=True,
             )
             self.state.flags["phandalin_arrived"] = True
-            self.add_journal("You reached Phandalin, a hard-bitten frontier town under growing Ashen Brand pressure.")
+            self.add_journal("You reached Iron Hollow, a hard-bitten frontier town under growing Ashen Brand pressure.")
             if self.state.flags.get("blackwake_completed"):
                 self.describe_blackwake_phandalin_arrival()
             choice = self.scenario_choice(
                 "How do you enter town?",
                 [
                     self.quoted_option("INSIGHT", "I want to read the mood of the town before I speak."),
-                    self.quoted_option("PERSUASION", "Let them know Neverwinter sent help."),
+                    self.quoted_option("PERSUASION", "Let them know Greywake sent help."),
                     self.skill_tag("INVESTIGATION", self.action_option("Survey the tracks, barricades, and weak points first.")),
                 ]
                 + [text for _, text in self.scene_identity_options("phandalin_arrival")],
@@ -260,16 +260,16 @@ class StoryAct1ExpandedMixin:
                     self.say(
                         "You catch the way fear keeps pulling the crowd's attention toward manor-side ruins, the east road, and a handful of people everybody seems to quietly trust."
                     )
-                    self.add_clue("Phandalin's fear points in three directions: the east road, the old manor hill, and the few locals still holding the place together.")
-                    self.reward_party(xp=10, reason="reading Phandalin's mood on arrival")
+                    self.add_clue("Iron Hollow's fear points in three directions: the east road, the old manor hill, and the few locals still holding the place together.")
+                    self.reward_party(xp=10, reason="reading Iron Hollow's mood on arrival")
                 else:
                     self.say("The town's fear is real, but too tangled to untangle in one glance.")
             elif choice == 2:
-                self.player_speaker("Let them know Neverwinter sent help.")
+                self.player_speaker("Let them know Greywake sent help.")
                 success = self.skill_check(self.state.player, "Persuasion", 12, context="to steady the town's nerves")
                 if success:
                     self.say("A few shoulders ease as your words sound more like a promise than a performance.")
-                    self.reward_party(xp=10, gold=6, reason="reassuring Phandalin on arrival")
+                    self.reward_party(xp=10, gold=6, reason="reassuring Iron Hollow on arrival")
                 else:
                     self.say("People listen, but frontier caution clings harder than hope.")
             else:
@@ -278,7 +278,7 @@ class StoryAct1ExpandedMixin:
                 if success:
                     self.say("Fresh wagon ruts, anxious repairs, and redirected lanes give you a usable picture of how fear is reshaping the town.")
                     self.add_clue("Recent wagon ruts suggest the Ashen Brand watches both the east road and the manor-side lanes.")
-                    self.reward_party(xp=10, reason="surveying Phandalin's defenses")
+                    self.reward_party(xp=10, reason="surveying Iron Hollow's defenses")
                 else:
                     self.say("There are too many overlapping tracks and half-finished repairs for a quick clean read.")
 
@@ -289,19 +289,19 @@ class StoryAct1ExpandedMixin:
             options: list[tuple[str, str]] = []
             if self.has_steward_interactions():
                 options.append(("steward", self.action_option("Report to Steward Tessa Harrow")))
-            options.append(("inn", self.action_option("Visit the Stonehill Inn")))
+            options.append(("inn", self.action_option("Visit the Ashlamp Inn")))
             if self.has_shrine_interactions():
-                options.append(("shrine", self.action_option("Stop by the shrine of Tymora")))
+                options.append(("shrine", self.action_option("Stop by the Lantern shrine")))
             options.extend(
                 [
-                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
-                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
+                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Hadrik's Provisions"))),
+                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Ironward at the Ironbound trading post"))),
                 ]
             )
             if self.has_edermath_orchard_interactions():
-                options.append(("orchard", self.action_option("Walk the old walls of Edermath Orchard")))
+                options.append(("orchard", self.action_option("Walk the old walls of Orchard Wall")))
             if self.has_miners_exchange_interactions():
-                options.append(("exchange", self.action_option("Step into the Miner's Exchange")))
+                options.append(("exchange", self.action_option("Step into the Delvers' Exchange")))
             options.extend(
                 [
                     ("camp", self.action_option("Return to camp")),
@@ -309,24 +309,24 @@ class StoryAct1ExpandedMixin:
                 ]
             )
             if not self.state.flags.get("old_owl_well_cleared"):
-                label = self.action_option("Investigate Old Owl Well")
+                label = self.action_option("Investigate Blackglass Well")
                 if not self.can_visit_old_owl_well():
-                    label = self.action_option("Investigate Old Owl Well (need a lead)")
+                    label = self.action_option("Investigate Blackglass Well (need a lead)")
                 options.append(("old_owl", label))
             if not self.state.flags.get("wyvern_tor_cleared"):
-                label = self.action_option("Hunt the raiders at Wyvern Tor")
+                label = self.action_option("Hunt the raiders at Red Mesa Hold")
                 if not self.can_visit_wyvern_tor():
-                    label = self.action_option("Hunt the raiders at Wyvern Tor (need a lead)")
+                    label = self.action_option("Hunt the raiders at Red Mesa Hold (need a lead)")
                 options.append(("wyvern", label))
             if not self.state.flags.get("ashfall_watch_cleared"):
                 label = self.action_option("Ride for Ashfall Watch")
                 if not self.act1_side_paths_cleared():
-                    label = self.action_option("Ride for Ashfall Watch (clear Old Owl Well and Wyvern Tor first)")
+                    label = self.action_option("Ride for Ashfall Watch (clear Blackglass Well and Red Mesa Hold first)")
                 options.append(("ashfall", label))
             elif not self.state.flags.get("tresendar_cleared"):
-                label = self.action_option("Descend beneath Tresendar Manor")
+                label = self.action_option("Descend beneath Duskmere Manor")
                 if not self.state.flags.get("tresendar_revealed"):
-                    label = self.action_option("Descend beneath Tresendar Manor (wait for a firmer lead)")
+                    label = self.action_option("Descend beneath Duskmere Manor (wait for a firmer lead)")
                 options.append(("tresendar", label))
             else:
                 options.append(("emberhall", self.action_option("Descend into Emberhall Cellars")))
@@ -381,10 +381,10 @@ class StoryAct1ExpandedMixin:
 
     def visit_edermath_orchard(self) -> None:
         assert self.state is not None
-        self.banner("Edermath Orchard")
+        self.banner("Orchard Wall")
         if not self.state.flags.get("edermath_orchard_seen"):
             self.say(
-                "Low stone walls shelter a battered orchard on the edge of town. Daran Edermath moves between the trees with a veteran's economy, trimming dead wood one moment and testing an old sword edge the next. "
+                "Low stone walls shelter a battered orchard on the edge of town. Daran Orchard moves between the trees with a veteran's economy, trimming dead wood one moment and testing an old sword edge the next. "
                 "The place feels less like a farm than a retired watchpost pretending to be one.",
                 typed=True,
             )
@@ -392,7 +392,7 @@ class StoryAct1ExpandedMixin:
         while True:
             options: list[tuple[str, str]] = []
             if self.quest_is_ready("break_wyvern_tor_raiders"):
-                options.append(("turn_in", self.action_option("Tell Daran what happened at Wyvern Tor.")))
+                options.append(("turn_in", self.action_option("Tell Daran what happened at Red Mesa Hold.")))
             if not self.state.flags.get("edermath_orchard_blight_checked"):
                 options.append(
                     (
@@ -401,7 +401,7 @@ class StoryAct1ExpandedMixin:
                     )
                 )
             if not self.state.flags.get("edermath_orchard_wyvern_tor_asked"):
-                options.append(("tor", "\"You look like someone who knows the hills. What is happening at Wyvern Tor?\""))
+                options.append(("tor", "\"You look like someone who knows the hills. What is happening at Red Mesa Hold?\""))
             if not self.state.flags.get("edermath_orchard_training_done"):
                 options.append(
                     (
@@ -420,12 +420,12 @@ class StoryAct1ExpandedMixin:
             choice = self.scenario_choice("Daran wipes orchard dust from his hands and waits.", [text for _, text in options])
             selection_key, _ = options[choice - 1]
             if selection_key == "turn_in":
-                self.player_action("Wyvern Tor is broken. The raiders there will not trouble Phandalin again.")
+                self.player_action("Red Mesa Hold is broken. The raiders there will not trouble Iron Hollow again.")
                 self.speaker(
-                    "Daran Edermath",
+                    "Daran Orchard",
                     "Good. Some victories feel loud. The best kind just make a road safe enough that ordinary people stop talking about it.",
                 )
-                self.turn_in_quest("break_wyvern_tor_raiders", giver="Daran Edermath")
+                self.turn_in_quest("break_wyvern_tor_raiders", giver="Daran Orchard")
             elif selection_key == "blight":
                 self.state.flags["edermath_orchard_blight_checked"] = True
                 self.player_speaker("Something is wrong with these trees. Let me see what the ash is doing.")
@@ -439,7 +439,7 @@ class StoryAct1ExpandedMixin:
                     self.say(
                         "The damage is not natural. Somebody deliberately salted the roots with ash and bad runoff to pressure Daran into leaving the wall and his vantage."
                     )
-                    self.add_clue("The raiders are sabotaging orchard roots and farm walls to blind trusted lookouts around Phandalin.")
+                    self.add_clue("The raiders are sabotaging orchard roots and farm walls to blind trusted lookouts around Iron Hollow.")
                     self.add_inventory_item("moonmint_drops", source="Daran's herb shelf")
                     self.reward_party(xp=10, reason="reading the orchard blight")
                 else:
@@ -447,19 +447,19 @@ class StoryAct1ExpandedMixin:
             elif selection_key == "tor":
                 self.state.flags["edermath_orchard_wyvern_tor_asked"] = True
                 self.state.flags["edermath_orchard_lead"] = True
-                self.player_speaker("You look like someone who knows the hills. What is happening at Wyvern Tor?")
+                self.player_speaker("You look like someone who knows the hills. What is happening at Red Mesa Hold?")
                 self.speaker(
-                    "Daran Edermath",
+                    "Daran Orchard",
                     "Orcs, a worg pack, and a blood-chief with enough sense to use the old stone folds. They hit goat herders, road scouts, and anyone trying to move quietly east. "
                     "Clear the tor and you close one of the town's ugliest leaks.",
                 )
-                self.add_clue("Daran Edermath confirms organized raiders and worgs are working out of Wyvern Tor.")
+                self.add_clue("Daran Orchard confirms organized raiders and worgs are working out of Red Mesa Hold.")
                 if self.grant_quest(
                     "break_wyvern_tor_raiders",
-                    note="Daran says Wyvern Tor is the high-ground threat stalking scouts, herders, and anyone trying to move east unseen.",
+                    note="Daran says Red Mesa Hold is the high-ground threat stalking scouts, herders, and anyone trying to move east unseen.",
                 ):
                     self.speaker(
-                        "Daran Edermath",
+                        "Daran Orchard",
                         "Do the town a favor and do it thoroughly. Half-cleared hills only teach raiders to come back meaner.",
                     )
             elif selection_key == "training":
@@ -475,11 +475,11 @@ class StoryAct1ExpandedMixin:
                     self.say(
                         "Daran makes you work the wall, the ladder, and the loose-stone turn at speed until your breathing stops being decorative."
                     )
-                    self.reward_party(xp=10, reason="drilling with Daran Edermath")
+                    self.reward_party(xp=10, reason="drilling with Daran Orchard")
                     self.add_inventory_item("travel_biscuits", 2, source="Daran's field satchel")
                 else:
                     self.speaker(
-                        "Daran Edermath",
+                        "Daran Orchard",
                         "Not bad. Frontier fighting is mostly staying useful after the first ugly surprise.",
                     )
             elif selection_key == "cache":
@@ -490,19 +490,19 @@ class StoryAct1ExpandedMixin:
 
     def run_edermath_old_cache_scene(self) -> None:
         assert self.state is not None
-        self.banner("Edermath Orchard: Old Adventurer's Cache")
+        self.banner("Orchard Wall: Old Adventurer's Cache")
         self.player_speaker("If your old cache is still buried, we can reach it quietly.")
         if self.state.flags.get("wyvern_tor_cleared"):
             self.speaker(
-                "Daran Edermath",
-                "After Wyvern Tor, I believe you can follow ugly ground without flattering it. That helps. The map is still half-wrong because I drew it half-drunk and thirty years too confident. The other half is worse: somebody has been watching the orchard walls.",
+                "Daran Orchard",
+                "After Red Mesa Hold, I believe you can follow ugly ground without flattering it. That helps. The map is still half-wrong because I drew it half-drunk and thirty years too confident. The other half is worse: somebody has been watching the orchard walls.",
             )
             self.say(
                 "Daran adds a fresh correction from the tor fight: any watcher patient enough to hold this line will favor the low ditch, not the obvious gap in the wall."
             )
         else:
             self.speaker(
-                "Daran Edermath",
+                "Daran Orchard",
                 "Maybe. The map is half-wrong because I drew it half-drunk and thirty years too confident. The other half is worse: somebody has been watching the orchard walls.",
             )
         self.say(
@@ -529,7 +529,7 @@ class StoryAct1ExpandedMixin:
         if self.act1_party_size() >= 3:
             enemies.append(create_enemy("bandit"))
         encounter = Encounter(
-            "Edermath Orchard Watchers",
+            "Orchard Wall Watchers",
             "Ashen Brand scouts caught watching Daran's old cache route turn a failed stealth approach into a close orchard fight.",
             enemies,
             allow_flee=True,
@@ -553,38 +553,38 @@ class StoryAct1ExpandedMixin:
         self.state.flags["edermath_old_cache_recovered"] = True
         self.state.flags["edermath_old_cache_trust"] = True
         self.state.flags["act2_edermath_cache_routework"] = True
-        self.add_inventory_item("edermath_cache_compass", source="Daran Edermath's old adventurer's cache")
-        self.reward_party(xp=35, gold=12, reason="recovering Daran Edermath's old adventurer's cache")
+        self.add_inventory_item("edermath_cache_compass", source="Daran Orchard's old adventurer's cache")
+        self.reward_party(xp=35, gold=12, reason="recovering Daran Orchard's old adventurer's cache")
         self.add_clue(
             "Daran's old cache map preserves a quiet orchard-to-highland route that can help control Act 2 approaches."
         )
         if quiet:
             self.speaker(
-                "Daran Edermath",
-                "Clean work. After Wyvern Tor, I hoped you knew patience as well as pressure. Now I know it."
+                "Daran Orchard",
+                "Clean work. After Red Mesa Hold, I hoped you knew patience as well as pressure. Now I know it."
                 if self.state.flags.get("wyvern_tor_cleared")
                 else "Clean work. Old routes reward patience more often than courage. Remember that when everyone else starts calling haste a plan.",
             )
             self.add_journal(
-                "You recovered Daran Edermath's old adventuring cache without alerting the orchard watchers, earning his trust and a route-control hook for Act 2."
+                "You recovered Daran Orchard's old adventuring cache without alerting the orchard watchers, earning his trust and a route-control hook for Act 2."
             )
         else:
             self.speaker(
-                "Daran Edermath",
-                "Wyvern Tor taught you to finish hard ground. This was messier than I hoped, but you finished it again, and now we know exactly who wanted that cache watched."
+                "Daran Orchard",
+                "Red Mesa Hold taught you to finish hard ground. This was messier than I hoped, but you finished it again, and now we know exactly who wanted that cache watched."
                 if self.state.flags.get("wyvern_tor_cleared")
                 else "Messier than I hoped. Still, you finished it, and now we know exactly who wanted that cache watched.",
             )
             self.add_journal(
-                "You recovered Daran Edermath's old adventuring cache after fighting the orchard watchers, earning his trust and a route-control hook for Act 2."
+                "You recovered Daran Orchard's old adventuring cache after fighting the orchard watchers, earning his trust and a route-control hook for Act 2."
             )
 
     def visit_miners_exchange(self) -> None:
         assert self.state is not None
-        self.banner("Miner's Exchange")
+        self.banner("Delvers' Exchange")
         if not self.state.flags.get("miners_exchange_seen"):
             self.say(
-                "The Miner's Exchange smells of wet stone, chalk dust, lamp oil, and bad news delivered in practical voices. Halia Thornton runs the counter with polished calm, "
+                "The Delvers' Exchange smells of wet stone, chalk dust, lamp oil, and bad news delivered in practical voices. Halia Vey runs the counter with polished calm, "
                 "sorting claim tags and grievance slips while half the room tries not to look as worried as it is.",
                 typed=True,
             )
@@ -592,7 +592,7 @@ class StoryAct1ExpandedMixin:
         while True:
             options: list[tuple[str, str]] = []
             if self.quest_is_ready("silence_old_owl_well"):
-                options.append(("turn_in", self.action_option("Tell Halia the threat at Old Owl Well has been dealt with.")))
+                options.append(("turn_in", self.action_option("Tell Halia the threat at Blackglass Well has been dealt with.")))
             if not self.state.flags.get("miners_exchange_missing_crews_asked"):
                 options.append(("missing", "\"Which crews are missing, and where did they vanish?\""))
             if not self.state.flags.get("miners_exchange_ledgers_checked"):
@@ -613,28 +613,28 @@ class StoryAct1ExpandedMixin:
             choice = self.scenario_choice("Halia closes one ledger with a fingertip and gives you her attention.", [text for _, text in options])
             selection_key, _ = options[choice - 1]
             if selection_key == "turn_in":
-                self.player_action("Old Owl Well is silent. Whatever was digging there will not trouble your crews again.")
+                self.player_action("Blackglass Well is silent. Whatever was digging there will not trouble your crews again.")
                 self.speaker(
-                    "Halia Thornton",
+                    "Halia Vey",
                     "Excellent. Quiet roads make honest ore much easier to turn into coin.",
                 )
-                self.turn_in_quest("silence_old_owl_well", giver="Halia Thornton")
+                self.turn_in_quest("silence_old_owl_well", giver="Halia Vey")
             elif selection_key == "missing":
                 self.state.flags["miners_exchange_missing_crews_asked"] = True
                 self.state.flags["miners_exchange_lead"] = True
                 self.player_speaker("Which crews are missing, and where did they vanish?")
                 self.speaker(
-                    "Halia Thornton",
-                    "Scouts east of town, grave-salvage teams who got too close to old stones, and one fool prospector who thought Old Owl Well was abandoned. It is not. "
+                    "Halia Vey",
+                    "Scouts east of town, grave-salvage teams who got too close to old stones, and one fool prospector who thought Blackglass Well was abandoned. It is not. "
                     "People go there and either disappear or come back talking about corpse-light and hired steel.",
                 )
-                self.add_clue("Halia Thornton ties missing crews and salvage thefts to Old Owl Well.")
+                self.add_clue("Halia Vey ties missing crews and salvage thefts to Blackglass Well.")
                 if self.grant_quest(
                     "silence_old_owl_well",
-                    note="Halia says Old Owl Well has become a grave-salvage site protected by both hired blades and something worse.",
+                    note="Halia says Blackglass Well has become a grave-salvage site protected by both hired blades and something worse.",
                 ):
                     self.speaker(
-                        "Halia Thornton",
+                        "Halia Vey",
                         "Bring me proof the well is quiet and I'll make it worth your time. Preferably the kind of proof that stays dead.",
                     )
             elif selection_key == "ledgers":
@@ -644,13 +644,13 @@ class StoryAct1ExpandedMixin:
                     self.state.player,
                     "Investigation",
                     12,
-                    context="to catch hidden patterns in the Miner's Exchange ledgers",
+                    context="to catch hidden patterns in the Delvers' Exchange ledgers",
                 )
                 if success:
                     self.say(
-                        "The numbers show purchase spikes in shovels, grave-hooks, and lamp oil timed to raids elsewhere. Somebody has been feeding Old Owl Well from inside a broader supply web."
+                        "The numbers show purchase spikes in shovels, grave-hooks, and lamp oil timed to raids elsewhere. Somebody has been feeding Blackglass Well from inside a broader supply web."
                     )
-                    self.add_clue("Exchange ledgers show Old Owl Well being supplied as part of the Ashen Brand's wider logistics chain.")
+                    self.add_clue("Exchange ledgers show Blackglass Well being supplied as part of the Ashen Brand's wider logistics chain.")
                     self.reward_party(xp=10, reason="reading the exchange ledgers")
                 else:
                     self.say("The books are too cleaned-up to expose the whole scheme, but not enough to feel honest.")
@@ -670,7 +670,7 @@ class StoryAct1ExpandedMixin:
                     self.reward_party(xp=10, gold=8, reason="settling a claim dispute at the exchange")
                 else:
                     self.speaker(
-                        "Halia Thornton",
+                        "Halia Vey",
                         "Worth trying. Next time I may just charge admission and let them tire themselves out.",
                     )
             else:
@@ -679,7 +679,7 @@ class StoryAct1ExpandedMixin:
 
     def scene_old_owl_well(self) -> None:
         assert self.state is not None
-        self.banner("Old Owl Well")
+        self.banner("Blackglass Well")
         if not self.state.flags.get("old_owl_well_seen"):
             self.say(
                 "The old watchtower rises from the scrub like a cracked finger of Netherese stone. Dig lines, corpse-salt circles, and half-collapsed tents surround the well itself, "
@@ -737,7 +737,7 @@ class StoryAct1ExpandedMixin:
                 self.say("The closest hireling narrows their eyes, then starts yelling for the dead to rise.")
 
         first_encounter = Encounter(
-            title="Old Owl Well Dig Ring",
+            title="Blackglass Well Dig Ring",
             description="Bone-haulers and animated sentries close around the well mouth.",
             enemies=enemies,
             allow_flee=True,
@@ -747,7 +747,7 @@ class StoryAct1ExpandedMixin:
         )
         outcome = self.run_encounter(first_encounter)
         if outcome == "defeat":
-            self.handle_defeat("The dead keep their watch at Old Owl Well.")
+            self.handle_defeat("The dead keep their watch at Blackglass Well.")
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
@@ -777,9 +777,9 @@ class StoryAct1ExpandedMixin:
             )
             if success:
                 self.say("The prospector gasps out one useful truth before passing out: the gravecaller answers to Ashfall's coin and the manor's keys.")
-                self.add_clue("A rescued prospector says the gravecaller at Old Owl Well was being paid through Ashfall Watch for work tied to the manor hill.")
+                self.add_clue("A rescued prospector says the gravecaller at Blackglass Well was being paid through Ashfall Watch for work tied to the manor hill.")
                 boss_bonus += 1
-                self.reward_party(xp=10, reason="saving the prospector at Old Owl Well")
+                self.reward_party(xp=10, reason="saving the prospector at Blackglass Well")
             else:
                 self.say("You save the prospector's life, but not a clean version of what they saw.")
         elif choice == 2:
@@ -792,9 +792,9 @@ class StoryAct1ExpandedMixin:
             )
             if success:
                 self.say("The page names Ashfall Watch as the collection point and mentions a soot-key transfer beneath the old manor hill.")
-                self.add_clue("The Old Owl Well notes point to Ashfall Watch as the collection point for salvage moved toward the manor hill.")
+                self.add_clue("The Blackglass Well notes point to Ashfall Watch as the collection point for salvage moved toward the manor hill.")
                 boss_bonus += 1
-                self.reward_party(xp=10, reason="securing the Old Owl Well route notes")
+                self.reward_party(xp=10, reason="securing the Blackglass Well route notes")
             else:
                 self.say("You save fragments, but the ugliest details go spinning away with the dust.")
         else:
@@ -851,7 +851,7 @@ class StoryAct1ExpandedMixin:
 
         boss_encounter = Encounter(
             title="Miniboss: Vaelith Marr",
-            description="The gravecaller of Old Owl Well fights from the lip of the buried dark.",
+            description="The gravecaller of Blackglass Well fights from the lip of the buried dark.",
             enemies=boss_enemies,
             allow_flee=True,
             allow_parley=False,
@@ -864,12 +864,12 @@ class StoryAct1ExpandedMixin:
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
-            self.say("You break contact and retreat to Phandalin with the well still active behind you.")
+            self.say("You break contact and retreat to Iron Hollow with the well still active behind you.")
             return
 
         self.state.flags["old_owl_well_cleared"] = True
-        self.add_clue("Old Owl Well is cleared, and its notes tie grave-salvage, Ashfall Watch, and the manor hill into one supply chain.")
-        self.add_journal("You silenced Old Owl Well and broke one of the Ashen Brand's outer operations.")
+        self.add_clue("Blackglass Well is cleared, and its notes tie grave-salvage, Ashfall Watch, and the manor hill into one supply chain.")
+        self.add_journal("You silenced Blackglass Well and broke one of the Ashen Brand's outer operations.")
         refresh_quest_statuses = getattr(self, "refresh_quest_statuses", None)
         if callable(refresh_quest_statuses):
             refresh_quest_statuses(announce=False)
@@ -878,10 +878,10 @@ class StoryAct1ExpandedMixin:
 
     def scene_wyvern_tor(self) -> None:
         assert self.state is not None
-        self.banner("Wyvern Tor")
+        self.banner("Red Mesa Hold")
         if not self.state.flags.get("wyvern_tor_seen"):
             self.say(
-                "Wyvern Tor looms out of the hills in broken shelves of wind-cut stone. Goat paths, old watch cairns, and smoke-stained hollows twist around the ridge, "
+                "Red Mesa Hold looms out of the hills in broken shelves of wind-cut stone. Goat paths, old watch cairns, and smoke-stained hollows twist around the ridge, "
                 "and something large has been pacing the high ground long enough to turn the dust into habitual scars.",
                 typed=True,
             )
@@ -902,7 +902,7 @@ class StoryAct1ExpandedMixin:
         )
         if choice == 1:
             self.player_action("Use the goat path and the wind shadow to reach the upper shelf.")
-            success = self.skill_check(self.state.player, "Survival", 13, context="to take the hidden path up Wyvern Tor")
+            success = self.skill_check(self.state.player, "Survival", 13, context="to take the hidden path up Red Mesa Hold")
             if success:
                 self.apply_status(enemies[0], "surprised", 1, source="your high approach")
                 hero_bonus += 2
@@ -931,7 +931,7 @@ class StoryAct1ExpandedMixin:
                 self.say("You read enough to know the worg is clever, not enough to stop it from choosing the angle first.")
 
         first_encounter = Encounter(
-            title="Wyvern Tor Shelf Fight",
+            title="Red Mesa Hold Shelf Fight",
             description="Orc raiders and a hunting worg defend the tor's outer shelf.",
             enemies=enemies,
             allow_flee=True,
@@ -941,7 +941,7 @@ class StoryAct1ExpandedMixin:
         )
         outcome = self.run_encounter(first_encounter)
         if outcome == "defeat":
-            self.handle_defeat("Wyvern Tor keeps the high ground and the road below it.")
+            self.handle_defeat("Red Mesa Hold keeps the high ground and the road below it.")
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
@@ -971,9 +971,9 @@ class StoryAct1ExpandedMixin:
             )
             if success:
                 self.say("The drover coughs out one clean answer: a blood-chief named Brughor, one ogre, and enough ego to think the hill already belongs to him.")
-                self.add_clue("A captured drover confirms Brughor holds Wyvern Tor with an ogre and a small disciplined raiding party.")
+                self.add_clue("A captured drover confirms Brughor holds Red Mesa Hold with an ogre and a small disciplined raiding party.")
                 boss_bonus += 1
-                self.reward_party(xp=10, reason="saving the captured drover at Wyvern Tor")
+                self.reward_party(xp=10, reason="saving the captured drover at Red Mesa Hold")
             else:
                 self.say("The drover lives, but the useful details come back in broken pieces.")
         elif choice == 2:
@@ -1044,7 +1044,7 @@ class StoryAct1ExpandedMixin:
 
         boss_encounter = Encounter(
             title="Miniboss: Brughor Skullcleaver",
-            description="The blood-chief of Wyvern Tor makes his stand on the broken high shelf.",
+            description="The blood-chief of Red Mesa Hold makes his stand on the broken high shelf.",
             enemies=boss_enemies,
             allow_flee=True,
             allow_parley=False,
@@ -1057,12 +1057,12 @@ class StoryAct1ExpandedMixin:
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
-            self.say("You pull clear of the upper shelf and retreat to Phandalin to regroup.")
+            self.say("You pull clear of the upper shelf and retreat to Iron Hollow to regroup.")
             return
 
         self.state.flags["wyvern_tor_cleared"] = True
-        self.add_clue("Wyvern Tor is cleared, and its raiders were coordinating with Ashfall Watch rather than acting alone.")
-        self.add_journal("You broke the raiders at Wyvern Tor and stripped another outer shield away from the Ashen Brand.")
+        self.add_clue("Red Mesa Hold is cleared, and its raiders were coordinating with Ashfall Watch rather than acting alone.")
+        self.add_journal("You broke the raiders at Red Mesa Hold and stripped another outer shield away from the Ashen Brand.")
         refresh_quest_statuses = getattr(self, "refresh_quest_statuses", None)
         if callable(refresh_quest_statuses):
             refresh_quest_statuses(announce=False)
@@ -1141,7 +1141,7 @@ class StoryAct1ExpandedMixin:
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
-            self.say("You fall back to Phandalin to rethink the assault.")
+            self.say("You fall back to Iron Hollow to rethink the assault.")
             return
 
         self.say(
@@ -1232,14 +1232,14 @@ class StoryAct1ExpandedMixin:
         choice = self.scenario_choice(
             "Rukhar raises his blade and waits to see how you answer.",
             [
-                self.quoted_option("INTIMIDATION", "Surrender the yard in Phandalin's name."),
+                self.quoted_option("INTIMIDATION", "Surrender the yard in Iron Hollow's name."),
                 self.quoted_option("PERSUASION", "Your paymaster is already losing. Walk away with the people who still can."),
                 self.action_option("Strike before he can settle the shield line."),
             ],
             allow_meta=False,
         )
         if choice == 1:
-            self.player_speaker("Surrender the yard in Phandalin's name.")
+            self.player_speaker("Surrender the yard in Iron Hollow's name.")
             success = self.skill_check(self.state.player, "Intimidation", 13, context="to crack Rukhar's command posture")
             if success:
                 boss_enemies[0].current_hp = max(1, boss_enemies[0].current_hp - 4)
@@ -1280,26 +1280,26 @@ class StoryAct1ExpandedMixin:
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
-            self.say("You escape the watchtower and retreat to Phandalin to regroup.")
+            self.say("You escape the watchtower and retreat to Iron Hollow to regroup.")
             return
 
         self.state.flags["ashfall_watch_cleared"] = True
-        self.add_clue("Rukhar carried a soot-black key stamped with the Tresendar crest and orders to move captives beneath the manor hill.")
-        self.add_journal("Ashfall Watch is broken, but the Ashen Brand's cellar routes beneath Phandalin are still active.")
+        self.add_clue("Rukhar carried a soot-black key stamped with the Duskmere crest and orders to move captives beneath the manor hill.")
+        self.add_journal("Ashfall Watch is broken, but the Ashen Brand's cellar routes beneath Iron Hollow are still active.")
         refresh_quest_statuses = getattr(self, "refresh_quest_statuses", None)
         if callable(refresh_quest_statuses):
             refresh_quest_statuses(announce=False)
         self.say(
-            "Among Rukhar's orders you find a blackened key bearing the Tresendar crest, prisoner transfer notes, and references to a deeper reserve called Emberhall. "
+            "Among Rukhar's orders you find a blackened key bearing the Duskmere crest, prisoner transfer notes, and references to a deeper reserve called Emberhall. "
             "The field base is broken, but the gang's thinking parts are still below town."
         )
         self.state.current_scene = "phandalin_hub"
 
     def scene_tresendar_manor(self) -> None:
         assert self.state is not None
-        self.banner("Tresendar Manor")
+        self.banner("Duskmere Manor")
         self.say(
-            "The ruined manor crouches over Phandalin like a memory that never learned to stay buried. Beneath the broken shell, a hidden stair drops into wet stone, cistern corridors, and ash-marked cellars where the Ashen Brand keeps its quieter work.",
+            "The ruined manor crouches over Iron Hollow like a memory that never learned to stay buried. Beneath the broken shell, a hidden stair drops into wet stone, cistern corridors, and ash-marked cellars where the Ashen Brand keeps its quieter work.",
             typed=True,
         )
         party_size = self.act1_party_size()
@@ -1354,7 +1354,7 @@ class StoryAct1ExpandedMixin:
                 self.say("The grate gives, but the landing is uglier than planned.")
 
         first_encounter = Encounter(
-            title="Tresendar Cellars",
+            title="Duskmere Cellars",
             description="Collectors, cutouts, and buried sentries hold the intake route beneath the manor.",
             enemies=enemies,
             allow_flee=True,
@@ -1365,7 +1365,7 @@ class StoryAct1ExpandedMixin:
         )
         outcome = self.run_encounter(first_encounter)
         if outcome == "defeat":
-            self.handle_defeat("The buried manor swallows the party beneath Phandalin.")
+            self.handle_defeat("The buried manor swallows the party beneath Iron Hollow.")
             return
         if outcome == "fled":
             self.state.current_scene = "phandalin_hub"
@@ -1427,7 +1427,7 @@ class StoryAct1ExpandedMixin:
             second_bonus += route_bonus
         second_encounter = Encounter(
             title="The Cistern Eye",
-            description="A warped cellar horror rises from the dark water below Tresendar Manor.",
+            description="A warped cellar horror rises from the dark water below Duskmere Manor.",
             enemies=second_enemies,
             allow_flee=True,
             allow_parley=False,
@@ -1446,8 +1446,8 @@ class StoryAct1ExpandedMixin:
 
         self.state.flags["tresendar_cleared"] = True
         self.state.flags["emberhall_revealed"] = True
-        self.add_clue("Tresendar Manor was the Ashen Brand's intake route; Varyn's remaining core has withdrawn into Emberhall below.")
-        self.add_journal("You cleared the buried Tresendar route and confirmed Varyn has fallen back to Emberhall for the final stand.")
+        self.add_clue("Duskmere Manor was the Ashen Brand's intake route; Varyn's remaining core has withdrawn into Emberhall below.")
+        self.add_journal("You cleared the buried Duskmere route and confirmed Varyn has fallen back to Emberhall for the final stand.")
         self.add_inventory_item("scroll_arcane_refresh", source="a sealed coffer in the cistern alcove")
         self.state.current_scene = "phandalin_hub"
 
@@ -1612,7 +1612,7 @@ class StoryAct1ExpandedMixin:
 
         encounter = Encounter(
             title="Boss: Varyn Sable",
-            description="The captain of the Ashen Brand makes the final stand beneath Phandalin.",
+            description="The captain of the Ashen Brand makes the final stand beneath Iron Hollow.",
             enemies=boss_enemies,
             allow_flee=True,
             allow_parley=True,
@@ -1631,8 +1631,8 @@ class StoryAct1ExpandedMixin:
 
         self.say(
             "Varyn falls, but not cleanly. Body, cloak, and blade hit the cellar stones while the route behind him folds the wrong way. "
-            "The remaining brigands scatter, the Ashen Brand breaks around that absence, and the pressure that has bent every road into Phandalin finally snaps. "
-            "Among the captain's ledgers are references to older powers stirring beneath the Sword Mountains, with whispers pointing toward deeper ruins, buried wealth, and unfinished business near Wave Echo Cave."
+            "The remaining brigands scatter, the Ashen Brand breaks around that absence, and the pressure that has bent every road into Iron Hollow finally snaps. "
+            "Among the captain's ledgers are references to older powers stirring beneath the Shatterbelt highlands, with whispers pointing toward deeper ruins, buried wealth, and unfinished business near Resonant Vaults."
         )
         self.state.flags["varyn_body_defeated_act1"] = True
         self.state.flags["varyn_route_displaced"] = True
@@ -1640,8 +1640,8 @@ class StoryAct1ExpandedMixin:
         if self.state.flags.get("emberhall_ledger_read") or self.state.flags.get("emberhall_archive_tip"):
             self.state.flags["emberhall_impossible_exit_seen"] = True
             self.say("The exits you decoded before the fight all account for themselves except one: a route that appears in the ledger only after Varyn is gone.")
-        self.add_journal("You broke the Ashen Brand and secured Phandalin through the end of Act 1.")
-        self.reward_party(xp=250, gold=80, reason="securing Phandalin at the end of Act I")
+        self.add_journal("You broke the Ashen Brand and secured Iron Hollow through the end of Act 1.")
+        self.reward_party(xp=250, gold=80, reason="securing Iron Hollow at the end of Act I")
         if 1 not in self.state.completed_acts:
             self.state.completed_acts.append(1)
         self.state.current_scene = "act1_complete"

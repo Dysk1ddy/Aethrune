@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 
+from ..data.story.public_terms import ability_label, spell_label, target_guard_label
 from ..dice import D20Outcome, roll, roll_d20
 from ..items import ITEMS
 from ..ui.colors import rich_style_name, strip_ansi
@@ -39,9 +40,10 @@ class CombatResolutionMixin:
         cost = magic_point_cost(spell_id)
         if spend_magic_points(caster, cost):
             return True
+        channel_name = spell_label(spell_id, spell_name)
         self.say(
-            f"{self.style_name(caster)} needs {cost} MP to cast {spell_name}, "
-            f"but has {current_magic_points(caster)} MP."
+            f"{self.style_name(caster)} needs {cost} channel reserve to use {channel_name}, "
+            f"but has {current_magic_points(caster)}."
         )
         return False
 
@@ -190,8 +192,8 @@ class CombatResolutionMixin:
     def ally_pressure_bonus(self, attacker, allies, *, ranged: bool) -> int:
         if not any(ally.is_conscious() and ally is not attacker for ally in allies):
             return 0
-        # A light flanking-style bonus keeps the text combat closer to 5e's feel
-        # without granting near-constant full advantage.
+        # A light flanking-style bonus keeps fights dynamic without granting
+        # near-constant full edge.
         return 1 if ranged else 2
 
     def has_damage_resistance(self, actor, damage_type: str) -> bool:
@@ -222,7 +224,7 @@ class CombatResolutionMixin:
                 attacker,
                 advantage,
                 target_number=target_ac,
-                target_label=f"AC {target_ac}",
+                target_label=target_guard_label(target_ac),
                 modifier=total_modifier,
                 style="attack",
                 outcome_kind="attack",
@@ -237,7 +239,7 @@ class CombatResolutionMixin:
                 critical_hit = False
                 self.say(f"{self.style_name(target)}'s armor turns a critical hit into a normal one.")
             if not critical_hit and total < target_ac:
-                self.say(f"{self.style_name(attacker)} attacks {self.style_name(target)} but misses AC {target_ac}.")
+                self.say(f"{self.style_name(attacker)} attacks {self.style_name(target)} but misses {target_guard_label(target_ac)}.")
                 return
             damage_roll = self.roll_with_display_bonus(
                 attacker.weapon.damage,
@@ -254,34 +256,34 @@ class CombatResolutionMixin:
                     self.rogue_sneak_attack_dice(attacker),
                     critical=critical_hit,
                     style="damage",
-                    context_label=f"{attacker.name} Sneak Attack",
+                    context_label=f"{attacker.name} Veilstrike",
                     outcome_kind="damage",
                 )
                 weapon_damage += sneak.total
-                self.say(f"Sneak Attack adds {self.style_damage(sneak.total)} damage.")
+                self.say(f"Veilstrike adds {self.style_damage(sneak.total)} damage.")
             martial_bonus = None
             smite = None
             if use_smite and attacker.class_name == "Paladin":
                 if not self.spend_mp_for_spell(attacker, "divine_smite", "Divine Smite"):
-                    self.say(f"{self.style_name(attacker)} reaches for divine wrath, but the light will not answer.")
+                    self.say(f"{self.style_name(attacker)} reaches for oathfire, but the light will not answer.")
                 else:
                     smite = self.roll_with_animation_context(
                         "2d8",
                         critical=critical_hit,
                         style="damage",
-                        context_label="Divine Smite",
+                        context_label=spell_label("divine_smite"),
                         outcome_kind="damage",
                     )
-                    self.say(f"Divine Smite adds {self.style_damage(smite.total)} radiant damage.")
+                    self.say(f"{spell_label('divine_smite')} adds {self.style_damage(smite.total)} radiant damage.")
             if attacker.archetype == "rukhar" and any(enemy.is_conscious() and enemy is not attacker for enemy in enemies):
                 martial_bonus = self.roll_with_animation_context(
                     "2d6",
                     style="damage",
-                    context_label=f"{attacker.name} martial advantage",
+                    context_label=f"{attacker.name} martial edge",
                     outcome_kind="damage",
                 )
                 weapon_damage += martial_bonus.total
-                self.say(f"{self.style_name(attacker)}'s martial advantage adds {self.style_damage(martial_bonus.total)} damage.")
+                self.say(f"{self.style_name(attacker)}'s martial edge adds {self.style_damage(martial_bonus.total)} damage.")
             total_actual = self.apply_damage(target, max(1, weapon_damage), damage_type=weapon_damage_type, source_actor=attacker)
             if smite is not None:
                 total_actual += self.apply_damage(target, smite.total, damage_type="radiant", source_actor=attacker)
@@ -340,7 +342,7 @@ class CombatResolutionMixin:
             attacker,
             advantage,
             target_number=target_ac,
-            target_label=f"AC {target_ac}",
+            target_label=target_guard_label(target_ac),
             modifier=total_modifier,
             style="attack",
             outcome_kind="attack",
@@ -573,8 +575,9 @@ class CombatResolutionMixin:
         return True
 
     def cast_sacred_flame(self, caster, target) -> None:
+        channel = spell_label("sacred_flame")
         if not self.can_make_hostile_action(caster):
-            self.say(f"{self.style_name(caster)} hesitates and cannot turn Sacred Flame on an enemy while Charmed.")
+            self.say(f"{self.style_name(caster)} hesitates and cannot turn {channel} on an enemy while Charmed.")
             return
         if not self.spend_mp_for_spell(caster, "sacred_flame", "Sacred Flame"):
             return
@@ -582,7 +585,7 @@ class CombatResolutionMixin:
         if callable(play_attack_sound_for):
             play_attack_sound_for(caster)
         dc = 8 + caster.proficiency_bonus + caster.ability_mod("WIS")
-        success = self.saving_throw(target, "DEX", dc, context="against Sacred Flame")
+        success = self.saving_throw(target, "DEX", dc, context=f"against {channel}")
         if success:
             self.say(f"{self.style_name(target)} slips clear of the radiant burst.")
             return
@@ -592,26 +595,27 @@ class CombatResolutionMixin:
                 "1d8",
                 bonus=self.spell_damage_bonus(caster),
                 style="damage",
-                context_label="Sacred Flame",
+                context_label=channel,
                 outcome_kind="damage",
             ).total
             + self.spell_damage_bonus(caster),
             source_actor=caster,
         )
-        self.say(f"Sacred Flame burns {self.style_name(target)} for {self.style_damage(actual)} radiant damage.")
+        self.say(f"{channel} burns {self.style_name(target)} for {self.style_damage(actual)} radiant damage.")
         self.announce_downed_target(target)
-        self.trigger_blacklake_adjudicator_reflection(caster, target, source="Sacred Flame")
+        self.trigger_blacklake_adjudicator_reflection(caster, target, source=channel)
         if target.is_conscious():
             self.apply_status(target, "reeling", 1, source="radiant force")
 
     def cast_cure_wounds(self, caster, target) -> None:
+        channel = spell_label("cure_wounds")
         if not self.spend_mp_for_spell(caster, "cure_wounds", "Cure Wounds"):
             return
         ability = "CHA" if caster.class_name in {"Bard", "Paladin"} else "WIS"
         amount = self.roll_with_animation_context(
             "1d8",
             style="healing",
-            context_label="Cure Wounds",
+            context_label=channel,
             outcome_kind="healing",
         ).total + caster.ability_mod(ability) + self.healing_bonus(caster)
         healed = target.heal(max(1, amount))
@@ -621,24 +625,26 @@ class CombatResolutionMixin:
         self.say(f"{self.style_name(caster)} restores {self.style_healing(healed)} hit points to {self.style_name(target)}.")
 
     def cast_healing_word(self, caster, target) -> None:
+        channel = spell_label("healing_word")
         if not self.spend_mp_for_spell(caster, "healing_word", "Healing Word"):
             return
         ability = "CHA" if caster.class_name == "Bard" else "WIS"
         amount = self.roll_with_animation_context(
             "1d4",
             style="healing",
-            context_label="Healing Word",
+            context_label=channel,
             outcome_kind="healing",
         ).total + caster.ability_mod(ability) + self.healing_bonus(caster)
         healed = target.heal(max(1, amount))
         play_heal_sound_for = getattr(self, "play_heal_sound_for", None)
         if healed > 0 and callable(play_heal_sound_for):
             play_heal_sound_for(caster)
-        self.say(f"{self.style_name(caster)} calls out a quick healing word and restores {self.style_healing(healed)} hit points to {self.style_name(target)}.")
+        self.say(f"{self.style_name(caster)} sends {channel} across the line and restores {self.style_healing(healed)} hit points to {self.style_name(target)}.")
 
     def cast_fire_bolt(self, caster, target, dodging) -> None:
+        channel = spell_label("fire_bolt")
         if not self.can_make_hostile_action(caster):
-            self.say(f"{self.style_name(caster)} cannot hurl Fire Bolt at an enemy while Charmed.")
+            self.say(f"{self.style_name(caster)} cannot channel {channel} at an enemy while Charmed.")
             return
         if not self.spend_mp_for_spell(caster, "fire_bolt", "Fire Bolt"):
             return
@@ -659,15 +665,15 @@ class CombatResolutionMixin:
                 caster,
                 advantage,
                 target_number=target_ac,
-                target_label=f"AC {target_ac}",
+                target_label=target_guard_label(target_ac),
                 modifier=total_modifier,
                 style="attack",
                 outcome_kind="attack",
-                context_label=f"{caster.name} casts Fire Bolt",
+                context_label=f"{caster.name} channels {channel}",
             )
             total = d20.kept + total_modifier
             if d20.kept == 1 or (d20.kept != 20 and total < target_ac):
-                self.say(f"{self.style_name(caster)}'s Fire Bolt misses {self.style_name(target)}.")
+                self.say(f"{self.style_name(caster)}'s {channel} misses {self.style_name(target)}.")
                 return
             actual = self.apply_damage(
                 target,
@@ -676,23 +682,24 @@ class CombatResolutionMixin:
                     bonus=self.spell_damage_bonus(caster),
                     critical=d20.kept == 20,
                     style="damage",
-                    context_label="Fire Bolt damage",
+                    context_label=f"{channel} damage",
                     outcome_kind="damage",
                 ).total
                 + self.spell_damage_bonus(caster),
                 source_actor=caster,
             )
-            self.say(f"Fire Bolt scorches {self.style_name(target)} for {self.style_damage(actual)} fire damage.")
+            self.say(f"{channel} scorches {self.style_name(target)} for {self.style_damage(actual)} fire damage.")
             self.announce_downed_target(target)
-            self.trigger_blacklake_adjudicator_reflection(caster, target, source="Fire Bolt")
+            self.trigger_blacklake_adjudicator_reflection(caster, target, source=channel)
             if target.is_conscious():
-                self.apply_status(target, "burning", 2, source="Fire Bolt")
+                self.apply_status(target, "burning", 2, source=channel)
         finally:
             self.break_invisibility_from_hostile_action(caster)
 
     def cast_produce_flame(self, caster, target, dodging) -> None:
+        channel = spell_label("produce_flame")
         if not self.can_make_hostile_action(caster):
-            self.say(f"{self.style_name(caster)} cannot lash out with Produce Flame while Charmed.")
+            self.say(f"{self.style_name(caster)} cannot lash out with {channel} while Charmed.")
             return
         if not self.spend_mp_for_spell(caster, "produce_flame", "Produce Flame"):
             return
@@ -713,15 +720,15 @@ class CombatResolutionMixin:
                 caster,
                 advantage,
                 target_number=target_ac,
-                target_label=f"AC {target_ac}",
+                target_label=target_guard_label(target_ac),
                 modifier=total_modifier,
                 style="attack",
                 outcome_kind="attack",
-                context_label=f"{caster.name} hurls Produce Flame",
+                context_label=f"{caster.name} hurls {channel}",
             )
             total = d20.kept + total_modifier
             if d20.kept == 1 or (d20.kept != 20 and total < target_ac):
-                self.say(f"{self.style_name(caster)}'s Produce Flame misses {self.style_name(target)}.")
+                self.say(f"{self.style_name(caster)}'s {channel} misses {self.style_name(target)}.")
                 return
             actual = self.apply_damage(
                 target,
@@ -730,23 +737,24 @@ class CombatResolutionMixin:
                     bonus=self.spell_damage_bonus(caster),
                     critical=d20.kept == 20,
                     style="damage",
-                    context_label="Produce Flame damage",
+                    context_label=f"{channel} damage",
                     outcome_kind="damage",
                 ).total
                 + self.spell_damage_bonus(caster),
                 source_actor=caster,
             )
-            self.say(f"Produce Flame sears {self.style_name(target)} for {self.style_damage(actual)} fire damage.")
+            self.say(f"{channel} sears {self.style_name(target)} for {self.style_damage(actual)} fire damage.")
             self.announce_downed_target(target)
-            self.trigger_blacklake_adjudicator_reflection(caster, target, source="Produce Flame")
+            self.trigger_blacklake_adjudicator_reflection(caster, target, source=channel)
             if target.is_conscious():
-                self.apply_status(target, "burning", 2, source="Produce Flame")
+                self.apply_status(target, "burning", 2, source=channel)
         finally:
             self.break_invisibility_from_hostile_action(caster)
 
     def cast_magic_missile(self, caster, target) -> None:
+        channel = spell_label("magic_missile")
         if not self.can_make_hostile_action(caster):
-            self.say(f"{self.style_name(caster)} cannot direct Magic Missile at an enemy while Charmed.")
+            self.say(f"{self.style_name(caster)} cannot direct {channel} at an enemy while Charmed.")
             return
         if not self.spend_mp_for_spell(caster, "magic_missile", "Magic Missile"):
             return
@@ -761,19 +769,20 @@ class CombatResolutionMixin:
                     f"{dart_count}d4+{dart_count}",
                     bonus=self.spell_damage_bonus(caster),
                     style="damage",
-                    context_label="Magic Missile",
+                    context_label=channel,
                     outcome_kind="damage",
                 ).total
                 + self.spell_damage_bonus(caster),
                 source_actor=caster,
             )
-            self.say(f"Magic Missile slams into {self.style_name(target)} for {self.style_damage(actual)} force damage.")
+            self.say(f"{channel} slams into {self.style_name(target)} for {self.style_damage(actual)} force damage.")
             self.announce_downed_target(target)
-            self.trigger_blacklake_adjudicator_reflection(caster, target, source="Magic Missile")
+            self.trigger_blacklake_adjudicator_reflection(caster, target, source=channel)
         finally:
             self.break_invisibility_from_hostile_action(caster)
 
     def cast_vicious_mockery(self, caster, target) -> None:
+        channel = spell_label("vicious_mockery")
         if not self.can_make_hostile_action(caster):
             self.say(f"{self.style_name(caster)} cannot weaponize a cutting remark while Charmed.")
             return
@@ -784,9 +793,9 @@ class CombatResolutionMixin:
             play_attack_sound_for(caster)
         try:
             dc = 8 + caster.proficiency_bonus + caster.ability_mod("CHA")
-            success = self.saving_throw(target, "WIS", dc, context="against Vicious Mockery")
+            success = self.saving_throw(target, "WIS", dc, context=f"against {channel}")
             if success:
-                self.say(f"{self.style_name(target)} bites back a wince and resists the mockery.")
+                self.say(f"{self.style_name(target)} bites back a wince and resists the cadence.")
                 return
             actual = self.apply_damage(
                 target,
@@ -794,23 +803,24 @@ class CombatResolutionMixin:
                     "1d6",
                     bonus=self.spell_damage_bonus(caster),
                     style="damage",
-                    context_label="Vicious Mockery",
+                    context_label=channel,
                     outcome_kind="damage",
                 ).total
                 + self.spell_damage_bonus(caster),
                 damage_type="psychic",
                 source_actor=caster,
             )
-            self.say(f"{self.style_name(caster)}'s mockery rattles {self.style_name(target)} for {self.style_damage(actual)} psychic damage.")
+            self.say(f"{self.style_name(caster)}'s {channel} rattles {self.style_name(target)} for {self.style_damage(actual)} psychic damage.")
             self.announce_downed_target(target)
             if target.is_conscious():
-                self.apply_status(target, "reeling", 2, source="humiliating mockery")
+                self.apply_status(target, "reeling", 2, source=channel)
         finally:
             self.break_invisibility_from_hostile_action(caster)
 
     def cast_eldritch_blast(self, caster, target, dodging) -> None:
+        channel = spell_label("eldritch_blast")
         if not self.can_make_hostile_action(caster):
-            self.say(f"{self.style_name(caster)} cannot level Eldritch Blast at an enemy while Charmed.")
+            self.say(f"{self.style_name(caster)} cannot level {channel} at an enemy while Charmed.")
             return
         if not self.spend_mp_for_spell(caster, "eldritch_blast", "Eldritch Blast"):
             return
@@ -831,15 +841,15 @@ class CombatResolutionMixin:
                 caster,
                 advantage,
                 target_number=target_ac,
-                target_label=f"AC {target_ac}",
+                target_label=target_guard_label(target_ac),
                 modifier=total_modifier,
                 style="attack",
                 outcome_kind="attack",
-                context_label=f"{caster.name} casts Eldritch Blast",
+                context_label=f"{caster.name} channels {channel}",
             )
             total = d20.kept + total_modifier
             if d20.kept == 1 or (d20.kept != 20 and total < target_ac):
-                self.say(f"{self.style_name(caster)}'s Eldritch Blast tears sparks from stone but misses {self.style_name(target)}.")
+                self.say(f"{self.style_name(caster)}'s {channel} tears sparks from stone but misses {self.style_name(target)}.")
                 return
             actual = self.apply_damage(
                 target,
@@ -848,39 +858,39 @@ class CombatResolutionMixin:
                     bonus=self.spell_damage_bonus(caster),
                     critical=d20.kept == 20,
                     style="damage",
-                    context_label="Eldritch Blast damage",
+                    context_label=f"{channel} damage",
                     outcome_kind="damage",
                 ).total
                 + self.spell_damage_bonus(caster),
                 damage_type="force",
                 source_actor=caster,
             )
-            self.say(f"Eldritch Blast hammers {self.style_name(target)} for {self.style_damage(actual)} force damage.")
+            self.say(f"{channel} hammers {self.style_name(target)} for {self.style_damage(actual)} force damage.")
             self.announce_downed_target(target)
-            self.trigger_blacklake_adjudicator_reflection(caster, target, source="Eldritch Blast")
+            self.trigger_blacklake_adjudicator_reflection(caster, target, source=channel)
             if target.is_conscious():
-                self.apply_status(target, "reeling", 1, source="eldritch impact")
+                self.apply_status(target, "reeling", 1, source=f"{channel} impact")
         finally:
             self.break_invisibility_from_hostile_action(caster)
 
     def use_rage(self, actor) -> None:
         if not actor.spend_resource("rage"):
-            self.say(f"{self.style_name(actor)} has no rage left to draw on.")
+            self.say(f"{self.style_name(actor)} has no Battle Surge left to draw on.")
             return
         actor.grant_temp_hp(4 + actor.level)
-        self.apply_status(actor, "emboldened", 3, source="rage")
-        self.say(f"{self.style_name(actor)} flies into a rage, taking {self.style_healing(actor.temp_hp)} temporary hit points with it.")
+        self.apply_status(actor, "emboldened", 3, source="Battle Surge")
+        self.say(f"{self.style_name(actor)} enters Battle Surge, taking {self.style_healing(actor.temp_hp)} temporary hit points with it.")
 
     def use_bardic_inspiration(self, actor, target) -> None:
         if not actor.spend_resource("bardic_inspiration"):
-            self.say(f"{self.style_name(actor)} has no Bardic Inspiration left.")
+            self.say(f"{self.style_name(actor)} has no Rally Note left.")
             return
         self.apply_status(target, "blessed", 2, source=f"{actor.name}'s inspiration")
         self.say(f"{self.style_name(actor)} lifts {self.style_name(target)} with a sharp line and steadier rhythm.")
 
     def use_martial_arts(self, attacker, target, heroes, enemies, dodging) -> None:
         if not self.can_make_hostile_action(attacker):
-            self.say(f"{self.style_name(attacker)} cannot lash out with a martial arts strike while Charmed.")
+            self.say(f"{self.style_name(attacker)} cannot lash out with a Close Form strike while Charmed.")
             return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
@@ -898,23 +908,23 @@ class CombatResolutionMixin:
                 attacker,
                 advantage,
                 target_number=target_ac,
-                target_label=f"AC {target_ac}",
+                target_label=target_guard_label(target_ac),
                 modifier=total_modifier,
                 style="attack",
                 outcome_kind="attack",
-                context_label=f"{attacker.name} martial arts strike",
+                context_label=f"{attacker.name} Close Form strike",
             )
             total = d20.kept + total_modifier
             critical_hit = d20.kept >= self.critical_threshold(attacker)
             if d20.kept == 1 or (not critical_hit and d20.kept != 20 and total < target_ac):
-                self.say(f"{self.style_name(attacker)}'s martial arts strike misses {self.style_name(target)}.")
+                self.say(f"{self.style_name(attacker)}'s Close Form strike misses {self.style_name(target)}.")
                 return
             damage_roll = self.roll_with_display_bonus(
                 "1d4",
                 bonus=self.weapon_damage_bonus_for(attacker, attacker.weapon),
                 critical=critical_hit,
                 style="damage",
-                context_label=f"{attacker.name} martial arts damage",
+                context_label=f"{attacker.name} Close Form damage",
                 outcome_kind="damage",
             )
             actual = self.apply_damage(
@@ -923,7 +933,7 @@ class CombatResolutionMixin:
                 damage_type="bludgeoning",
                 source_actor=attacker,
             )
-            self.say(f"{self.style_name(attacker)} snaps in with a martial arts strike for {self.style_damage(actual)} damage.")
+            self.say(f"{self.style_name(attacker)} snaps in with a Close Form strike for {self.style_damage(actual)} damage.")
             if target.is_conscious():
                 self.apply_status(target, "reeling", 1, source=attacker.name)
             self.announce_downed_target(target)
@@ -932,9 +942,9 @@ class CombatResolutionMixin:
 
     def use_flurry_of_blows(self, attacker, target, heroes, enemies, dodging) -> None:
         if not attacker.spend_resource("ki"):
-            self.say(f"{self.style_name(attacker)} has no ki left for Flurry of Blows.")
+            self.say(f"{self.style_name(attacker)} has no focus left for Twinflow Strikes.")
             return
-        self.say(f"{self.style_name(attacker)} spends 1 ki point and flows into a flurry of strikes.")
+        self.say(f"{self.style_name(attacker)} spends 1 focus and flows into Twinflow Strikes.")
         self.use_martial_arts(attacker, target, heroes, enemies, dodging)
         if target.is_conscious():
             self.use_martial_arts(attacker, target, heroes, enemies, dodging)
@@ -964,7 +974,7 @@ class CombatResolutionMixin:
                 attacker,
                 advantage,
                 target_number=target_ac,
-                target_label=f"AC {target_ac}",
+                target_label=target_guard_label(target_ac),
                 modifier=total_modifier,
                 style="attack",
                 outcome_kind="attack",
@@ -999,12 +1009,12 @@ class CombatResolutionMixin:
 
     def use_second_wind(self, actor) -> None:
         if not actor.spend_resource("second_wind"):
-            self.say(f"{self.style_name(actor)} has already used Second Wind.")
+            self.say(f"{self.style_name(actor)} has already used Second Breath.")
             return
         amount = self.roll_with_animation_context(
             "1d10",
             style="healing",
-            context_label="Second Wind",
+            context_label="Second Breath",
             outcome_kind="healing",
         ).total + actor.level
         healed = actor.heal(amount)
@@ -1015,17 +1025,17 @@ class CombatResolutionMixin:
 
     def use_action_surge(self, actor, target, heroes, enemies, dodging) -> None:
         if not actor.spend_resource("action_surge"):
-            self.say(f"{self.style_name(actor)} has already spent Action Surge this rest.")
+            self.say(f"{self.style_name(actor)} has already spent Battle Surge this rest.")
             return
         self.say(f"{self.style_name(actor)} digs deep and surges into a second strike.")
         self.perform_weapon_attack(actor, target, heroes, enemies, dodging)
 
     def use_channel_divinity(self, actor, target) -> None:
         if not self.can_make_hostile_action(actor):
-            self.say(f"{self.style_name(actor)} cannot invoke hostile divine judgment while Charmed.")
+            self.say(f"{self.style_name(actor)} cannot invoke hostile Lantern judgment while Charmed.")
             return
         if not actor.spend_resource("channel_divinity"):
-            self.say(f"{self.style_name(actor)} has no Channel Divinity remaining.")
+            self.say(f"{self.style_name(actor)} has no Lantern Surge remaining.")
             return
         play_attack_sound_for = getattr(self, "play_attack_sound_for", None)
         if callable(play_attack_sound_for):
@@ -1036,19 +1046,19 @@ class CombatResolutionMixin:
                 "2d8",
                 bonus=self.spell_damage_bonus(actor),
                 style="damage",
-                context_label="Channel Divinity",
+                context_label="Lantern Surge",
                 outcome_kind="damage",
             ).total
             + self.spell_damage_bonus(actor),
             source_actor=actor,
         )
         self.say(
-            f"{self.style_name(actor)} invokes Channel Divinity and sears {self.style_name(target)} "
+            f"{self.style_name(actor)} invokes Lantern Surge and sears {self.style_name(target)} "
             f"for {self.style_damage(actual)} radiant damage."
         )
         self.announce_downed_target(target)
         if target.is_conscious():
-            self.apply_status(target, "stunned", 1, source="divine judgment")
+            self.apply_status(target, "stunned", 1, source="Lantern judgment")
 
     def help_downed_ally(self, actor, target) -> None:
         success = self.skill_check(actor, "Medicine", 10, context=f"to haul {target.name} back into the fight")
@@ -1072,13 +1082,13 @@ class CombatResolutionMixin:
 
     def use_healing_potion(self, user, target) -> None:
         if not user.spend_item("Healing Potion"):
-            self.say(f"{self.style_name(user)} fumbles for a potion that is no longer there.")
+            self.say(f"{self.style_name(user)} fumbles for a recovery draught that is no longer there.")
             return
         healed = target.heal(
             self.roll_with_animation_context(
                 "2d4+2",
                 style="healing",
-                context_label="Healing Potion",
+                context_label="Red Recovery Draught",
                 outcome_kind="healing",
             ).total
         )
@@ -1086,14 +1096,14 @@ class CombatResolutionMixin:
         if healed > 0 and callable(play_heal_sound_for):
             play_heal_sound_for(user)
         self.say(
-            f"{self.style_name(user)} uses a healing potion on {self.style_name(target)}, "
+            f"{self.style_name(user)} uses a Red Recovery Draught on {self.style_name(target)}, "
             f"restoring {self.style_healing(healed)} hit points."
         )
 
     def use_lay_on_hands(self, user, target) -> None:
         pool = user.resources.get("lay_on_hands", 0)
         if pool <= 0:
-            self.say(f"{self.style_name(user)} has no Lay on Hands healing left.")
+            self.say(f"{self.style_name(user)} has no Oath Mend healing left.")
             return
         amount = min(pool, 5, target.max_hp - target.current_hp if not target.dead else 0)
         if amount <= 0:
@@ -1105,7 +1115,7 @@ class CombatResolutionMixin:
         if healed > 0 and callable(play_heal_sound_for):
             play_heal_sound_for(user)
         self.say(
-            f"{self.style_name(user)} channels divine power and restores {self.style_healing(healed)} "
+            f"{self.style_name(user)} channels oathbound power and restores {self.style_healing(healed)} "
             f"hit points to {self.style_name(target)}."
         )
 
@@ -1284,7 +1294,7 @@ class CombatResolutionMixin:
 
     def announce_downed_target(self, target) -> None:
         if target.current_hp == 0 and not target.dead and "enemy" not in target.tags:
-            self.say(f"{self.style_name(target)} falls unconscious and begins making death saves.")
+            self.say(f"{self.style_name(target)} falls unconscious and begins making death resist checks.")
 
     def recover_after_battle(self) -> None:
         assert self.state is not None
@@ -1310,11 +1320,11 @@ class CombatResolutionMixin:
             modifier=0,
             style="save",
             outcome_kind="save",
-            context_label=f"{actor.name} death save",
+            context_label=f"{actor.name} death resist",
         )
         if d20.kept == 1:
             actor.death_failures += 2
-            self.say(f"{self.style_name(actor)} rolls a natural 1 on a death save and suffers two failures.")
+            self.say(f"{self.style_name(actor)} rolls a natural 1 on a death resist check and suffers two failures.")
         elif d20.kept == 20:
             actor.current_hp = 1
             actor.death_successes = 0
@@ -1323,10 +1333,10 @@ class CombatResolutionMixin:
             return
         elif d20.kept >= 10:
             actor.death_successes += 1
-            self.say(f"{self.style_name(actor)} succeeds on a death save.")
+            self.say(f"{self.style_name(actor)} succeeds on a death resist check.")
         else:
             actor.death_failures += 1
-            self.say(f"{self.style_name(actor)} fails a death save.")
+            self.say(f"{self.style_name(actor)} fails a death resist check.")
         if actor.death_successes >= 3:
             actor.stable = True
             actor.death_successes = 0
@@ -1370,14 +1380,15 @@ class CombatResolutionMixin:
         return success
 
     def saving_throw(self, actor, ability: str, dc: int, *, context: str, against_poison: bool = False) -> bool:
+        resist_label = f"{ability_label(ability, include_code=True)} resist"
         if self.always_fail_dice_checks_enabled() and self.is_party_member_actor(actor):
-            self.say(f"{self.style_name(actor)} automatically fails the {ability} save {context}.")
+            self.say(f"{self.style_name(actor)} automatically fails the {resist_label} {context}.")
             return False
         if self.always_pass_dice_checks_enabled() and self.is_party_member_actor(actor):
-            self.say(f"{self.style_name(actor)} automatically clears the {ability} save {context}.")
+            self.say(f"{self.style_name(actor)} automatically clears the {resist_label} {context}.")
             return True
         if self.auto_fail_save(actor, ability):
-            self.say(f"{self.style_name(actor)} automatically fails the {ability} save {context}.")
+            self.say(f"{self.style_name(actor)} automatically fails the {resist_label} {context}.")
             return False
         advantage = 1 if against_poison and "dwarven_resilience" in actor.features else 0
         if self.has_status(actor, "restrained") and ability == "DEX":
@@ -1398,10 +1409,10 @@ class CombatResolutionMixin:
             modifier=total_modifier,
             style="save",
             outcome_kind="save",
-            context_label=f"{actor.name} {ability} save",
+            context_label=f"{actor.name} {resist_label}",
         )
         total = d20.kept + total_modifier
-        self.say(f"{self.style_name(actor)} makes a {ability} save {context}: {total} vs DC {dc}.")
+        self.say(f"{self.style_name(actor)} makes a {resist_label} {context}: {total} vs DC {dc}.")
         return total >= dc
 
     def roll_with_advantage(self, actor, advantage_state: int) -> D20Outcome:
@@ -1549,7 +1560,7 @@ class CombatResolutionMixin:
         name = self.style_name(creature)
         line = (
             f"{name}: {self.format_health_bar(creature.current_hp, creature.max_hp)}, "
-            f"AC {self.effective_armor_class(creature)}{temp}{conditions}"
+            f"{target_guard_label(self.effective_armor_class(creature))}{temp}{conditions}"
         )
         magic_bar = self.format_member_magic_bar(creature)
         if magic_bar is None:

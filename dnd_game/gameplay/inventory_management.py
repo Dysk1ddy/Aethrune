@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..models import ABILITY_ORDER, Character, SKILL_TO_ABILITY
-from ..items import canonical_equipment_slot, equipment_slot_label, format_inventory_line, get_item
+from ..items import canonical_equipment_slot, equipment_slot_label, format_inventory_line, get_item, marks_label
 from ..ui.colors import rich_style_name
 from ..ui.rich_render import Columns, Group, Panel, Table, box
 
@@ -35,7 +35,7 @@ class InventoryManagementMixin:
                 self.inventory_rich_item_name(item),
                 self.inventory_rich_rarity(item),
                 str(quantity),
-                f"{price_lookup[item_id]} gp",
+                marks_label(price_lookup[item_id]),
                 self.inventory_item_rules_summary(item),
             )
         negotiator = self.trade_negotiator()
@@ -43,7 +43,7 @@ class InventoryManagementMixin:
         sidebar = Panel(
             Group(
                 self.rich_text(merchant_name, "light_aqua", bold=True),
-                self.rich_text(f"Party gold: {self.state.gold} gp", "light_yellow"),
+                self.rich_text(f"Party marks: {self.state.gold}", "light_yellow"),
                 self.rich_text(f"Carry room: {carry_room:.1f} lb", "white"),
                 self.rich_text(
                     f"Negotiator: {negotiator.name} (Persuasion +{negotiator.skill_bonus('Persuasion')})",
@@ -98,7 +98,7 @@ class InventoryManagementMixin:
                         self.skill_tag("TRADE", f"Buy items from {merchant_name}"),
                     ]
                 )
-            options.extend(["Use a consumable or scroll", "Manage equipment", "Drop items"])
+            options.extend(["Use a draught or script", "Manage equipment", "Drop items"])
             if merchant_id is not None and merchant_name is not None:
                 options.append(self.skill_tag("TRADE", f"Sell items to {merchant_name}"))
             options.append("Back")
@@ -149,7 +149,7 @@ class InventoryManagementMixin:
         if rendered:
             return
         for item_id in item_ids:
-            self.output_fn(f"- {format_inventory_line(item_id, stock[item_id])} | buy {self.merchant_buy_price(merchant_id, item_id)} gp each")
+            self.output_fn(f"- {format_inventory_line(item_id, stock[item_id])} | buy {marks_label(self.merchant_buy_price(merchant_id, item_id))} each")
 
     def ask_quantity_or_back(self, prompt: str, maximum: int) -> int | None:
         while True:
@@ -188,7 +188,7 @@ class InventoryManagementMixin:
             choice = self.choose(
                 f"Choose an item to buy from {merchant_name}.",
                 [
-                    f"{get_item(item_id).name} x{stock[item_id]} | buy {self.merchant_buy_price(merchant_id, item_id)} gp each"
+                    f"{get_item(item_id).name} x{stock[item_id]} | buy {marks_label(self.merchant_buy_price(merchant_id, item_id))} each"
                     for item_id in item_ids
                 ]
                 + ["Back"],
@@ -229,7 +229,7 @@ class InventoryManagementMixin:
             play_sound_effect = getattr(self, "play_sound_effect", None)
             if callable(play_sound_effect):
                 play_sound_effect("buy_item")
-            self.say(f"You buy {item.name} x{quantity} from {merchant_name} for {total_price} gp.")
+            self.say(f"You buy {item.name} x{quantity} from {merchant_name} for {marks_label(total_price)}.")
             return
 
     def manage_equipment(self) -> None:
@@ -271,8 +271,8 @@ class InventoryManagementMixin:
     def equipment_comparison_summary(self, before: Character, after: Character) -> str:
         parts: list[str] = []
         core_stats = [
-            ("AC", after.armor_class - before.armor_class),
-            ("attack", after.attack_bonus() - before.attack_bonus()),
+            ("Guard", after.armor_class - before.armor_class),
+            ("strike", after.attack_bonus() - before.attack_bonus()),
             ("damage", after.damage_bonus() - before.damage_bonus()),
             ("initiative", self.initiative_bonus(after) - self.initiative_bonus(before)),
         ]
@@ -288,10 +288,10 @@ class InventoryManagementMixin:
             after_spell_attack = self.spell_attack_bonus(after, after_spell_ability or before_spell_ability or "INT")
             spell_attack_delta = after_spell_attack - before_spell_attack
             if spell_attack_delta:
-                parts.append(self.format_delta("spell attack", spell_attack_delta))
+                parts.append(self.format_delta("channeling strike", spell_attack_delta))
             spell_damage_delta = self.spell_damage_bonus(after) - self.spell_damage_bonus(before)
             if spell_damage_delta:
-                parts.append(self.format_delta("spell damage", spell_damage_delta))
+                parts.append(self.format_delta("channeling damage", spell_damage_delta))
             healing_delta = self.healing_bonus(after) - self.healing_bonus(before)
             if healing_delta:
                 parts.append(self.format_delta("healing", healing_delta))
@@ -308,7 +308,7 @@ class InventoryManagementMixin:
             if after.save_bonus(ability) != before.save_bonus(ability)
         ]
         if save_deltas:
-            parts.append("saves: " + ", ".join(save_deltas))
+            parts.append("resist checks: " + ", ".join(save_deltas))
         before_resistances = {
             key.replace("resist_", "")
             for key, value in before.gear_bonuses.items()
@@ -326,9 +326,9 @@ class InventoryManagementMixin:
         if lost_resistances:
             parts.append("loses resist " + ", ".join(lost_resistances))
         if not before.gear_bonuses.get("stealth_advantage", 0) and after.gear_bonuses.get("stealth_advantage", 0):
-            parts.append("gains advantage on Stealth")
+            parts.append("gains edge on Stealth")
         elif before.gear_bonuses.get("stealth_advantage", 0) and not after.gear_bonuses.get("stealth_advantage", 0):
-            parts.append("loses advantage on Stealth")
+            parts.append("loses edge on Stealth")
         if not before.gear_bonuses.get("crit_immunity", 0) and after.gear_bonuses.get("crit_immunity", 0):
             parts.append("critical hits become normal hits")
         elif before.gear_bonuses.get("crit_immunity", 0) and not after.gear_bonuses.get("crit_immunity", 0):
@@ -476,7 +476,7 @@ class InventoryManagementMixin:
             choice = self.choose(
                 f"Choose an item to sell to {merchant_name}.",
                 [
-                    f"{get_item(item_id).name} x{self.available_inventory_count(item_id)} | sell {self.merchant_sell_price(merchant_id, item_id)} gp each"
+                    f"{get_item(item_id).name} x{self.available_inventory_count(item_id)} | sell {marks_label(self.merchant_sell_price(merchant_id, item_id))} each"
                     for item_id in item_ids
                 ]
                 + ["Back"],
@@ -500,7 +500,7 @@ class InventoryManagementMixin:
                 play_sound_effect = getattr(self, "play_sound_effect", None)
                 if callable(play_sound_effect):
                     play_sound_effect("sell_item")
-                self.say(f"{merchant_name} buys {item.name} x{quantity} for {total_price} gp.")
+                self.say(f"{merchant_name} buys {item.name} x{quantity} for {marks_label(total_price)}.")
             return
 
     def open_camp_menu(self) -> None:

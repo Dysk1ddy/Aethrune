@@ -15,9 +15,9 @@ POINT_BUY_COSTS = {
 STANDARD_ARRAY = [15, 14, 13, 12, 10, 8]
 
 ACTS = [
-    {"number": 1, "title": "Ashes on the Triboar Trail", "status": "playable"},
-    {"number": 2, "title": "Echoes Beneath the Sword Mountains", "status": "planned"},
-    {"number": 3, "title": "The Jewel and the Chasm", "status": "planned"},
+    {"number": 1, "title": "Ashes on the Emberway", "status": "playable"},
+    {"number": 2, "title": "Echoes in the Resonant Vaults", "status": "planned"},
+    {"number": 3, "title": "The Meridian Depths", "status": "planned"},
 ]
 
 

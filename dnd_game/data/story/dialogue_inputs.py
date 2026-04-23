@@ -40,7 +40,7 @@ DIALOGUE_INPUTS: list[dict[str, object]] = [
         "lines": [
             (
                 "rhogar_valeguard",
-                "Say Neverwinter sent help, then make the help visible. A banner without a shield is just cloth.",
+                "Say Greywake sent help, then make the help visible. A banner without a shield is just cloth.",
             )
         ],
     },

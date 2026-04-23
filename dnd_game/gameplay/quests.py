@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..data.quests import QUESTS, QUEST_ORDER, QuestDefinition, QuestLogEntry
+from ..data.story.public_terms import marks_label
 from ..items import get_item
 from ..ui.colors import rich_style_name
 from ..ui.rich_render import Panel, Table, box
@@ -102,7 +103,7 @@ class QuestMixin:
         if definition.reward.xp:
             parts.append(f"{definition.reward.xp} XP")
         if definition.reward.gold:
-            parts.append(f"{definition.reward.gold} gp")
+            parts.append(marks_label(definition.reward.gold))
         for item_id, quantity in definition.reward.items.items():
             parts.append(f"{get_item(item_id).name} x{quantity}")
         if definition.reward.flags:

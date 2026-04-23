@@ -55,10 +55,10 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         "wayside_luck_shrine": TravelNode(
             node_id="wayside_luck_shrine",
             scene_key="wayside_luck_shrine",
-            title="Wayside Luck Shrine",
+            title="Wayside Lantern Shrine",
             short_label="WAYSIDE",
             kind="story",
-            summary="Roadside Tymora shrine where Elira first reads the party by what they do for the wounded.",
+            summary="Roadside Lantern shrine where Elira first reads the party by what they do for the wounded.",
             requirement=Requirement(all_flags=("act1_started",)),
         ),
         "greywake_triage_yard": TravelNode(
@@ -67,7 +67,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             title="Greywake Triage Yard",
             short_label="GREYWAKE",
             kind="story",
-            summary="Neverwinter's outer triage yard reveals that the enemy is pre-sorting outcomes, not merely attacking travelers.",
+            summary="Greywake's outer triage yard reveals that the enemy is pre-sorting outcomes, not merely attacking travelers.",
             requirement=Requirement(all_flags=("wayside_luck_shrine_seen",)),
         ),
         "greywake_road_breakout": TravelNode(
@@ -82,8 +82,8 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         "neverwinter_briefing": TravelNode(
             node_id="neverwinter_briefing",
             scene_key="neverwinter_briefing",
-            title="Neverwinter Briefing",
-            short_label="NEVERWINTER",
+            title="Greywake Briefing",
+            short_label="BRIEFING",
             kind="story",
             summary="Opening setup and early companion selection.",
             requirement=Requirement(all_flags=("act1_started",)),
@@ -94,7 +94,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             title="Blackwake Crossing",
             short_label="BLACKWAKE",
             kind="dungeon_entry",
-            summary="Optional pre-Phandalin branch tracing forged toll papers, prisoners, and an Ashen Brand supply cache.",
+            summary="Optional pre-Iron Hollow branch tracing forged toll papers, prisoners, and an Ashen Brand supply cache.",
             requirement=Requirement(all_flags=("blackwake_started",)),
             enters_dungeon_id="blackwake_crossing_branch",
         ),
@@ -104,14 +104,14 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             title="Road Decision After Blackwake",
             short_label="ROAD CHOICE",
             kind="story",
-            summary="Post-branch fork back to Neverwinter or forward toward the High Road.",
+            summary="Post-branch fork back to Greywake or forward toward the Emberway.",
             requirement=Requirement(all_flags=("blackwake_completed",)),
         ),
         "high_road_ambush": TravelNode(
             node_id="high_road_ambush",
             scene_key="road_ambush",
-            title="High Road Ambush",
-            short_label="HIGH ROAD",
+            title="Emberway Ambush",
+            short_label="EMBERWAY",
             kind="story",
             summary="Roadside combat and Tolan recruitment pivot.",
             requirement=Requirement(all_flags=("act1_started",)),
@@ -122,11 +122,11 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             title="Liar's Circle",
             short_label="LIARS",
             kind="story",
-            summary="A wilderness statue puzzle branching from the High Road after the ambush.",
+            summary="A wilderness statue puzzle branching from the Emberway after the ambush.",
             requirement=Requirement(
                 all_flags=("road_ambush_cleared",),
                 any_flags=("liars_circle_branch_available", "liars_circle_solved", "liars_circle_failed"),
-                notes="Discovered after clearing the High Road ambush.",
+                notes="Discovered after clearing the Emberway ambush.",
             ),
         ),
         "false_checkpoint": TravelNode(
@@ -135,11 +135,11 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             title="False Roadwarden Checkpoint",
             short_label="CHECKPOINT",
             kind="story",
-            summary="Fake roadwardens demand papers on the High Road; contract-house proof can collapse the stop without a check.",
+            summary="Fake roadwardens demand papers on the Emberway; contract-house proof can collapse the stop without a check.",
             requirement=Requirement(
                 all_flags=("road_ambush_cleared",),
                 any_flags=("high_road_false_checkpoint_available", "high_road_false_checkpoint_resolved"),
-                notes="Discovered after clearing the High Road ambush. Oren/Sabra/Garren proof can solve it directly.",
+                notes="Discovered after clearing the Emberway ambush. Oren/Sabra/Garren proof can solve it directly.",
             ),
         ),
         "false_tollstones": TravelNode(
@@ -152,14 +152,14 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             requirement=Requirement(
                 all_flags=("road_ambush_cleared",),
                 any_flags=("high_road_tollstones_branch_available", "high_road_tollstones_resolved"),
-                notes="Discovered after clearing the High Road ambush. Liar's Blessing can change the encounter.",
+                notes="Discovered after clearing the Emberway ambush. Liar's Blessing can change the encounter.",
             ),
         ),
         "phandalin_hub": TravelNode(
             node_id="phandalin_hub",
             scene_key="phandalin_hub",
-            title="Phandalin",
-            short_label="PHANDALIN",
+            title="Iron Hollow",
+            short_label="IRON HOLLOW",
             kind="hub",
             summary="Primary hub for services, leads, and fixed story beats.",
             requirement=Requirement(all_flags=("phandalin_arrived",)),
@@ -167,14 +167,14 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         "old_owl_well": TravelNode(
             node_id="old_owl_well",
             scene_key="old_owl_well",
-            title="Old Owl Well",
-            short_label="OLD OWL",
+            title="Blackglass Well",
+            short_label="BLACKGLASS",
             kind="dungeon_entry",
             summary="Branch site with a dig ring, rescue route, clue route, and miniboss.",
             requirement=Requirement(
                 any_flags=("miners_exchange_lead", "old_owl_well_cleared"),
                 active_quests=("silence_old_owl_well",),
-                notes="Unlocked by the Miner's Exchange lead or the Act 1 quest.",
+                notes="Unlocked by the Delvers' Exchange lead or the Act 1 quest.",
             ),
             enters_dungeon_id="old_owl_well_dig",
             parent_hub_id="phandalin_hub",
@@ -182,14 +182,14 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         "wyvern_tor": TravelNode(
             node_id="wyvern_tor",
             scene_key="wyvern_tor",
-            title="Wyvern Tor",
-            short_label="WYVERN TOR",
+            title="Red Mesa Hold",
+            short_label="RED MESA",
             kind="dungeon_entry",
             summary="Outdoor assault site that still uses a room-grid progression. Recommended for level 3 parties.",
             requirement=Requirement(
                 any_flags=("edermath_orchard_lead", "wyvern_tor_cleared"),
                 active_quests=("break_wyvern_tor_raiders",),
-                notes="Unlocked by the orchard lead or the Wyvern Tor quest. Recommended level 3.",
+                notes="Unlocked by the orchard lead or the Red Mesa Hold quest. Recommended level 3.",
             ),
             enters_dungeon_id="wyvern_tor_assault",
             parent_hub_id="phandalin_hub",
@@ -203,7 +203,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             summary="Hidden relay ruin where the Ashen Brand stages reserve supplies ahead of Ashfall Watch.",
             requirement=Requirement(
                 any_flags=("hidden_route_unlocked", "cinderfall_ruins_cleared"),
-                notes="Unlocked by finding a hidden route through Phandalin, Old Owl Well, or Wyvern Tor.",
+                notes="Unlocked by finding a hidden route through Iron Hollow, Blackglass Well, or Red Mesa Hold.",
             ),
             enters_dungeon_id="cinderfall_relay",
             parent_hub_id="phandalin_hub",
@@ -224,8 +224,8 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         "tresendar_manor": TravelNode(
             node_id="tresendar_manor",
             scene_key="tresendar_manor",
-            title="Tresendar Manor",
-            short_label="TRESENDAR",
+            title="Duskmere Manor",
+            short_label="DUSKMERE",
             kind="dungeon_entry",
             summary="Late-act manor descent revealed after the lantern vigil.",
             requirement=Requirement(all_flags=("tresendar_revealed",)),
@@ -263,7 +263,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             "breakout_to_briefing",
             "greywake_road_breakout",
             "neverwinter_briefing",
-            "Carry Greywake's warning to Neverwinter",
+            "Carry Greywake's warning to the briefing room",
             requirement=Requirement(
                 any_flags=(
                     "greywake_breakout_resolved",
@@ -272,7 +272,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
                 )
             ),
         ),
-        TravelEdge("briefing_to_ambush", "neverwinter_briefing", "high_road_ambush", "Take the High Road"),
+        TravelEdge("briefing_to_ambush", "neverwinter_briefing", "high_road_ambush", "Take the Emberway"),
         TravelEdge(
             "briefing_to_blackwake",
             "neverwinter_briefing",
@@ -291,13 +291,13 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             "decision_to_ambush",
             "road_decision_post_blackwake",
             "high_road_ambush",
-            "Press south for Phandalin",
+            "Press south for Iron Hollow",
         ),
         TravelEdge(
             "ambush_to_phandalin",
             "high_road_ambush",
             "phandalin_hub",
-            "Continue to Phandalin",
+            "Continue to Iron Hollow",
             requirement=Requirement(all_flags=("phandalin_arrived",)),
         ),
         TravelEdge(
@@ -307,7 +307,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             "Investigate the statue trail",
             requirement=Requirement(all_flags=("road_ambush_cleared", "liars_circle_branch_available")),
         ),
-        TravelEdge("liars_circle_to_phandalin", "liars_circle", "phandalin_hub", "Return to the High Road"),
+        TravelEdge("liars_circle_to_phandalin", "liars_circle", "phandalin_hub", "Return to the Emberway"),
         TravelEdge(
             "ambush_to_false_checkpoint",
             "high_road_ambush",
@@ -315,7 +315,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             "Challenge the roadwarden checkpoint",
             requirement=Requirement(all_flags=("road_ambush_cleared", "high_road_false_checkpoint_available")),
         ),
-        TravelEdge("false_checkpoint_to_phandalin", "false_checkpoint", "phandalin_hub", "Return to the High Road"),
+        TravelEdge("false_checkpoint_to_phandalin", "false_checkpoint", "phandalin_hub", "Return to the Emberway"),
         TravelEdge(
             "ambush_to_false_tollstones",
             "high_road_ambush",
@@ -323,18 +323,18 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             "Investigate the broken milemarker",
             requirement=Requirement(all_flags=("road_ambush_cleared", "high_road_tollstones_branch_available")),
         ),
-        TravelEdge("false_tollstones_to_phandalin", "false_tollstones", "phandalin_hub", "Return to the High Road"),
-        TravelEdge("phandalin_to_old_owl", "phandalin_hub", "old_owl_well", "Investigate Old Owl Well"),
-        TravelEdge("phandalin_to_wyvern", "phandalin_hub", "wyvern_tor", "Hunt the raiders at Wyvern Tor"),
+        TravelEdge("false_tollstones_to_phandalin", "false_tollstones", "phandalin_hub", "Return to the Emberway"),
+        TravelEdge("phandalin_to_old_owl", "phandalin_hub", "old_owl_well", "Investigate Blackglass Well"),
+        TravelEdge("phandalin_to_wyvern", "phandalin_hub", "wyvern_tor", "Hunt the raiders at Red Mesa Hold"),
         TravelEdge("phandalin_to_cinderfall", "phandalin_hub", "cinderfall_ruins", "Investigate Cinderfall Ruins"),
         TravelEdge("phandalin_to_ashfall", "phandalin_hub", "ashfall_watch", "Ride for Ashfall Watch"),
-        TravelEdge("phandalin_to_tresendar", "phandalin_hub", "tresendar_manor", "Descend beneath Tresendar Manor"),
+        TravelEdge("phandalin_to_tresendar", "phandalin_hub", "tresendar_manor", "Descend beneath Duskmere Manor"),
         TravelEdge("phandalin_to_emberhall", "phandalin_hub", "emberhall_cellars", "Descend into Emberhall"),
     ),
     story_beats=(
         StoryBeat(
             beat_id="stonehill_council",
-            title="Stonehill War-Room Council",
+            title="Ashlamp War-Room Council",
             host_node_id="phandalin_hub",
             summary="Fixed convergence beat that reframes the branches into the Ashfall assault.",
             requirement=Requirement(
@@ -368,7 +368,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
             completion_flags=("blackwake_completed",),
             exit_to_node_id="road_decision_post_blackwake",
             boss_room_id="floodgate_chamber",
-            summary="Optional pre-Phandalin mini-campaign with a burned tollhouse, two flexible clue routes, and a supply-cache finale.",
+            summary="Optional pre-Iron Hollow mini-campaign with a burned tollhouse, two flexible clue routes, and a supply-cache finale.",
             rooms={
                 "charred_tollhouse": DungeonRoom(
                     "charred_tollhouse",
@@ -510,7 +510,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
                     4,
                     2,
                     "event",
-                    "Command room foreshadowing Phandalin pressure sites, caravan hijacks, and hobgoblin supervision farther south.",
+                    "Command room foreshadowing Iron Hollow pressure sites, caravan hijacks, and hobgoblin supervision farther south.",
                     exits=("floodgate_chamber",),
                     requirement=Requirement(any_flags=("blackwake_prisoners_reached", "blackwake_seal_workshop_reached")),
                     clear_grants_flags=("blackwake_ash_office_searched",),
@@ -530,7 +530,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         ),
         "old_owl_well_dig": DungeonMap(
             dungeon_id="old_owl_well_dig",
-            title="Old Owl Well Dig Ring",
+            title="Blackglass Well Dig Ring",
             entry_node_id="old_owl_well",
             entrance_room_id="well_ring",
             width=3,
@@ -587,7 +587,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         ),
         "wyvern_tor_assault": DungeonMap(
             dungeon_id="wyvern_tor_assault",
-            title="Wyvern Tor Assault",
+            title="Red Mesa Hold Assault",
             entry_node_id="wyvern_tor",
             entrance_room_id="goat_path",
             width=3,
@@ -773,7 +773,7 @@ ACT1_HYBRID_MAP = HybridMapBlueprint(
         ),
         "tresendar_undercellars": DungeonMap(
             dungeon_id="tresendar_undercellars",
-            title="Tresendar Undercellars",
+            title="Duskmere Undercellars",
             entry_node_id="tresendar_manor",
             entrance_room_id="hidden_stair",
             width=3,

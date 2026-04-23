@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-"""Expanded lore codex entries used by the title-screen reference menu.
+"""Aethrune lore codex entries used by the title-screen reference menu.
 
-The text in this module is adapted from official Dungeons & Dragons material,
-primarily the 2014 Basic Rules, the 2024 Free Rules, and official D&D Beyond
-Forgotten Realms location features. A few local entries such as Ashfall Watch
-and Emberhall Cellars are clearly marked as game-original locations that sit on
-top of the official Sword Coast frame used by this project.
+The public codex now presents Roads That Remember as an original Aethrune
+campaign. Internal character-option keys still mirror the current mechanics so
+existing saves, tests, and creation flow remain stable during the retcon.
 """
 
 from collections.abc import Mapping
@@ -21,129 +19,205 @@ LoreEntry = dict[str, str]
 LoreSection = Mapping[str, LoreEntry]
 
 
+CLASS_PUBLIC_LABELS = {
+    "Barbarian": "Vanguard",
+    "Bard": "Resonant",
+    "Cleric": "Channeler",
+    "Druid": "Wildbinder",
+    "Fighter": "Blade",
+    "Monk": "Disciple",
+    "Paladin": "Oathbearer",
+    "Ranger": "Pathwarden",
+    "Rogue": "Veilrunner",
+    "Sorcerer": "Fluxborn",
+    "Warlock": "Bound",
+    "Wizard": "Scribe",
+}
+
+
+RACE_PUBLIC_LABELS = {
+    "Human": "Valen",
+    "Dwarf": "Draeven",
+    "Elf": "Eldren",
+    "Halfling": "Halkin",
+    "Dragonborn": "Varoxi",
+    "Gnome": "Oryn",
+    "Half-Elf": "Sylari",
+    "Half-Orc": "Orukh-Blooded",
+    "Tiefling": "Khyren",
+    "Goliath": "Thalren",
+    "Orc": "Orukh",
+}
+
+
+ABILITY_PUBLIC_LABELS = {
+    "STR": "Power",
+    "DEX": "Agility",
+    "CON": "Endurance",
+    "INT": "Logic",
+    "WIS": "Awareness",
+    "CHA": "Presence",
+}
+
+
+SKILL_PUBLIC_LABELS = {
+    "Arcana": "System Lore",
+    "Religion": "Doctrine",
+    "Insight": "Reading",
+    "Survival": "Wayfinding",
+    "Sleight of Hand": "Handwork",
+}
+
+
 LORE_INTRO = (
-    "This codex expands the title-screen lore notes into a browsable reference for the "
-    "Forgotten Realms frame behind the game. The class, race, background, ability, and "
-    "skill entries are grounded in official D&D rules text and D&D Beyond lore articles. "
-    "Locations drawn directly from the Sword Coast are presented as official setting lore, "
-    "while original adventure sites created for this game are labeled as adaptations."
+    "This codex introduces Aethrune, the original setting for Roads That Remember. "
+    "It focuses on Greywake, the Emberway, Iron Hollow, the Resonant Vaults, and "
+    "the Meridian systems still shaping the world after their builders are gone. "
+    "The underlying combat and character math still uses an SRD-derived d20 chassis, "
+    "but the public story language now favors Aethrune terms such as channeling, "
+    "relics, draughts, scripts, Guard, edge, strain, and resist checks."
 )
 
 
 LOCATION_LORE: dict[str, LoreEntry] = {
-    "Forgotten Realms": {
-        "menu": "The wider fantasy world that holds the Sword Coast and its rival powers.",
+    "Aethrune": {
+        "menu": "A broken world where old roads, records, and buried systems still answer.",
         "text": (
-            "The Forgotten Realms is a crowded, ancient world where living faith, old empires, "
-            "wandering monsters, and buried magic all overlap. Temples speak to gods who answer, "
-            "ruins hide the work of long-fallen civilizations, and even small frontier towns may "
-            "sit on layers of history older than the people now living there.\n\n"
-            "For this game, that matters because adventurers are never moving through empty ground. "
-            "A caravan road is also a trade artery, a political pressure point, and a line drawn "
-            "across old danger. A shrine is both a place of worship and a practical refuge. In the "
-            "Realms, lore is rarely decorative; it is usually the reason a place is prosperous, haunted, "
-            "contested, or worth defending."
+            "Aethrune is a world rebuilt on top of a dead infrastructure empire. The Meridian Accord once "
+            "bound cities, routes, waterworks, signal towers, vaults, and ledgers into a single living system. "
+            "When that order collapsed, people survived by scavenging its roads, sheltering under its ruins, "
+            "and arguing over what its records still mean.\n\n"
+            "That history matters because the world is not empty wilderness. A broken road can still remember "
+            "where travelers are meant to go. A sealed gate can still recognize old authority. A village ledger "
+            "can become a weapon if the right faction learns how to read it."
         ),
     },
-    "Sword Coast": {
-        "menu": "The famous western shore where trade, ruins, and frontier danger meet.",
+    "Shatterbelt Frontier": {
+        "menu": "The Act I borderland where trade, fear, and old roadwork collide.",
         "text": (
-            "The Sword Coast is one of the best-known regions in the Forgotten Realms: a long belt of "
-            "ports, roads, farm country, wild stretches, and dangerous ruins along Faerun's western edge. "
-            "Civilized centers such as Neverwinter, Waterdeep, and Baldur's Gate are linked by trade, but "
-            "the countryside between them is never fully tame. Banditry, goblin tribes, local monsters, "
-            "weather, and old magical scars make even an ordinary road feel like part of the adventure.\n\n"
-            "That mix of commerce and peril is exactly why the Sword Coast works so well as a campaign frame. "
-            "A single missing caravan can become a regional problem. A ruined tower can throttle a town's food, "
-            "ore, medicine, and morale. The setting rewards heroes who can fight, negotiate, investigate, and "
-            "understand how local trouble fits into a much older landscape."
+            "The Shatterbelt Frontier is the rough belt between Greywake's city reach and the settlements that "
+            "depend on the Emberway. It is practical country: milehouses, supply camps, shrine-lanterns, quarry "
+            "tracks, farms, drainage cuts, ruined towers, and old Accord stone half-buried under newer work.\n\n"
+            "The frontier is tense because nobody fully controls it. Greywake wants order, Iron Hollow wants "
+            "breathing room, the Ashen Brand wants routes it can tax by fear, and older Meridian machinery waits "
+            "below all of them with its own cold logic."
         ),
     },
-    "Neverwinter": {
-        "menu": "The Jewel of the North, rebuilding beneath the shadow of Mount Hotenow.",
+    "Greywake": {
+        "menu": "A salt-gray harbor city trying to govern roads it can no longer fully secure.",
         "text": (
-            "Neverwinter is one of the North's great cities, often called the Jewel of the North and the "
-            "City of Skilled Hands. Official lore consistently presents it as a place of craft, trade, and "
-            "stubborn recovery. The warmth of the Neverwinter River, touched by geothermal heat from nearby "
-            "Mount Hotenow, historically kept the city greener and milder than outsiders expected.\n\n"
-            "Modern Neverwinter lives with the memory of catastrophe. Mount Hotenow's eruption shattered the "
-            "city, opened the Chasm, and left the region unstable for years, but the city did not stay broken. "
-            "In this game's opening, Neverwinter functions exactly as official lore suggests it should: a place "
-            "where order is trying to reassert itself, trade routes matter, and local authorities understand that "
-            "protecting the road south is part of protecting the city's future."
+            "Greywake is the campaign's opening city: a harbor of wet stone, ash-stained warehouses, emergency "
+            "triage yards, and officials who know every road failure becomes a city problem eventually. Its power "
+            "comes from shipping, paperwork, and the stubborn belief that a route can be saved if enough people "
+            "are willing to stand in the rain and do the work.\n\n"
+            "In Act I, Greywake is not a shining capital. It is a pressured city with too many wounded travelers, "
+            "too many missing wagons, and too many factions trying to decide whether the Emberway is still worth "
+            "defending."
         ),
     },
-    "Mount Hotenow": {
-        "menu": "The volcano whose eruption changed Neverwinter and the surrounding frontier.",
+    "Emberway": {
+        "menu": "The old road artery whose milestones, shrines, and tollmarks still shape Act I.",
         "text": (
-            "Mount Hotenow is the volcanic wound at the edge of Neverwinter's recent history. In official Sword "
-            "Coast lore, its eruption devastated Neverwinter, reshaped nearby territory, and turned what had been "
-            "a prosperous northern center into a place defined by rebuilding, factional pressure, and lingering "
-            "fear. Even when the mountain is quiet, the eruption remains a living fact in the memories of locals.\n\n"
-            "That legacy explains why the region feels slightly raw even when trade is flowing. Rebuilt walls, "
-            "careful ledgers, and nervous road patrols are not just flavor. They are the social aftershocks of a "
-            "city that learned how fast security, wealth, and civic pride can burn away."
+            "The Emberway is more than a trade road. It is an Accord-era route laid across older survey lines, "
+            "reinforced with milemarkers, culverts, watchpoints, signal stones, and shrine-lanterns. Travelers use "
+            "it because the alternatives are slower and meaner, but every wagon that moves along it also enters a "
+            "contest over who gets to define safe passage.\n\n"
+            "When the Ashen Brand starts forging authority along the Emberway, the threat is not just violence. "
+            "False papers, fake checkpoints, controlled rumors, and staged rescues can make a road obey the wrong "
+            "masters long before anyone admits the route has fallen."
         ),
     },
-    "High Road": {
-        "menu": "The northern trade route linking settlements along the coast.",
+    "Iron Hollow": {
+        "menu": "A frontier hub built around claims, supply ledgers, and stubborn local survival.",
         "text": (
-            "The High Road is one of the Sword Coast's defining overland routes, the kind of road that exists "
-            "half as infrastructure and half as story engine. Merchants, messengers, mercenaries, pilgrims, and "
-            "adventurers all move along it, which means news, coin, and danger do the same.\n\n"
-            "In practical terms, whoever threatens the High Road threatens more than a single wagon. Raids on a "
-            "major route raise prices, slow messages, isolate settlements, and convince frightened travelers to "
-            "stay home. That is why the game's first ambush matters immediately: it puts the player into the "
-            "official Sword Coast pattern where road safety is a political and economic concern, not merely a fight."
+            "Iron Hollow is the Act I hub: a hard-working settlement with mine claims, supply posts, inn rooms, "
+            "orchard walls, council arguments, and a population tired of being treated as someone else's margin "
+            "note. The town survives because people keep showing up for one another even when the road fails them.\n\n"
+            "That makes Iron Hollow the heart of grounded heroics. Reopening the Emberway means food arrives, "
+            "tools move, wounded people get medicine, and families stop making every plan around fear."
         ),
     },
-    "Triboar Trail": {
-        "menu": "The inland road branching toward Phandalin and the frontier beyond.",
+    "Lantern Shrine Network": {
+        "menu": "Wayside refuges where road faith, first aid, and rumor all meet.",
         "text": (
-            "The Triboar Trail is the inland road that pulls travelers away from the better-known coastal routes "
-            "and into the frontier spaces that make Phandalin such a classic D&D hub. In official adventures tied "
-            "to Phandalin, the trail serves as a threshold: once travelers leave the main arteries behind, the land "
-            "feels less supervised, less settled, and much more vulnerable to local threats.\n\n"
-            "That frontier quality is important to the tone of this game. The trail is where rumor turns into direct "
-            "risk. It is close enough to civilization that caravans keep using it, but rough enough that goblins, "
-            "brigands, and hidden strongholds can shape daily life for everyone living nearby."
+            "The Lantern Shrine Network grew around small waystations that keep lamps burning for travelers. Some "
+            "are staffed by faithful caretakers, some by volunteers, and some by whoever survived long enough to "
+            "light the wick again.\n\n"
+            "In story terms, a lantern shrine is never only holy ground. It is a field hospital, message drop, "
+            "weather shelter, witness stand, and moral test. Who gets treated first? Which report gets believed? "
+            "Which names are spoken aloud when the road starts taking people?"
         ),
     },
-    "Phandalin": {
-        "menu": "A resettled mining town where everyday survival and old ruins live side by side.",
+    "Blackglass Well": {
+        "menu": "A cracked waterwork where old salvage, grave dust, and route history surface.",
         "text": (
-            "Phandalin is one of fifth edition's most recognizable starter towns: a small frontier settlement built "
-            "near the ruins of an older community and supported by miners, traders, laborers, and practical local "
-            "leaders. Official material repeatedly treats it as a place where small-scale problems matter a great "
-            "deal because each wagon, roof beam, work crew, and guard shift genuinely affects the town's chances.\n\n"
-            "That makes Phandalin ideal for grounded heroics. Saving the town is not abstract. Reopening a road means "
-            "ore moves, shelves fill, wages return, and people stop planning around fear. The game leans into that "
-            "official identity: Phandalin is not a glittering capital, but it is the kind of place the Realms are "
-            "worth protecting for."
+            "Blackglass Well is an Accord-era waterwork whose dark lining still holds heat and memory. Salvagers "
+            "come for copper, pumps, old seals, and anything a hungry market will buy. The trouble is that some "
+            "systems were buried for reasons better than forgetfulness.\n\n"
+            "The site gives Act I a different flavor of danger: not raiders on the road, but people profiting from "
+            "the frontier's dead infrastructure before anyone understands what they have reopened."
         ),
     },
-    "Ashfall Watch": {
-        "menu": "A game-original watchtower built to feel like a believable Sword Coast frontier ruin.",
+    "Red Mesa Hold": {
+        "menu": "A raider stronghold on broken red stone above the trade cuts.",
         "text": (
-            "Ashfall Watch is original to this game, not an established official location, but it is intentionally "
-            "designed to fit the logic of official Sword Coast adventures. Frontier D&D regularly uses old keeps, "
-            "watchtowers, shrines, and ruined fortifications as pressure points where raiders can choke roads and "
-            "test local authority.\n\n"
-            "Within the story, Ashfall Watch represents the militarized version of a bandit problem. It is not only a "
-            "hideout; it is a forward base, lookout, and symbol of intimidation. That makes it a natural escalation from "
-            "roadside raids to organized coercion, which is exactly the kind of regional danger Phandalin-era adventures "
-            "often build toward."
+            "Red Mesa Hold overlooks dry cuts and supply approaches where a disciplined raiding band can make "
+            "itself feel larger than it is. Its danger is logistical as much as martial: one fortified height can "
+            "shape which wagons move, which scouts vanish, and which town leaders start bargaining with fear.\n\n"
+            "The hold also shows how old Accord routes can be repurposed. A place built to watch the land can "
+            "become a fist around it."
         ),
     },
-    "Emberhall Cellars": {
-        "menu": "A game-original ruin that echoes the buried-cellar mysteries common to Phandalin stories.",
+    "Cinderfall Ruins": {
+        "menu": "A scorched relay ruin that hints at older signal logic beneath Act I.",
         "text": (
-            "Emberhall Cellars is another original location created for this project, but it follows an official Phandalin "
-            "tradition closely. Adventures around the town love hidden lower levels, forgotten foundations, cellar routes, "
-            "and older stonework beneath newer buildings because Phandalin's identity is tied to resettlement over ruins.\n\n"
-            "As a result, Emberhall feels like a natural extension of the setting rather than a break from it. It stands for "
-            "the older layer beneath frontier life: the buried masonry, secret storage, and inherited danger that can turn a "
-            "simple settlement problem into a deeper mystery with historical roots."
+            "Cinderfall Ruins mark one of the frontier's half-understood signal scars. Burned stone, fused brackets, "
+            "and relay fragments suggest the Meridian Accord once moved instructions through the region faster than "
+            "horses could carry them.\n\n"
+            "For the current story, Cinderfall is a hinge between ordinary bandit pressure and the stranger question "
+            "underneath it: what happens when people learn to imitate a system the world forgot how to question?"
+        ),
+    },
+    "Duskmere Manor": {
+        "menu": "A buried estate whose cellars turn local extortion into an older secret.",
+        "text": (
+            "Duskmere Manor is the renamed Act I manor site: a broken estate over sealed rooms, smuggling paths, "
+            "and old stone that never quite stopped listening. It looks like a gang hideout from the surface, which "
+            "is exactly why it works so well as one.\n\n"
+            "Below the rot and bravado, the manor points toward the campaign's deeper pattern. People think they are "
+            "using ruins as cover. The ruins may be using them as evidence."
+        ),
+    },
+    "Vein of Glass": {
+        "menu": "The Act II region where claims, echoes, and old water-control systems converge.",
+        "text": (
+            "The Vein of Glass is a fractured region of mineral seams, flooded cuts, reflective stone, broken "
+            "prospects, and old intake works. It draws miners, reclaimers, claim lawyers, scavengers, and zealots "
+            "because every exposed layer seems to promise proof of something valuable.\n\n"
+            "Act II turns the campaign from road control toward memory control. The question is no longer only who "
+            "owns the route. It is who gets to define what the buried world was trying to say."
+        ),
+    },
+    "Resonant Vaults": {
+        "menu": "The deep ruin complex beneath Act II, where record and reality begin to blur.",
+        "text": (
+            "The Resonant Vaults are the Act II deep site: a network of galleries, flooded crossings, tuned chambers, "
+            "and command spaces where Meridian systems still answer patterns, titles, and lies. The vaults do not "
+            "feel dead. They feel paused.\n\n"
+            "The Quiet Choir wants the Vaults because a system that remembers authority can be taught to obey a new "
+            "voice. The player reaches them after seeing what route control did above ground, which makes the deeper "
+            "threat easier to understand and harder to dismiss."
+        ),
+    },
+    "Meridian Forge": {
+        "menu": "The Act II convergence point where old infrastructure can be repaired or weaponized.",
+        "text": (
+            "The Meridian Forge is not just a workshop. It is a control chamber for making broken systems agree with "
+            "one another again. In merciful hands, it could stabilize routes, waterworks, and signal relays. In the "
+            "wrong hands, it could make oppression look like restored order.\n\n"
+            "That is why the Forge matters to the long arc of Roads That Remember. It forces the story to ask whether "
+            "a broken world should be repaired exactly as it was, or whether survival requires refusing some of the "
+            "old system's permissions."
         ),
     },
 }
@@ -151,142 +225,128 @@ LOCATION_LORE: dict[str, LoreEntry] = {
 
 CLASS_LORE: dict[str, LoreEntry] = {
     "Barbarian": {
-        "menu": "Primal warriors who survive by instinct, fury, and endurance.",
+        "label": "Vanguard",
+        "menu": "Front-line survivors who turn pressure into momentum.",
         "text": (
-            "Official D&D lore does not treat barbarians as mindless berserkers. A barbarian is a warrior whose culture, "
-            "training, or personal philosophy embraces primal instinct over polished civilization. The class fantasy is tied "
-            "to ferocity, toughness, and the refusal to be domesticated by walls, etiquette, or fear. In many Realms-flavored "
-            "stories, barbarians come from harsh homelands where physical resilience and decisive action are the difference "
-            "between a living tribe and a dead one.\n\n"
-            "Mechanically and narratively, rage is the center of the class. It is not simple anger so much as a battle state "
-            "that channels pain into momentum. A barbarian in this campaign fits naturally as a northern outrider, tribal exile, "
-            "mercenary shock trooper, or frontier guardian whose instincts are often sharper than a courtier's polished manners."
+            "In Aethrune, the Vanguard is the person who reaches the breach first and refuses to let it widen. "
+            "Their fury is not mindless anger; it is a practiced survival state built from pain tolerance, field "
+            "instinct, and the hard knowledge that hesitation can kill a whole caravan.\n\n"
+            "Vanguards fit the Shatterbelt as convoy breakers, tunnel guardians, militia shock troops, or people "
+            "who learned to survive when the road stopped being fair."
         ),
     },
     "Bard": {
-        "menu": "Keepers of stories and magic whose art still carries the echo of creation.",
+        "label": "Resonant",
+        "menu": "Voice, rhythm, and social timing turned into battlefield force.",
         "text": (
-            "Bards are one of D&D's most distinctive classes because their magic is rooted in expression itself. Official class "
-            "lore describes bardic power as an echo of the song of creation, a reminder that words, rhythm, memory, and performance "
-            "can shape reality as surely as a wizard's formula. That makes the bard both entertainer and scholar, diplomat and spy, "
-            "magician and historian.\n\n"
-            "In a Sword Coast campaign, bards are often the people who know how stories travel between cities and why rumor matters. "
-            "A bard can read a room, rally frightened allies, embarrass a liar, or turn an inn into an intelligence network. Their "
-            "power is social without being soft: a skilled bard controls morale, reputation, and tempo before steel ever clears a sheath."
+            "Resonants understand that Aethrune is built from patterns: songs, signals, ledgers, rumors, prayers, "
+            "and names repeated until people obey them. A Resonant can read a room, bend morale, expose a lie, and "
+            "make a crowd remember courage at exactly the right second.\n\n"
+            "The old internal class is still Bard for now, but the public fantasy is a field performer, signal-reader, "
+            "and morale architect who can turn attention itself into a tool."
         ),
     },
     "Cleric": {
-        "menu": "Divine servants whose faith becomes miracles, judgment, and refuge.",
+        "label": "Channeler",
+        "menu": "Lantern faith and disciplined channeling made practical.",
         "text": (
-            "Clerics embody one of the Forgotten Realms' defining truths: the gods are real, active, and powerful enough to answer. "
-            "Official D&D material presents clerics as chosen or devoted servants whose magic comes from direct relationship with a deity, "
-            "pantheon, or sacred ideal. They are not just healers. They are champions, judges, exorcists, keepers of ritual, and living "
-            "proof that the divine still touches mortal affairs.\n\n"
-            "On the Sword Coast, a cleric might travel as a road-priest, temple emissary, battlefield chaplain, or pilgrim tasked with "
-            "repairing a wounded community. In this game's frontier context, a cleric is especially potent because faith is practical: "
-            "blessings steady frightened people, healing preserves manpower, and radiant judgment pushes back the darkness old ruins invite."
+            "Channelers carry faith into places where faith has to do work: triage yards, flooded claims, frightened "
+            "milehouses, and rooms where nobody wants to say how many names are missing. Their power is framed as "
+            "lantern discipline, oath, doctrine, and practiced channeling rather than borrowed setting theology.\n\n"
+            "A Channeler in Roads That Remember can be healer, witness, judge, exorcist, or road-priest. The common "
+            "thread is responsibility under pressure."
         ),
     },
     "Druid": {
-        "menu": "Guardians of the Old Faith who read the land as law, memory, and warning.",
+        "label": "Wildbinder",
+        "menu": "Land-sense, weathercraft, and living systems in one tradition.",
         "text": (
-            "Druids channel the oldest spiritual current in the game: the power of nature as a living order rather than a scenery backdrop. "
-            "Official lore frames them as priests of the Old Faith, protectors of sacred groves, weather-readers, and interpreters of the "
-            "balance between settlement and wilderness. Their authority comes from attunement, patience, and the refusal to see forests, "
-            "storms, beasts, and seasons as lesser than cities.\n\n"
-            "That perspective makes druids excellent frontier protagonists. They understand what happens when roads cut too deeply, when "
-            "mines wake the wrong thing, or when desperate people ignore the health of the land that feeds them. In this campaign, a druid "
-            "can feel like a quiet corrective force: never fully tame, never truly lost, and always aware that civilization survives only by "
-            "negotiating with older powers."
+            "Wildbinders know that Aethrune's wilderness is not separate from its ruins. Roots break culverts, water "
+            "finds old channels, beasts nest in signal towers, and the land remembers every system that tried to "
+            "discipline it.\n\n"
+            "They make excellent frontier protagonists because they can tell when a road is merely damaged and when "
+            "the world around it is rejecting the lie someone built into it."
         ),
     },
     "Fighter": {
-        "menu": "Disciplined professionals who master arms, armor, and battlefield judgment.",
+        "label": "Blade",
+        "menu": "Disciplined arms, armor, and judgment without theatrics.",
         "text": (
-            "The fighter is the broad martial class of D&D, intentionally built to represent trained excellence rather than one narrow fantasy. "
-            "Official lore supports knights, caravan guards, duelists, militia captains, mercenaries, veterans, and aristocratic weapon masters "
-            "all under the same banner. What unites them is not mysticism but practiced competence.\n\n"
-            "That flexibility makes fighters central to Sword Coast stories. Roads need escorts, towns need defenders, and every faction trusts "
-            "some version of a well-trained warrior. A fighter in this game feels immediately at home as a shield-wall veteran, scout captain, "
-            "bodyguard, or ex-soldier who understands that good steel matters most when everyone else starts panicking."
+            "Blades are professional fighters in the broadest sense: caravan guards, militia captains, duelists, "
+            "retired soldiers, bodyguards, and people who know where to stand when everyone else starts panicking.\n\n"
+            "A Blade is valuable in Aethrune because most crises are practical before they are dramatic. Hold the "
+            "door. Keep the line. Choose the right target. Get everyone home."
         ),
     },
     "Monk": {
-        "menu": "Ascetic martial adepts who turn discipline inward until body and spirit move as one.",
+        "label": "Disciple",
+        "menu": "Body, breath, and attention trained until motion becomes answer.",
         "text": (
-            "Monks are D&D's spiritual martial artists, shaped by monasteries, strict traditions, and the cultivation of inner energy called ki. "
-            "Official descriptions emphasize self-mastery over mere athleticism. A monk does not simply fight without armor; they refine posture, "
-            "breath, timing, and perception until motion becomes defense and will becomes force.\n\n"
-            "In the wider Realms, monks often arrive in a story as travelers from disciplined orders, temple-trained wanderers, or seekers testing "
-            "themselves against the world. On the frontier, that creates a compelling contrast: the monk brings calm structure into places ruled by "
-            "mud, fear, haste, and improvisation. Their presence implies that restraint can be just as dangerous as fury."
+            "Disciples come from orders, schools, shrine paths, and hard private disciplines that teach the body to "
+            "become a reliable instrument. Their calm is not softness. It is compression.\n\n"
+            "On the frontier, a Disciple brings control into places ruled by mud, fear, crowd noise, and bad footing. "
+            "That makes restraint feel dangerous in the best possible way."
         ),
     },
     "Paladin": {
-        "menu": "Holy champions whose sworn vows become martial and moral power.",
+        "label": "Oathbearer",
+        "menu": "Sworn conviction made visible in shield, voice, and light.",
         "text": (
-            "Paladins are not only armored warriors with a touch of healing. Official D&D lore treats them as people transformed by sacred oaths "
-            "strong enough to shape reality. Their power is bound to conviction: justice, devotion, vengeance, protection, or another principle "
-            "held with absolute seriousness. That is why paladins feel larger than life even at low level. They are carrying an ideal into places "
-            "where compromise has become ordinary.\n\n"
-            "In a frontier campaign, a paladin represents certainty under pressure. Villagers read them as reassurance, criminals read them as a "
-            "problem, and allies often rally around the simple fact that someone has arrived who still believes honor can survive hardship. Their "
-            "magic is the glow around that certainty, not a substitute for it."
+            "Oathbearers are people whose promises have become load-bearing structures. They walk into corruption, "
+            "extortion, and despair carrying an oath that does not bend just because the road got expensive.\n\n"
+            "They are not defined by a borrowed pantheon. They are defined by what they have sworn to protect when "
+            "the old systems offer easier answers."
         ),
     },
     "Ranger": {
-        "menu": "Hunters, scouts, and wardens who know what the wild remembers.",
+        "label": "Pathwarden",
+        "menu": "Trackers, scouts, and route-keepers who know what roads hide.",
         "text": (
-            "Rangers thrive where maps start thinning out. Official class lore portrays them as wanderers, hunters, trackers, monster-slayers, and "
-            "guardians of borderlands who understand terrain in a way city-dwellers rarely do. A ranger does not merely travel through wilderness; "
-            "they interpret it. Tracks, weather, silence, and broken branches become evidence.\n\n"
-            "That makes the ranger almost perfectly matched to a Phandalin-style campaign. Frontier towns survive because someone can read danger at "
-            "a distance, pick the right trail, and strike first when raiders grow bold. Whether played as a patient archer, a hard-bitten scout, or "
-            "a local guide who knows every ridge and wash, the ranger gives the party a relationship with the land itself."
+            "Pathwardens read the world before it explains itself. A wrong silence, a bent weed, a fresh wheel cut, "
+            "a frightened horse, or a missing lantern tells them what a witness might not know how to say.\n\n"
+            "The Emberway needs Pathwardens because maps are too clean. Roads are lived things, and somebody has to "
+            "notice when the route starts lying."
         ),
     },
     "Rogue": {
-        "menu": "Precision specialists who win through timing, nerve, and impossible angles.",
+        "label": "Veilrunner",
+        "menu": "Precision, nerve, and side-door thinking under pressure.",
         "text": (
-            "Rogues are the class of leverage. Official D&D descriptions cover thieves, scouts, spies, assassins, gamblers, burglars, and con artists, "
-            "but the core fantasy is always the same: the rogue notices the opening others miss and turns it into advantage. They survive by accuracy, "
-            "mobility, and a willingness to act in the moment when hesitation would be fatal.\n\n"
-            "In story terms, rogues often know how cities really function. Locks, rumors, fences, coded signals, false papers, and side doors all sit "
-            "within their wheelhouse. On the frontier, that talent remains valuable because law is thinner there. A rogue can be the party's scout, "
-            "interrogator, infiltrator, or practical realist when everyone else starts thinking too loudly."
+            "Veilrunners survive by seeing openings other people miss. Locks, false papers, quiet steps, coded marks, "
+            "crowd flow, and bad assumptions are all part of their toolkit.\n\n"
+            "In Aethrune, that makes them more than thieves. A Veilrunner is often the only person who can move through "
+            "a controlled route without becoming part of the control."
         ),
     },
     "Sorcerer": {
-        "menu": "Innate spellcasters whose magic erupts from bloodline, accident, or destiny.",
+        "label": "Fluxborn",
+        "menu": "Innate channeling shaped by unstable power in the blood or body.",
         "text": (
-            "Sorcerers wield arcane power without the years of book-study a wizard depends on. Official lore frames that power as raw magic living inside "
-            "the character: perhaps from draconic blood, a planar touch, a wild magical event, or some other force powerful enough to leave a lasting mark. "
-            "Because their magic is innate, sorcerers often experience it as identity as much as technique.\n\n"
-            "That creates a distinct narrative flavor. A wizard asks what spell is prepared; a sorcerer asks what power wants out. In a Sword Coast story, "
-            "sorcerers can feel uncanny even when trusted, because their gift reminds everyone that magic is not always learned, licensed, or safe. Their "
-            "presence is often dramatic before they ever cast a spell."
+            "Fluxborn carry power that arrived before permission. Some inherit it from exposure to energy cores, "
+            "signal accidents, lineage scars, or a moment when the world pushed too much force through one life.\n\n"
+            "Their story question is control: not whether power exists, but what it costs to make that power answer "
+            "without burning the person who carries it."
         ),
     },
     "Warlock": {
-        "menu": "Occult wielders whose power comes from bargains with forces beyond the ordinary.",
+        "label": "Bound",
+        "menu": "Borrowed force, dangerous bargains, and obligations with teeth.",
         "text": (
-            "Warlocks stand at the intersection of ambition and risk. Official D&D lore defines them by pact magic: power granted through a bargain, bond, "
-            "or deep supernatural relationship with an otherworldly patron. That patron might be infernal, fey, cosmic, or something stranger, but the class "
-            "always carries the question of cost. Who granted this power, and why?\n\n"
-            "Narratively, warlocks bring tension wherever they go. They often know secrets respectable mages avoid, and they carry a confidence that can feel "
-            "either seductive or alarming depending on who is watching. In a frontier campaign, a warlock is a reminder that desperation breeds bargains and "
-            "that not every useful power arrives with a temple's blessing or a school's approval."
+            "The Bound are channelers whose power comes through a bargain, imprint, patron system, hidden voice, or "
+            "other obligation that does not vanish when combat ends. In Aethrune, the old world left many things "
+            "capable of answering desire.\n\n"
+            "That makes the Bound compelling because every useful gift raises a second question: who else heard the "
+            "promise being made?"
         ),
     },
     "Wizard": {
-        "menu": "Scholars of the arcane who shape reality through study, memory, and written formulae.",
+        "label": "Scribe",
+        "menu": "Studied channeling, pattern logic, and field scholarship.",
         "text": (
-            "Wizards are the classic learned spellcasters of D&D: researchers, collectors of formulae, keepers of spellbooks, and intellectual engineers of "
-            "the impossible. Official class lore emphasizes that wizardry is earned through study, discipline, and relentless curiosity. Where a sorcerer is "
-            "born with power, a wizard builds power piece by piece.\n\n"
-            "That makes the wizard deeply tied to ruins, libraries, lost cities, and old mistakes. Wizards adventure because ancient magic is rarely sitting "
-            "conveniently on a classroom shelf. In a Sword Coast game, the wizard often becomes the party member most alert to hidden meaning: old inscriptions, "
-            "strange symbols, magical residue, and the terrifying possibility that a forgotten cellar contains something the present age was wise to forget."
+            "Scribes treat power as something that can be notated, tested, corrected, and improved. They read ruin "
+            "marks, copy channel patterns, compare field journals, and turn old symbols into present leverage.\n\n"
+            "A Scribe belongs naturally in the Resonant Vaults arc because the world keeps leaving instructions, "
+            "and not all instructions deserve obedience."
         ),
     },
 }
@@ -294,105 +354,112 @@ CLASS_LORE: dict[str, LoreEntry] = {
 
 RACE_LORE: dict[str, LoreEntry] = {
     "Human": {
-        "menu": "Adaptable, ambitious people whose short lives often push them to act quickly.",
+        "label": "Valen",
+        "menu": "Adaptable rebuilders who became the backbone of the post-Accord world.",
         "text": (
-            "Humans are the great generalists of official D&D lore. They are everywhere, build quickly, adapt quickly, and rarely wait for history to slow down "
-            "for them. Their shorter lives compared with elves and dwarves often translate into urgency: kingdoms rise fast, fortunes change fast, and human ambition "
-            "reshapes the map generation by generation.\n\n"
-            "On the Sword Coast, humans are common in cities, villages, mercenary companies, trade houses, temples, and frontier settlements alike. That ubiquity gives "
-            "them narrative flexibility. A human adventurer might be ordinary by ancestry, but that very flexibility suits a game about roads, reinvention, and choices "
-            "made under pressure."
+            "The Valen are Aethrune's most numerous and varied people. During the Meridian Accord they were workers, "
+            "traders, soldiers, clerks, couriers, and citizens. After the collapse, they became the survivors most "
+            "likely to rebuild a town from whatever still stood.\n\n"
+            "Valen characters fit almost any path because adaptation is their inheritance."
         ),
     },
     "Dwarf": {
-        "menu": "Stone-blooded folk of clan, craft, endurance, and long memory.",
+        "label": "Draeven",
+        "menu": "Deep infrastructure keepers shaped by stone, craft, and endurance.",
         "text": (
-            "Dwarves are defined in official lore by resilience, craftsmanship, and loyalty to clan and tradition. Their stories are saturated with halls delved from "
-            "mountain roots, ancestral pride, grudges remembered across decades, and beauty found in enduring work rather than fleeting fashion.\n\n"
-            "A dwarf on the frontier often reads as fundamentally dependable. They value sturdy walls, honest labor, and promises meant to last. In a region where towns "
-            "can be half-built and roads half-secured, dwarven steadiness carries both emotional and practical weight."
+            "The Draeven maintained tunnels, foundations, load-bearing works, and deep systems under the old Accord. "
+            "When surface authority failed, many endured below and emerged into a world that had become less reliable "
+            "than the stone they trusted.\n\n"
+            "They value craft because a bad join can kill generations later."
         ),
     },
     "Elf": {
-        "menu": "Long-lived people of grace, memory, and sharpened senses.",
+        "label": "Eldren",
+        "menu": "Long-memory observers who carry fragments others forgot.",
         "text": (
-            "Official D&D elves are shaped by time. Their long lives produce patience, perspective, and an almost haunting sense that the present is only one brief movement "
-            "in a much longer song. They are often described as graceful, perceptive, and touched by fey ancestry, which helps explain their elegance, discipline, and distance.\n\n"
-            "That long memory can be a gift or burden on the Sword Coast. An elf may recognize patterns others dismiss, remember old names buried beneath new settlements, or "
-            "treat today's panic as one more turn in a cycle already centuries deep."
+            "The Eldren were archivists, continuity keepers, observers, and record minds within the old systems. "
+            "They saw pieces of the collapse coming, but not enough to stop it cleanly.\n\n"
+            "In play, an Eldren character can make memory feel active rather than ornamental: a burden, a warning, "
+            "and sometimes a weapon."
         ),
     },
     "Halfling": {
-        "menu": "Small wanderers whose luck, courage, and practicality keep them alive.",
+        "label": "Halkin",
+        "menu": "Quick couriers and small-route survivors who thrive when systems fail.",
         "text": (
-            "Halflings are often underestimated, which official D&D lore treats as a mistake people keep making. They are small, yes, but also steady, resourceful, socially warm, "
-            "and astonishingly difficult to break. Their stories value comfort, food, fellowship, and quick wits, but that does not make them timid. It makes them people who know "
-            "exactly what is worth preserving.\n\n"
-            "A halfling adventurer brings a grounded tone to a frontier campaign. They understand campfire morale, practical travel, and the difference between reckless heroics and "
-            "brave action taken for the right reasons."
+            "The Halkin were messengers, small traders, and route improvisers even before the collapse. When big "
+            "systems failed, they adapted faster than anyone who had depended on official permissions.\n\n"
+            "Their courage is practical: keep moving, keep laughing when possible, and never let a giant institution "
+            "convince you it is the whole world."
         ),
     },
     "Dragonborn": {
-        "menu": "Proud draconic heirs marked by honor, will, and elemental ancestry.",
+        "label": "Varoxi",
+        "menu": "Forged survivors marked by ancient systems and visible power.",
         "text": (
-            "Dragonborn carry the visual and spiritual echo of dragons without being dragons themselves. Official lore emphasizes pride, personal honor, self-mastery, and the deep "
-            "importance of clan or inherited legacy. Their draconic ancestry is not cosmetic; it shapes how they think about strength, reputation, and the proper use of power.\n\n"
-            "In a frontier game, a dragonborn often enters a scene already commanding attention. Their bearing can suggest nobility, severity, or disciplined intensity, and their "
-            "presence reminds other characters that ancient bloodlines still walk the common road."
+            "The Varoxi are living remnants of catastrophic fusion between flesh, authority, and old machinery. Some "
+            "show metallic growth, strange heat, luminous eyes, or bodies that seem half-designed by a failed system.\n\n"
+            "They are often feared because they make the Meridian past impossible to treat as safely dead."
         ),
     },
     "Gnome": {
-        "menu": "Sharp-minded folk of invention, curiosity, and quietly stubborn optimism.",
+        "label": "Oryn",
+        "menu": "Unrecorded people whose presence resists easy categorization.",
         "text": (
-            "Official gnome lore mixes intellect with delight. Gnomes are clever, inquisitive, playful, and often drawn toward craft, illusion, investigation, and invention. They are "
-            "the kind of people who take the world seriously without surrendering their sense of wonder.\n\n"
-            "That combination makes gnomes particularly strong fits for mystery-heavy adventures. A gnome can be the party member who sees the strange hinge, the forged seal, or the "
-            "arcane pattern everyone else stepped over. Their curiosity is not idle. It is often how danger gets recognized in time."
+            "The Oryn are rare and difficult to categorize. Old Accord records either missed them, erased them, or "
+            "failed to hold them in a stable way. That absence has become part of their identity.\n\n"
+            "An Oryn character suits curious, inventive, evasive, or pattern-breaking roles: someone the ledger cannot "
+            "quite pin down."
         ),
     },
     "Half-Elf": {
-        "menu": "Bridge-walkers who often learn to read more than one world at once.",
+        "label": "Sylari",
+        "menu": "Pattern-sensitive observers partly out of sync with ordinary perception.",
         "text": (
-            "Half-elves are defined in official lore by dual belonging and partial exclusion. They often move between human and elven cultures without being entirely claimed by either, "
-            "which can produce flexibility, empathy, loneliness, or sharpened social awareness depending on the character.\n\n"
-            "That makes them excellent adventurers in a setting full of mixed loyalties and shifting alliances. A half-elf often knows how to listen across differences, adapt without "
-            "forgetting themselves, and survive the quiet work of never assuming a room will welcome them automatically."
+            "The Sylari emerged from Eldren lines exposed to unstable signal systems. They notice discontinuities, "
+            "echoes, and false alignments others miss, but perception can become lonely when nobody else trusts the "
+            "same evidence.\n\n"
+            "They are excellent characters for reading the world's quiet wrongness before it becomes loud."
         ),
     },
     "Half-Orc": {
-        "menu": "Intense, resilient survivors who feel everything with frightening force.",
+        "label": "Orukh-Blooded",
+        "menu": "Borderline inheritors of Orukh endurance and mixed-world pressure.",
         "text": (
-            "Official half-orc lore stresses emotional intensity as much as physical power. Half-orcs are strong and durable, but also passionate, easily roused, deeply loyal, and often "
-            "forced to define themselves against other people's fear or prejudice. They may carry scars proudly, bitterly, or both.\n\n"
-            "In a frontier campaign, that intensity can become a dramatic strength. A half-orc hero often reads as someone who knows hardship personally and therefore refuses to look away "
-            "when others are being cornered by the same forces."
+            "Orukh-Blooded people often move between communities that expect them to prove what should not need "
+            "proving: loyalty, restraint, usefulness, or belonging. Many respond by becoming impossible to ignore.\n\n"
+            "Their stories fit Aethrune's borderlands well because the Shatterbelt itself is built from mixed claims "
+            "and disputed authority."
         ),
     },
     "Tiefling": {
-        "menu": "Marked descendants of infernal influence who survive through poise and self-definition.",
+        "label": "Khyren",
+        "menu": "Fire-blooded people shaped by inner heat, restraint, and volatile inheritance.",
         "text": (
-            "Tieflings occupy one of D&D's most durable social roles: visibly uncanny people who must decide for themselves what their inherited mark means. Official lore repeatedly notes "
-            "that tieflings are treated with suspicion, often living as minorities inside human-majority settlements, and learn early to rely on self-possession, wit, and carefully chosen loyalty.\n\n"
-            "That gives tieflings strong natural tension in any town-centered story. A tiefling adventurer may understand mistrust better than most and can turn that hard-earned composure "
-            "into either charisma, defiance, mischief, or relentless control."
+            "The Khyren descend from populations changed by proximity to old energy cores. Their bodies may show "
+            "warm skin tones, emberlike eyes, or veins that glow under stress.\n\n"
+            "Khyren culture values control because power that leaks at the wrong moment can become someone else's "
+            "excuse to fear you."
         ),
     },
     "Goliath": {
-        "menu": "Mountain nomads who measure life by hardship, honor, and earned worth.",
+        "label": "Thalren",
+        "menu": "River and coast-adapted people who prize motion over rigidity.",
         "text": (
-            "Official goliath lore presents them as reclusive highland people shaped by cold air, thin resources, and a culture where every individual must prove useful to the tribe. Their "
-            "stone-like appearance, physical power, and competitive spirit all grow from a homeland where failure can cost more than pride.\n\n"
-            "A goliath adventurer often carries that mountain ethic into lower lands. Deeds matter, excuses do not, and survival is a team responsibility. On the Sword Coast, a goliath can "
-            "feel both alien and deeply honorable: a wanderer carved by places most townsfolk would never willingly climb."
+            "The Thalren are tied to water-control systems, flood channels, rivers, and coastal change. Their cultures "
+            "often prefer flexible agreements over rigid institutions because water has taught them that survival is "
+            "movement with memory.\n\n"
+            "A Thalren adventurer brings that flow into every hard place the party enters."
         ),
     },
     "Orc": {
-        "menu": "Forceful, direct people associated with endurance, momentum, and fierce pride.",
+        "label": "Orukh",
+        "menu": "Powerful fringe survivors who learned not to depend on central systems.",
         "text": (
-            "Official modern D&D treatments of orcs emphasize strength, drive, and cultural variety rather than flattening them into a single stereotype. They are often portrayed as intense, "
-            "hardy, and action-oriented, with a strong sense of presence and a willingness to press forward when others would balk.\n\n"
-            "Used thoughtfully in a frontier campaign, an orc character can embody momentum and refusal. They are especially effective in stories about survival, contested belonging, and the "
-            "choice to become protector rather than raider."
+            "The Orukh lived at the edges of Accord benefit and often survived without trusting central promises. "
+            "When the collapse came, that independence became preparation.\n\n"
+            "Orukh characters carry strength, community loyalty, and suspicion of any authority that demands obedience "
+            "before earning trust."
         ),
     },
 }
@@ -400,71 +467,68 @@ RACE_LORE: dict[str, LoreEntry] = {
 
 BACKGROUND_LORE: dict[str, LoreEntry] = {
     "Soldier": {
-        "menu": "A veteran of organized violence who knows discipline, rank, and survival.",
+        "label": "Route Veteran",
+        "menu": "A guard, patrol hand, or militia survivor shaped by hard marches.",
         "text": (
-            "Official soldier backgrounds assume more than weapon familiarity. A soldier has lived inside structure: rank, orders, camp routine, battlefield fear, and the practical skills that "
-            "keep a line from collapsing. Whether that service was national, mercenary, or local militia, it leaves habits that do not disappear when the uniform comes off.\n\n"
-            "In this game, a soldier background ties naturally into road security, patrol logic, and the sober understanding that weak logistics lose wars before swords ever cross."
+            "Route Veterans know how quickly a checkpoint becomes a grave marker when command fails. They understand "
+            "formations, ration math, frightened recruits, and the difference between bravery and simply having no "
+            "safe place to retreat."
         ),
     },
     "Acolyte": {
-        "menu": "A temple servant shaped by ritual, devotion, and sacred obligations.",
+        "label": "Lantern Acolyte",
+        "menu": "A shrine-tender, field medic, or doctrine keeper from the road faiths.",
         "text": (
-            "The acolyte background in official D&D speaks to service more than power. An acolyte performs rites, studies doctrine, tends shrines, and acts as an intermediary between everyday "
-            "people and the sacred world. Some become full clerics, but many are simply devout and well-trained.\n\n"
-            "That background adds social weight to religion in the story. An acolyte knows how temples operate, how pilgrims think, and why sacred places remain practical institutions as well "
-            "as spiritual ones."
+            "Lantern Acolytes keep lamps burning where travel turns dangerous. Their work is practical devotion: "
+            "washing wounds, recording names, settling panic, and deciding what mercy requires when supplies run thin."
         ),
     },
     "Criminal": {
-        "menu": "An underworld survivor who understands secrecy, leverage, and bad neighborhoods.",
+        "label": "Veil Broker",
+        "menu": "A smuggler, lock hand, or papers-forger who knows hidden routes.",
         "text": (
-            "Official criminal backgrounds are about more than theft. They imply familiarity with vice, hidden markets, coded trust, fences, safehouses, and the social underside that respectable "
-            "people prefer not to name. A criminal survives by reading danger, spotting opportunity, and knowing which rules are real only because someone can enforce them.\n\n"
-            "On the Sword Coast frontier, that perspective is often useful. Smuggling routes, forged papers, and quiet middlemen matter whenever raiders start turning trade into an extortion game."
+            "Veil Brokers understand the underside of Aethrune's roads. False seals, quiet doors, smuggled food, "
+            "coded favors, and borrowed identities can be crimes, survival tools, or both depending on who writes the law."
         ),
     },
     "Sage": {
-        "menu": "A learned researcher whose curiosity and memory are as useful as any weapon.",
+        "label": "Accord Scholar",
+        "menu": "A reader of old systems, failed ledgers, and dangerous precedent.",
         "text": (
-            "Official sages are people who spent years with manuscripts, libraries, lectures, and unanswered questions. Their strength lies not only in what they know, but in how they pursue what "
-            "they do not know yet. A sage expects mystery to have context.\n\n"
-            "That makes the background especially potent in a setting full of ruins and inherited trouble. A sage sees old inscriptions, local legends, and strange magical residue as leads rather "
-            "than decoration."
+            "Accord Scholars study ruins because old decisions still have teeth. They know that a treaty, relay note, "
+            "or maintenance log can explain why a modern town is bleeding."
         ),
     },
     "Outlander": {
-        "menu": "A wanderer of wild places who trusts trailcraft more than walls.",
+        "label": "Trail-Wise",
+        "menu": "A camp survivor who trusts weather, tracks, and lived distance.",
         "text": (
-            "The outlander background represents people shaped by life beyond settled roads: hunters, guides, scouts, nomads, and drifters who know how to find food, read weather, and keep moving. "
-            "Official D&D uses the background to mark someone who belongs to the margins of civilization without necessarily rejecting it.\n\n"
-            "In a campaign around Phandalin, outlanders carry immediate credibility. They understand why a missing trail sign, dead cookfire, or badly cut track can say more than a frightened witness."
+            "Trail-Wise characters know the land outside official maps. They read firepits, river height, animal panic, "
+            "and the human habit of pretending a bad road is safe because the alternative is expensive."
         ),
     },
     "Charlatan": {
-        "menu": "A confidence artist who survives by performance, disguise, and nerve.",
+        "label": "Maskwright",
+        "menu": "A fraud, performer, or confidence reader who knows how belief moves.",
         "text": (
-            "Official charlatans are professional fabricators: swindlers, forgers, false healers, stage magicians, and social predators who know exactly how badly people want a convincing lie. "
-            "Their craft depends on showmanship, timing, and reading weakness without flinching.\n\n"
-            "That background can produce an especially flavorful adventurer because the same talents that support fraud also support infiltration, improvisation, and fast social recovery when a plan breaks."
+            "Maskwrights understand that identity is often a performance other people agree to believe. On the Emberway, "
+            "that makes them useful against forged authority and dangerous when they decide to forge back."
         ),
     },
     "Guild Artisan": {
-        "menu": "A trained craftsperson who understands quality, contracts, and civic reputation.",
+        "label": "Guildwright",
+        "menu": "A craftsperson trained in prices, materials, supply, and reputation.",
         "text": (
-            "Guild artisans in official lore belong to the working machinery of a city or town. They know trade standards, supply chains, craftsmanship, pricing, apprenticeships, and the fragile web "
-            "of trust that lets strangers buy one another's labor. They are practical professionals, not just flavor text.\n\n"
-            "In a frontier economy, that knowledge becomes quietly heroic. An artisan knows what shortages mean, what a damaged road does to livelihoods, and how much civilization depends on people "
-            "doing ordinary work well."
+            "Guildwrights know the practical machinery of town life: who supplies nails, who can repair a hinge, who "
+            "owes whom, and why a missing wagon can break more than one household."
         ),
     },
     "Hermit": {
-        "menu": "A secluded seeker whose solitude sharpened insight rather than softening it.",
+        "label": "Quiet Witness",
+        "menu": "A secluded seeker who learned to notice signs before crowds do.",
         "text": (
-            "The official hermit background is built around withdrawal, contemplation, and a truth discovered in solitude. Hermits may be healers, visionaries, exiles, mystics, or people who stepped "
-            "away from society long enough to see it more clearly on their return.\n\n"
-            "That makes the background excellent for characters who feel slightly offset from the rest of the world. In this game's tone, a hermit often reads as someone who recognizes omens, sickness, "
-            "patterns, and spiritual danger before more worldly people admit anything is wrong."
+            "Quiet Witnesses step away from noise long enough to hear pattern. Some study herbs, some omens, some old "
+            "doctrine, and some merely know what people sound like when they are about to lie to themselves."
         ),
     },
 }
@@ -472,740 +536,229 @@ BACKGROUND_LORE: dict[str, LoreEntry] = {
 
 ABILITY_LORE: dict[str, LoreEntry] = {
     "STR": {
-        "menu": "Strength measures force, lifting power, and the ability to impose yourself physically.",
-        "text": (
-            "Strength governs raw physical might in official D&D. It covers pushing, climbing, jumping, grappling, hauling, forcing doors, and turning mass into action. A high-Strength character is "
-            "not automatically huge, but they do possess the kind of bodily authority that changes a scene the moment force becomes relevant.\n\n"
-            "In this game, Strength-heavy characters feel direct and decisive. They solve problems by breaking lines, holding positions, dragging allies clear, and making sure a hostile body stays exactly "
-            "where they put it."
-        ),
+        "label": "Power",
+        "menu": "Raw force, lifting, breaking, climbing, and close-quarters pressure.",
+        "text": "Power measures the ability to move weight, force doors, grapple, haul gear, and turn physical mass into action.",
     },
     "DEX": {
-        "menu": "Dexterity measures balance, speed, precision, and controlled movement.",
-        "text": (
-            "Dexterity is official D&D's measure of agility and finesse. It influences stealth, initiative, careful handwork, missile accuracy, evasive movement, and the physical confidence needed to place "
-            "your body exactly where danger is not.\n\n"
-            "A high-Dexterity adventurer feels sharp even while standing still. They are the ones who slip through gaps, react before the crowd finishes gasping, and make difficult actions look effortless."
-        ),
+        "label": "Agility",
+        "menu": "Speed, finesse, balance, stealth, and quick hands.",
+        "text": "Agility covers initiative, careful movement, ranged aim, quiet steps, and the hand precision needed for delicate work.",
     },
     "CON": {
-        "menu": "Constitution measures stamina, toughness, and the ability to keep going.",
-        "text": (
-            "Constitution represents the body's staying power: resistance to fatigue, pain, poison, exposure, and the general wear of being alive in dangerous circumstances. Official rules tie it directly "
-            "to hit points because tough bodies remain functional longer under pressure.\n\n"
-            "In narrative terms, high Constitution is the quality that lets a character travel sick, fight hurt, or finish the climb when everyone else is already shaking."
-        ),
+        "label": "Endurance",
+        "menu": "Stamina, pain tolerance, poison resistance, and staying upright.",
+        "text": "Endurance decides how much punishment, sickness, hunger, panic, and exhaustion a character can survive before breaking.",
     },
     "INT": {
-        "menu": "Intelligence measures study, recall, analysis, and disciplined reasoning.",
-        "text": (
-            "Intelligence is the official home of learned knowledge and careful inference. Arcana, History, Nature, Investigation, and Religion all draw on it because Intelligence characters understand patterns, "
-            "classifications, records, and the logic beneath appearances.\n\n"
-            "A high-Intelligence adventurer is often the person who notices that a strange event is not random, a symbol is not decorative, and a local rumor sounds like a damaged version of an older fact."
-        ),
+        "label": "Logic",
+        "menu": "Study, pattern recognition, memory, and system reasoning.",
+        "text": "Logic helps decode Accord records, read old machinery, connect clues, and understand what a ruin was designed to do.",
     },
     "WIS": {
-        "menu": "Wisdom measures perception, intuition, judgment, and spiritual attunement.",
-        "text": (
-            "Wisdom in official D&D is less about book learning and more about awareness. It governs noticing, reading people, tending wounds, surviving outdoors, handling animals, and sensing what the moment "
-            "actually requires. Wisdom characters are grounded in present reality.\n\n"
-            "That can look quiet, but it is invaluable. Wisdom is the score that catches lies in a voice, danger in a treeline, and panic in a patient's breathing before the room realizes anything is wrong."
-        ),
+        "label": "Awareness",
+        "menu": "Perception, instinct, medicine, wayfinding, and reading the moment.",
+        "text": "Awareness is the sense that catches tracks, lies, infection, danger, weather, and the emotional shape of a room.",
     },
     "CHA": {
-        "menu": "Charisma measures force of presence, persuasion, identity, and social weight.",
-        "text": (
-            "Officially, Charisma is not just charm. It is the strength of personality that lets a character persuade, deceive, command, perform, intimidate, and anchor magic through pure selfhood. High Charisma "
-            "means other people feel you, whether they adore you, fear you, or simply cannot ignore you.\n\n"
-            "In play, Charisma often decides whether a tense scene becomes a fight, a confession, a bargain, or a memorable lie somebody almost believes."
-        ),
+        "label": "Presence",
+        "menu": "Force of personality, social pressure, command, and performance.",
+        "text": "Presence is the ability to make people listen, believe, flinch, rally, confess, or follow when the outcome is uncertain.",
     },
 }
 
 
 SKILL_LORE: dict[str, LoreEntry] = {
-    "Acrobatics": {
-        "menu": "Keeping balance, landing safely, and controlling motion under pressure.",
-        "text": "Acrobatics is the skill of balance, dives, tumbling, and staying upright when the environment turns unfriendly. It is the language of rope bridges, slick stone, leaps, sudden drops, and movement that has to be elegant because clumsy would be fatal.",
-    },
-    "Animal Handling": {
-        "menu": "Calming, guiding, and reading beasts without treating them like machines.",
-        "text": "Animal Handling reflects the judgment needed to soothe mounts, assess temperament, and work with living creatures instead of against them. In a Sword Coast campaign, it covers road horses, farm animals, trained hounds, and frightened beasts that react badly to panic.",
-    },
-    "Arcana": {
-        "menu": "Recognizing magical theory, traditions, symbols, and supernatural structures.",
-        "text": "Arcana is learned magical literacy. It helps a character identify spells, magical schools, occult signs, planar influences, and the habits of arcane practice. It is how a party member stops seeing 'weird' and starts seeing specific danger.",
-    },
-    "Athletics": {
-        "menu": "Climbing, swimming, forcing movement, and winning physical contests.",
-        "text": "Athletics is applied Strength: climbing with purpose, swimming in bad conditions, jumping cleanly, wrestling, and overpowering resistance. It is the skill of bodies doing hard things when there is no elegant shortcut.",
-    },
-    "Deception": {
-        "menu": "Lies, misdirection, false confidence, and social sleight of hand.",
-        "text": "Deception governs a character's ability to mislead without immediately collapsing under scrutiny. Good deception is not only lying well. It is offering the right lie for the listener, with the right timing, tone, and amount of detail.",
-    },
-    "History": {
-        "menu": "Remembering states, wars, bloodlines, events, and the shape of the past.",
-        "text": "History is the skill that turns names and ruins into context. It covers old kingdoms, noble lines, battles, treaties, famous disasters, and the kinds of buried precedent that keep haunting the present in the Forgotten Realms.",
-    },
-    "Insight": {
-        "menu": "Reading motives, tension, sincerity, and emotional fractures.",
-        "text": "Insight is social perception. It measures how well a character notices hesitation, fear, hidden hostility, guilt, or genuine conviction. Strong Insight often keeps a scene from being interpreted too literally.",
-    },
-    "Intimidation": {
-        "menu": "Applying threat, force of personality, or implied violence to control a scene.",
-        "text": "Intimidation is the art of making someone believe resistance will cost them. It can sound like a growl, a cold promise, an unblinking stare, or quiet certainty from someone obviously able to follow through.",
-    },
-    "Investigation": {
-        "menu": "Searching carefully, connecting clues, and noticing how things fit together.",
-        "text": "Investigation is deliberate reasoning applied to physical evidence. It covers searching rooms, studying ledgers, spotting hidden compartments, reconstructing events, and identifying the pattern underneath scattered clues.",
-    },
-    "Medicine": {
-        "menu": "Diagnosing wounds, stabilizing the hurt, and understanding bodily distress.",
-        "text": "Medicine measures practical knowledge of illness, injury, anatomy, and emergency care. It is the skill that knows the difference between dramatic blood and dangerous blood, or between someone who is dying now and someone who can still be saved.",
-    },
-    "Nature": {
-        "menu": "Knowing terrain, weather, plants, beasts, and the logic of the wild.",
-        "text": "Nature is learned knowledge about the natural world rather than instinctive field sense. It helps identify dangerous flora, local fauna, weather patterns, minerals, and the environmental context surrounding an expedition.",
-    },
-    "Perception": {
-        "menu": "Noticing what is present right now before it notices you.",
-        "text": "Perception is immediate awareness: hidden movement, distant shapes, odd sounds, shifted dust, fresh smoke, or the expression someone thought they concealed. It is one of the most important survival skills on any dangerous road.",
-    },
-    "Performance": {
-        "menu": "Captivating an audience through music, acting, or deliberate spectacle.",
-        "text": "Performance is not casual charm. It is crafted expression meant to move a crowd, hold attention, sell emotion, or create a persona stronger than the person underneath it. Bards love it, but con artists and nobles can weaponize it too.",
-    },
-    "Persuasion": {
-        "menu": "Winning cooperation through honesty, reason, empathy, or social grace.",
-        "text": "Persuasion is influence without overt coercion. It covers diplomacy, negotiation, reassurance, appeals to duty, and the ability to make someone feel that agreeing with you is sensible, honorable, or safe.",
-    },
-    "Religion": {
-        "menu": "Knowing gods, rites, sacred signs, heresies, and divine traditions.",
-        "text": "Religion is learned understanding of the sacred order: deities, temples, ceremonies, celestial and fiendish symbolism, holy law, and the practical habits of faith communities. In the Realms, that knowledge matters because divine power is not hypothetical.",
-    },
-    "Sleight of Hand": {
-        "menu": "Fine manual control used for palming, planting, hiding, or lifting objects.",
-        "text": "Sleight of Hand is delicate dexterity with intent behind it. Picking pockets is the obvious example, but the skill also covers concealment, silent object work, cheating tricks, and any movement of the fingers that must happen cleanly and unnoticed.",
-    },
-    "Stealth": {
-        "menu": "Moving unseen, unheard, or unremarked despite active risk.",
-        "text": "Stealth is more than crouching. It is light placement, timing, shadow use, breath control, and understanding lines of sight. Good stealth often depends as much on patience and judgment as on agility.",
-    },
-    "Survival": {
-        "menu": "Tracking, foraging, navigation, and staying alive outside comfort.",
-        "text": "Survival is the fieldcraft skill. It covers reading tracks, finding safe routes, locating food and water, predicting practical dangers, and making decisions that keep a group alive when walls and supply rooms are far away.",
-    },
+    "Acrobatics": {"menu": "Balance, tumbling, slips, falls, and unstable footing.", "text": "Acrobatics keeps a character moving when roofs sag, bridges tilt, and a fight spills across broken ground."},
+    "Animal Handling": {"menu": "Working with mounts, hounds, livestock, and frightened beasts.", "text": "Animal Handling reads the panic and trust of living creatures, especially on roads where horses often know trouble first."},
+    "Arcana": {"label": "System Lore", "menu": "Knowledge of channeling, relics, old signals, and unstable forces.", "text": "System Lore explains Meridian machinery, channel patterns, relic behavior, and the difference between a miracle and a malfunction."},
+    "Athletics": {"menu": "Climbing, swimming, jumping, grappling, and hard exertion.", "text": "Athletics is the body's answer when the route collapses, the gate sticks, or somebody has to hold a line by force."},
+    "Deception": {"menu": "Lies, masks, forged confidence, and controlled misdirection.", "text": "Deception matters because Aethrune's factions often win by making false authority look official long enough to matter."},
+    "History": {"menu": "Old records, battles, settlements, treaties, and ruins.", "text": "History turns names and buried stone into context, especially when the Meridian past keeps repeating through modern choices."},
+    "Insight": {"label": "Reading", "menu": "Understanding motive, fear, pressure, and concealed intent.", "text": "Reading catches the moment when a witness edits the truth, a leader hides panic, or a negotiator smiles too late."},
+    "Intimidation": {"menu": "Threat, command presence, and controlled menace.", "text": "Intimidation is the art of making consequences visible before anyone has to bleed for them."},
+    "Investigation": {"menu": "Searching scenes, testing claims, and connecting evidence.", "text": "Investigation follows scratches, ledgers, footprints, missing objects, false seals, and the quiet math of what does not fit."},
+    "Medicine": {"menu": "Triage, disease, wounds, fatigue, and field care.", "text": "Medicine keeps people alive when the shrine is full, the rain will not stop, and the next wagon is already overdue."},
+    "Nature": {"menu": "Weather, terrain, plants, beasts, and living patterns.", "text": "Nature explains how the land reacts when roads, mines, and waterworks push too hard against it."},
+    "Perception": {"menu": "Noticing threats, details, movement, sound, and ambush signs.", "text": "Perception is the skill of catching danger before it becomes a headline in someone else's ledger."},
+    "Performance": {"menu": "Voice, rhythm, storytelling, public timing, and staged emotion.", "text": "Performance can rally survivors, distract a room, sell a false role, or make a truth memorable enough to travel."},
+    "Persuasion": {"menu": "Honest pressure, negotiation, appeals, and earned trust.", "text": "Persuasion moves people without hiding the ask, which makes it precious in towns tired of being manipulated."},
+    "Religion": {"label": "Doctrine", "menu": "Shrine law, ritual practice, oaths, cults, and sacred obligations.", "text": "Doctrine covers Lantern rites, funeral names, oath language, forbidden symbols, and the difference between faith and control."},
+    "Sleight of Hand": {"label": "Handwork", "menu": "Quick fingers, hidden objects, small mechanisms, and misdirection.", "text": "Handwork handles palms, pins, seals, pockets, and the tiny movements that decide whether a plan survives contact."},
+    "Stealth": {"menu": "Quiet movement, concealment, shadowing, and not being where eyes expect.", "text": "Stealth lets a character move through controlled roads, occupied ruins, and frightened towns without becoming another report."},
+    "Survival": {"label": "Wayfinding", "menu": "Tracking, foraging, route sense, weather reading, and camp judgment.", "text": "Wayfinding keeps a party alive when maps are wrong, food is thin, and the road ahead has started lying."},
 }
 
 
 FEATURE_LORE: dict[str, LoreEntry] = {
-    "rage": {"menu": "Barbarian fury turned into a deliberate battle state.", "text": "Rage is the barbarian's defining ability: a focused eruption of primal ferocity that hardens the body against pain and drives each strike harder. In lore terms, it is the moment instinct stops being background emotion and becomes a weapon."},
-    "unarmored_defense_barbarian": {"menu": "Surviving through toughness and instinct instead of armor.", "text": "Barbarian Unarmored Defense reflects the idea that some warriors are so physically hardened and so combat-aware that plates and mail become optional. Their durability comes from body knowledge, not polished equipment."},
-    "bard_spellcasting": {"menu": "Magic expressed through art, words, memory, and rhythm.", "text": "Bardic spellcasting channels the official idea that creation itself has a song-like structure. A bard's magic feels social and artistic, but it is no less real than any wizard's formula."},
-    "bardic_inspiration": {"menu": "A bard's gift for turning timing and morale into real advantage.", "text": "Bardic Inspiration is the mechanical proof that courage, confidence, and good words can change outcomes. It turns the bard from a performer into an active shaper of the party's momentum."},
-    "cleric_spellcasting": {"menu": "Miracles granted through faith and divine favor.", "text": "Cleric spellcasting exists because the gods answer. Each prayer, invocation, or sacred sign reflects a channel between mortal service and divine power."},
-    "druid_spellcasting": {"menu": "Nature's power called through reverence, balance, and old rites.", "text": "Druid spellcasting feels ancient because it is rooted in weather, flame, growth, decay, and the living cycles that existed before many kingdoms did. It is natural power treated as sacred law."},
-    "second_wind": {"menu": "A fighter's trained ability to rally even while hurt.", "text": "Second Wind represents the veteran trick of forcing the body to recover enough to keep fighting. It is discipline made physical: the refusal to surrender the battle just because the battle is finally hurting back."},
-    "martial_arts": {"menu": "Monastic combat built on timing, precision, and disciplined repetition.", "text": "Martial Arts lets the monk turn the body into a practiced weapon. The feature reflects years of training rather than brute force, which is why speed and control matter more than heavy gear."},
-    "unarmored_defense_monk": {"menu": "Avoiding harm through awareness, posture, and inner balance.", "text": "Monk Unarmored Defense expresses the fantasy that perfect discipline can replace armor. The monk survives not by absorbing the blow, but by being centered enough that the blow lands poorly or not at all."},
-    "lay_on_hands": {"menu": "Paladin healing delivered through sacred touch and will.", "text": "Lay on Hands is one of the clearest signs that a paladin's oath has real power. It turns conviction into healing, making the paladin a frontline protector rather than a warrior who merely talks about mercy."},
-    "divine_smite": {"menu": "Radiant judgment poured through a weapon strike.", "text": "Divine Smite is what happens when righteous conviction stops arguing and starts landing. It is a perfect paladin feature because it fuses martial presence and sacred wrath into one decisive moment."},
-    "natural_explorer": {"menu": "A ranger's practiced edge in wild and roadless places.", "text": "Natural Explorer reflects the ranger's comfort in difficult terrain and uncertain travel. It marks someone who has spent enough time outdoors that the land itself becomes an ally rather than an obstacle."},
-    "sneak_attack": {"menu": "Rogue precision that punishes distraction and exposed openings.", "text": "Sneak Attack is not about cowardice. It is about accuracy. The rogue waits for imbalance, distraction, or vulnerability and then turns a normal hit into a fight-changing strike."},
-    "expertise": {"menu": "Exceptional specialization that pushes a trained skill into mastery.", "text": "Expertise represents focus so practiced that ordinary proficiency is no longer enough to describe it. Rogues excel at it because their fantasy revolves around being meaningfully better at a few critical things than almost anyone else."},
-    "sorcerer_spellcasting": {"menu": "Arcane power flowing from within instead of from a book.", "text": "Sorcerer spellcasting feels immediate and personal because the magic is part of the caster. It often reads as instinct, temperament, lineage, or destiny made visible."},
-    "warlock_spellcasting": {"menu": "Occult magic granted by pact, patronage, and dangerous knowledge.", "text": "Warlock magic carries the flavor of a relationship behind every spell. Its power feels compact, forceful, and slightly unsettling because someone or something beyond the caster helped open that door."},
-    "wizard_spellcasting": {"menu": "Arcane power structured through study, preparation, and written craft.", "text": "Wizard spellcasting is the most scholarly magic in the game. Its reliability comes from preparation, not spontaneity, which is why wizards feel like researchers even in the middle of danger."},
-    "arcane_recovery": {"menu": "A wizard's ability to reclaim focus through disciplined rest.", "text": "Arcane Recovery reflects efficient magical scholarship. A practiced wizard can pause, reorganize, and pull a little more utility from a mind trained to treat spellcasting as controlled intellectual work."},
-    "darkvision": {"menu": "Seeing in darkness better than ordinary folk.", "text": "Darkvision is one of the most common fantasy heritage traits in D&D. In story terms, it marks peoples shaped by subterranean halls, moonlit forests, or other environments where darkness is normal rather than exceptional."},
-    "dwarven_resilience": {"menu": "Dwarven toughness against poison and bodily hardship.", "text": "Dwarven resilience embodies the old fantasy of stout folk who outlast what would drop others. It fits a people famous for hard labor, strong drink, stubborn lungs, and underground endurance."},
-    "keen_senses": {"menu": "Elven sharpness of hearing, sight, and notice.", "text": "Keen Senses reflects the heightened awareness that official lore often attaches to elves. It is less a trick than a way of being: their attention catches more of the world before it fades."},
-    "fey_ancestry": {"menu": "Resistance rooted in ancient ties to the Feywild.", "text": "Fey Ancestry marks peoples whose blood still carries the influence of the fey. It suggests a mind shaped by an older, stranger heritage that does not submit easily to enchantment."},
-    "lucky": {"menu": "Halfling fortune that keeps disaster from landing cleanly.", "text": "Halfling luck is one of D&D's most charming racial signatures. It turns the halfling fantasy into mechanics: disaster almost catches them, then somehow does not."},
-    "brave": {"menu": "Halfling courage that resists fear better than outsiders expect.", "text": "Brave suits halflings because official lore treats them as warm and practical rather than naive. They know fear, but they do not let it own them for long."},
-    "draconic_presence": {"menu": "The social and spiritual weight of draconic heritage.", "text": "Draconic presence represents the way dragonborn often carry themselves with unmistakable force. Even before a dragonborn speaks, their ancestry suggests intensity, pride, and command."},
-    "gnome_cunning": {"menu": "Sharp gnomish resistance against mental intrusion and trickery.", "text": "Gnome Cunning captures the race's official association with intellect, wit, and mental resilience. Gnomes are hard to fool in the deeper magical sense because their minds stay quick and active."},
-    "relentless_endurance": {"menu": "Half-orc refusal to fall when the fight says they should.", "text": "Relentless Endurance is the half-orc fantasy made concrete: too angry, proud, or stubborn to stay down just because the body reached its limit a heartbeat ago."},
-    "menacing": {"menu": "A fearsome bearing that turns presence into pressure.", "text": "Menacing does not require cruelty. It reflects the reality that some people have a naturally intimidating edge, and others decide quickly not to test them."},
-    "hellish_resistance": {"menu": "Tiefling endurance against the fires linked to infernal blood.", "text": "Hellish Resistance gives tieflings a visible reminder that their ancestry has consequences. The fire that harms others does not own them so easily."},
-    "stone_endurance": {"menu": "Goliath grit that weathers punishment like mountain rock.", "text": "Stone's Endurance expresses the goliath ideal of bodily toughness forged by brutal terrain. The feature feels like a mountain-bred instinct to absorb hardship and keep climbing."},
-    "adrenaline_rush": {"menu": "Orc momentum turned into sudden explosive drive.", "text": "Adrenaline Rush matches the orc image of forceful forward motion. It is the moment when urgency becomes physical acceleration and hesitation simply disappears."},
+    "rage": {"label": "Battle Surge", "menu": "A Vanguard's focused state of pressure and pain tolerance.", "text": "Battle Surge turns fear and injury into forward motion, hardening the body while the Vanguard forces the fight to answer them."},
+    "unarmored_defense_barbarian": {"label": "Scar Guard", "menu": "Defense from instinct, endurance, and refusal to yield.", "text": "Scar Guard represents survival reflexes so practiced that armor is no longer the only way to stay standing."},
+    "bard_spellcasting": {"label": "Resonant Channeling", "menu": "Patterned voice and rhythm that shape reality.", "text": "Resonant Channeling uses tone, cadence, memory, and attention as tools for support and disruption."},
+    "bardic_inspiration": {"label": "Rally Note", "menu": "A timed word or phrase that helps an ally exceed themselves.", "text": "A Rally Note gives someone the exact push they need before doubt can settle into their hands."},
+    "cleric_spellcasting": {"label": "Lantern Channeling", "menu": "Disciplined faith turned into healing, protection, and judgment.", "text": "Lantern Channeling frames power as service under pressure: mend the wounded, steady the frightened, and push back the dark."},
+    "druid_spellcasting": {"label": "Wildbinding", "menu": "Living systems, weather, and land-sense shaped into force.", "text": "Wildbinding listens to the land's older logic and answers with growth, flame, water, and endurance."},
+    "second_wind": {"label": "Second Breath", "menu": "A Blade's practiced recovery in the middle of danger.", "text": "Second Breath is the moment training takes over and a wounded fighter finds enough air for one more push."},
+    "martial_arts": {"label": "Close Form", "menu": "Disciplined strikes built from posture and timing.", "text": "Close Form turns movement into offense without needing heavy arms or armor to define the fighter."},
+    "unarmored_defense_monk": {"label": "Empty-Hand Guard", "menu": "Defense through balance, breath, and disciplined motion.", "text": "Empty-Hand Guard keeps a Disciple alive by making stillness, angle, and timing do the work of a shield."},
+    "lay_on_hands": {"label": "Oath Mend", "menu": "An Oathbearer's sworn reserve of restorative force.", "text": "Oath Mend is care made immediate: a promise to protect translated through steady hands."},
+    "divine_smite": {"label": "Vowstrike", "menu": "A close strike charged by conviction.", "text": "Vowstrike spends inner reserve to make a weapon blow carry the weight of an oath."},
+    "natural_explorer": {"label": "Route Sense", "menu": "A Pathwarden's practiced edge in wild and broken routes.", "text": "Route Sense means terrain is never just scenery; it is evidence, warning, and opportunity."},
+    "sneak_attack": {"label": "Veilstrike", "menu": "Precision damage when an opening appears.", "text": "Veilstrike rewards the Veilrunner for choosing the exact moment when defense becomes assumption."},
+    "expertise": {"label": "Deep Practice", "menu": "A skill refined past ordinary competence.", "text": "Deep Practice marks the difference between knowing a trick and building a life around it."},
+    "sorcerer_spellcasting": {"label": "Flux Channeling", "menu": "Innate power shaped by instinct and control.", "text": "Flux Channeling is volatile force made useful before it burns through the person carrying it."},
+    "warlock_spellcasting": {"label": "Bound Channeling", "menu": "Power drawn through bargain, imprint, or obligation.", "text": "Bound Channeling is useful because something answered; it is dangerous because something may still be listening."},
+    "wizard_spellcasting": {"label": "Script Channeling", "menu": "Studied patterns, notation, and repeatable power.", "text": "Script Channeling turns field notes and old symbols into controlled effects."},
+    "arcane_recovery": {"label": "Pattern Recovery", "menu": "A Scribe's ability to restore channeling focus through review.", "text": "Pattern Recovery represents the scholar's habit of fixing the mind by returning to first principles."},
+    "darkvision": {"label": "Lowlight Sight", "menu": "Eyes adapted to dim routes, tunnels, and old chambers.", "text": "Lowlight Sight marks people whose bodies learned to treat darkness as information rather than absence."},
+    "dwarven_resilience": {"label": "Draeven Resilience", "menu": "Deep-born resistance to poison, fatigue, and bad air.", "text": "Draeven Resilience comes from generations shaped by tunnels, minerals, pressure, and stubborn survival."},
+    "keen_senses": {"label": "Eldren Attention", "menu": "Long-trained perception and memory working together.", "text": "Eldren Attention catches small details because the mind has learned to wait for them."},
+    "fey_ancestry": {"label": "Signal Distance", "menu": "A mind that resists easy influence and false resonance.", "text": "Signal Distance makes outside pressure slide off because the self is tuned to an older, steadier rhythm."},
+    "lucky": {"label": "Halkin Slip", "menu": "A small survivor's talent for disaster missing by inches.", "text": "Halkin Slip is not destiny. It is readiness, motion, and a lifetime of refusing to be where danger expected."},
+    "brave": {"label": "Small Courage", "menu": "Fear acknowledged, then stepped through anyway.", "text": "Small Courage suits the Halkin because they know fear well enough not to worship it."},
+    "draconic_presence": {"label": "Forged Presence", "menu": "A Varoxi aura of visible power and old-system weight.", "text": "Forged Presence makes authority physical, whether the Varoxi wants that attention or not."},
+    "gnome_cunning": {"label": "Unrecorded Cunning", "menu": "A mind hard for old systems to categorize or corner.", "text": "Unrecorded Cunning lets an Oryn slip through assumptions built by ledgers, categories, and tidy answers."},
+    "relentless_endurance": {"label": "Orukh Grit", "menu": "The refusal to fall when collapse seems reasonable.", "text": "Orukh Grit is survival as an argument: the world says enough, and the body says not yet."},
+    "menacing": {"label": "Hard Stare", "menu": "Presence sharpened by a life of being tested.", "text": "Hard Stare makes a warning land before steel has to."},
+    "hellish_resistance": {"label": "Ember Veins", "menu": "Khyren heat tolerance and inner fire control.", "text": "Ember Veins let the Khyren survive heat, surge, and stress that would break a colder body."},
+    "stone_endurance": {"label": "River-Stone Endurance", "menu": "Thalren toughness shaped by pressure and motion.", "text": "River-Stone Endurance absorbs impact the way water and stone share a lesson: bend, brace, continue."},
+    "adrenaline_rush": {"label": "Orukh Rush", "menu": "A sudden burst of forward survival.", "text": "Orukh Rush closes distance before hesitation can become a cage."},
 }
 
 
-def bullet_list(items: list[str]) -> str:
-    return "\n".join(f"- {item}" for item in items)
+APPENDIX_A_ENTRIES: dict[str, LoreEntry] = {
+    "Appendix A: Blinded": {"menu": "A creature cannot rely on sight.", "text": "Blinded means visual information is gone or unreliable. In Aethrune terms, the character suffers strain on sight-based actions and gives enemies edge when sight would protect them."},
+    "Appendix A: Charmed / Swayed": {"menu": "Influence clouds judgment toward the source.", "text": "Swayed characters are socially or supernaturally tilted toward a source and cannot treat that source as a clear enemy until the effect breaks."},
+    "Appendix A: Deafened": {"menu": "A creature cannot rely on hearing.", "text": "Deafened blocks sound cues, spoken warnings, and signal rhythms. It matters in ruins where sound often arrives before danger does."},
+    "Appendix A: Frightened / Shaken": {"menu": "Fear interferes with direct action.", "text": "Shaken characters struggle while the source of fear dominates the scene. In public language, this usually appears as strain on direct pressure against the fear."},
+    "Appendix A: Grappled": {"menu": "Movement is physically pinned or controlled.", "text": "Grappled means someone or something has locked down movement. Escape usually calls for Power or Agility under pressure."},
+    "Appendix A: Incapacitated": {"menu": "A creature cannot take meaningful actions.", "text": "Incapacitated is a severe state where the character cannot act normally, whether from shock, pain, binding, or overwhelming force."},
+    "Appendix A: Invisible / Veiled": {"menu": "A creature cannot be seen without special help.", "text": "Veiled targets are hidden from ordinary sight. Attacks against them suffer strain unless another sense or clue reveals the right angle."},
+    "Appendix A: Paralyzed / Locked": {"menu": "A creature is held rigid and cannot move.", "text": "Locked characters cannot move or speak effectively. Close-range danger becomes much worse because defense has collapsed."},
+    "Appendix A: Petrified": {"menu": "A creature is transformed into inert matter.", "text": "Petrified is rare and terrifying: the body becomes rigid matter, suspending ordinary action until the effect is reversed."},
+    "Appendix A: Poisoned": {"menu": "Toxin or sickness weakens action.", "text": "Poisoned characters act under strain as the body fights venom, illness, bad air, or contaminated relic residue."},
+    "Appendix A: Prone": {"menu": "A creature is down on the ground.", "text": "Prone means footing has failed. Standing costs time, close enemies gain openings, and distant attacks become less certain."},
+    "Appendix A: Restrained": {"menu": "Movement is limited by bindings, rubble, or force.", "text": "Restrained characters can still think and struggle, but their movement is limited enough that enemies can exploit the position."},
+    "Appendix A: Stunned / Disrupted": {"menu": "A creature loses the thread of action.", "text": "Disrupted means shock, impact, or signal interference has broken the character's ability to act for a moment."},
+    "Appendix A: Unconscious": {"menu": "A creature is down, unaware, and unable to act.", "text": "Unconscious characters cannot defend themselves, speak, move, or choose actions until restored or stabilized."},
+}
 
 
-def build_condition_entry(menu: str, summary: str, rules: list[str]) -> LoreEntry:
-    return {
-        "menu": menu,
-        "text": summary + "\n\nRules reference:\n" + bullet_list(rules),
-    }
-
-
-def build_deity_roster_text(intro: str, deities: list[tuple[str, str, str, str, str]]) -> str:
-    lines = [
-        f"{name} ({alignment}): {portfolio}; domains {domains}; symbol {symbol}."
-        for name, portfolio, alignment, domains, symbol in deities
-    ]
-    return intro + "\n\nRoster:\n" + bullet_list(lines)
-
-
-APPENDIX_A_ENTRIES: dict[str, LoreEntry] = {}
-FORGOTTEN_REALMS_DEITIES: list[tuple[str, str, str, str, str]] = []
-CELTIC_DEITIES: list[tuple[str, str, str, str, str]] = []
-GREEK_DEITIES: list[tuple[str, str, str, str, str]] = []
-EGYPTIAN_DEITIES: list[tuple[str, str, str, str, str]] = []
-NORSE_DEITIES: list[tuple[str, str, str, str, str]] = []
-APPENDIX_LORE: dict[str, LoreEntry] = {}
-
-
-FORGOTTEN_REALMS_DEITIES.extend(
-    [
-        ("Auril", "goddess of winter", "NE", "Nature, Tempest", "six-pointed snowflake"),
-        ("Azuth", "god of wizards", "LN", "Knowledge", "left hand pointing upward, outlined in fire"),
-        ("Bane", "god of tyranny", "LE", "War", "upright black right hand, thumb and fingers together"),
-        ("Beshaba", "goddess of misfortune", "CE", "Trickery", "black antlers"),
-        ("Bhaal", "god of murder", "NE", "Death", "skull surrounded by a ring of blood droplets"),
-        ("Chauntea", "goddess of agriculture", "NG", "Life", "sheaf of grain or a blooming rose over grain"),
-        ("Cyric", "god of lies", "CE", "Trickery", "white jawless skull on black or purple sunburst"),
-        ("Deneir", "god of writing", "NG", "Knowledge", "lit candle above an open eye"),
-        ("Eldath", "goddess of peace", "NG", "Life, Nature", "waterfall plunging into still pool"),
-        ("Gond", "god of craft", "N", "Knowledge", "toothed cog with four spokes"),
-        ("Helm", "god of protection", "LN", "Life, Light", "staring eye on upright left gauntlet"),
-        ("Ilmater", "god of endurance", "LG", "Life", "hands bound at the wrist with red cord"),
-        ("Kelemvor", "god of the dead", "LN", "Death", "upright skeletal arm holding balanced scales"),
-        ("Lathander", "god of birth and renewal", "NG", "Life, Light", "road traveling into a sunrise"),
-        ("Leira", "goddess of illusion", "CN", "Trickery", "point-down triangle containing a swirl of mist"),
-        ("Lliira", "goddess of joy", "CG", "Life", "triangle of three six-pointed stars"),
-        ("Loviatar", "goddess of pain", "LE", "Death", "nine-tailed barbed scourge"),
-        ("Malar", "god of the hunt", "CE", "Nature", "clawed paw"),
-        ("Mask", "god of thieves", "CN", "Trickery", "black mask"),
-        ("Mielikki", "goddess of forests", "NG", "Nature", "unicorn's head"),
-        ("Milil", "god of poetry and song", "NG", "Light", "five-stringed harp made of leaves"),
-        ("Myrkul", "god of death", "NE", "Death", "white human skull"),
-        ("Mystra", "goddess of magic", "NG", "Knowledge", "circle of seven stars, or nine stars encircling a flowing red mist, or a single star"),
-        ("Oghma", "god of knowledge", "N", "Knowledge", "blank scroll"),
-        ("Savras", "god of divination and fate", "LN", "Knowledge", "crystal ball containing many kinds of eyes"),
-        ("Selune", "goddess of the moon", "CG", "Knowledge, Life", "pair of eyes surrounded by seven stars"),
-        ("Shar", "goddess of darkness and loss", "NE", "Death, Trickery", "black disk encircled with a border"),
-        ("Silvanus", "god of wild nature", "N", "Nature", "oak leaf"),
-        ("Sune", "goddess of love and beauty", "CG", "Life, Light", "face of a beautiful red-haired woman"),
-        ("Talona", "goddess of disease and poison", "CE", "Death", "three teardrops on a triangle"),
-        ("Talos", "god of storms", "CE", "Tempest", "three lightning bolts radiating from a central point"),
-        ("Tempus", "god of war", "N", "War", "upright flaming sword"),
-        ("Torm", "god of courage and self-sacrifice", "LG", "War", "white right gauntlet"),
-        ("Tymora", "goddess of good fortune", "CG", "Trickery", "face-up coin"),
-        ("Tyr", "god of justice", "LG", "War", "balanced scales resting on a warhammer"),
-        ("Umberlee", "goddess of the sea", "CE", "Tempest", "wave curling left and right"),
-        ("Waukeen", "goddess of trade", "N", "Knowledge, Trickery", "upright coin with Waukeen's profile facing left"),
-    ]
-)
-
-CELTIC_DEITIES.extend(
-    [
-        ("The Daghdha", "god of weather and crops", "CG", "Nature, Trickery", "bubbling cauldron or shield"),
-        ("Arawn", "god of life and death", "NE", "Life, Death", "black star on gray background"),
-        ("Belenus", "god of sun, light, and warmth", "NG", "Light", "solar disk and standing stones"),
-        ("Brigantia", "goddess of rivers and livestock", "NG", "Life", "footbridge"),
-        ("Diancecht", "god of medicine and healing", "LG", "Life", "crossed oak and mistletoe branches"),
-        ("Dunatis", "god of mountains and peaks", "N", "Nature", "red sun-capped mountain peak"),
-        ("Goibhniu", "god of smiths and healing", "NG", "Knowledge, Life", "giant mallet over sword"),
-        ("Lugh", "god of arts, travel, and commerce", "CN", "Knowledge, Life", "pair of long hands"),
-        ("Manannan mac Lir", "god of oceans and sea creatures", "LN", "Nature, Tempest", "wave of white water on green"),
-        ("Math Mathonwy", "god of magic", "NE", "Knowledge", "staff"),
-        ("Morrigan", "goddess of battle", "CE", "War", "two crossed spears"),
-        ("Nuada", "god of war and warriors", "N", "War", "silver hand on black background"),
-        ("Oghma", "god of speech and writing", "NG", "Knowledge", "unfurled scroll"),
-        ("Silvanus", "god of nature and forests", "N", "Nature", "summer oak tree"),
-    ]
-)
-
-GREEK_DEITIES.extend(
-    [
-        ("Zeus", "god of the sky, ruler of the gods", "N", "Tempest", "fist full of lightning bolts"),
-        ("Aphrodite", "goddess of love and beauty", "CG", "Light", "sea shell"),
-        ("Apollo", "god of light, music, and healing", "CG", "Knowledge, Life, Light", "lyre"),
-        ("Ares", "god of war and strife", "CE", "War", "spear"),
-        ("Artemis", "goddess of hunting and childbirth", "NG", "Life, Nature", "bow and arrow on lunar disk"),
-        ("Athena", "goddess of wisdom and civilization", "LG", "Knowledge, War", "owl"),
-        ("Demeter", "goddess of agriculture", "NG", "Life", "mare's head"),
-        ("Dionysus", "god of mirth and wine", "CN", "Life", "thyrsus (staff tipped with pine cone)"),
-        ("Hades", "god of the underworld", "LE", "Death", "black ram"),
-        ("Hecate", "goddess of magic and the moon", "CE", "Knowledge, Trickery", "setting moon"),
-        ("Hephaestus", "god of smithing and craft", "NG", "Knowledge", "hammer and anvil"),
-        ("Hera", "goddess of marriage and intrigue", "CN", "Trickery", "fan of peacock feathers"),
-        ("Hercules", "god of strength and adventure", "CG", "Tempest, War", "lion's head"),
-        ("Hermes", "god of travel and commerce", "CG", "Trickery", "caduceus (winged staff and serpents)"),
-        ("Hestia", "goddess of home and family", "NG", "Life", "hearth"),
-        ("Nike", "goddess of victory", "LN", "War", "winged woman"),
-        ("Pan", "god of nature", "CN", "Nature", "syrinx (pan pipes)"),
-        ("Poseidon", "god of the sea and earthquakes", "CN", "Tempest", "trident"),
-        ("Tyche", "goddess of good fortune", "N", "Trickery", "red pentagram"),
-    ]
-)
-
-EGYPTIAN_DEITIES.extend(
-    [
-        ("Re-Horakhty", "god of the sun, ruler of the gods", "LG", "Life, Light", "solar disk encircled by serpent"),
-        ("Anubis", "god of judgment and death", "LN", "Death", "black jackal"),
-        ("Apep", "god of evil, fire, and serpents", "NE", "Trickery", "flaming snake"),
-        ("Bast", "goddess of cats and vengeance", "CG", "War", "cat"),
-        ("Bes", "god of luck and music", "CN", "Trickery", "image of the misshapen deity"),
-        ("Hathor", "goddess of love, music, and motherhood", "NG", "Life, Light", "horned cow's head with lunar disk"),
-        ("Imhotep", "god of crafts and medicine", "NG", "Knowledge", "step pyramid"),
-        ("Isis", "goddess of fertility and magic", "NG", "Knowledge, Life", "ankh and star"),
-        ("Nephthys", "goddess of death and grief", "CG", "Death", "horns around a lunar disk"),
-        ("Osiris", "god of nature and the underworld", "LG", "Life, Nature", "crook and flail"),
-        ("Ptah", "god of crafts, knowledge, and secrets", "LN", "Knowledge", "bull"),
-        ("Set", "god of darkness and desert storms", "CE", "Death, Tempest, Trickery", "coiled cobra"),
-        ("Sobek", "god of water and crocodiles", "LE", "Nature, Tempest", "crocodile head with horns and plumes"),
-        ("Thoth", "god of knowledge and wisdom", "N", "Knowledge", "ibis"),
-    ]
-)
-
-NORSE_DEITIES.extend(
-    [
-        ("Odin", "god of knowledge and war", "NG", "Knowledge, War", "watching blue eye"),
-        ("Aegir", "god of the sea and storms", "NE", "Tempest", "rough ocean waves"),
-        ("Balder", "god of beauty and poetry", "NG", "Life, Light", "gem-encrusted silver chalice"),
-        ("Forseti", "god of justice and law", "N", "Light", "head of a bearded man"),
-        ("Frey", "god of fertility and the sun", "NG", "Life, Light", "ice-blue greatsword"),
-        ("Freya", "goddess of fertility and love", "NG", "Life", "falcon"),
-        ("Frigga", "goddess of birth and fertility", "N", "Life, Light", "cat"),
-        ("Heimdall", "god of watchfulness and loyalty", "LG", "Light, War", "curling musical horn"),
-        ("Hel", "goddess of the underworld", "NE", "Death", "woman's face, rotting on one side"),
-        ("Hermod", "god of luck", "CN", "Trickery", "winged scroll"),
-        ("Loki", "god of thieves and trickery", "CE", "Trickery", "flame"),
-        ("Njord", "god of sea and wind", "NG", "Nature, Tempest", "gold coin"),
-        ("Odur", "god of light and the sun", "CG", "Light", "solar disk"),
-        ("Sif", "goddess of war", "CG", "War", "upraised sword"),
-        ("Skadi", "god of earth and mountains", "N", "Nature", "mountain peak"),
-        ("Surtur", "god of fire giants and war", "LE", "War", "flaming sword"),
-        ("Thor", "god of storms and thunder", "CG", "Tempest, War", "hammer"),
-        ("Thrym", "god of frost giants and cold", "CE", "War", "white double-bladed axe"),
-        ("Tyr", "god of courage and strategy", "LN", "Knowledge, War", "sword"),
-        ("Uller", "god of hunting and winter", "CN", "Nature", "longbow"),
-    ]
-)
-
-
-APPENDIX_A_ENTRIES.update(
-    {
-        "Appendix A: Blinded": build_condition_entry(
-            "Sight is gone, and the creature fights at a severe perception disadvantage.",
-            "Blinded covers creatures that cannot see at all, whether from darkness, injury, magic, or another effect. It is one of the clearest examples of a condition bundling multiple penalties into a single rules label.",
-            [
-                "The creature cannot see.",
-                "Any ability check that depends on sight fails automatically.",
-                "Attack rolls against the creature have advantage.",
-                "The creature's own attack rolls have disadvantage.",
-            ],
+APPENDIX_LORE: dict[str, LoreEntry] = {
+    "Appendix A: Conditions": {
+        "menu": "Aethrune-facing names for major combat states.",
+        "text": (
+            "Contents:\n"
+            + "\n".join(f"- {name.removeprefix('Appendix A: ')}" for name in APPENDIX_A_ENTRIES)
+            + "\n\nThese entries keep the combat chassis readable while moving the public vocabulary toward Aethrune terms."
         ),
-        "Appendix A: Charmed": build_condition_entry(
-            "Hostility toward the charmer is locked out while social influence becomes easier.",
-            "Charmed does not mean full mind control. It means the target is magically or emotionally constrained in how it can act toward the charmer, and that social leverage shifts sharply in the charmer's favor.",
-            [
-                "The creature cannot attack the charmer.",
-                "The creature cannot target the charmer with harmful abilities or magical effects.",
-                "The charmer has advantage on social ability checks made to interact with the creature.",
-            ],
-        ),
-        "Appendix A: Deafened": build_condition_entry(
-            "Hearing-based awareness and checks stop working.",
-            "Deafened is simple but important whenever a scene depends on spoken warning, approaching danger, or listening for clues.",
-            [
-                "The creature cannot hear.",
-                "Any ability check that depends on hearing fails automatically.",
-            ],
-        ),
-        "Appendix A: Exhaustion": build_condition_entry(
-            "Accumulating hardship that worsens in six escalating stages.",
-            "Exhaustion is the long-burn survival condition of the Basic Rules. It often comes from hunger, exposure, or punishing special effects, and it stacks rather than replacing itself.",
-            [
-                "Level 1: disadvantage on ability checks.",
-                "Level 2: speed is halved.",
-                "Level 3: disadvantage on attack rolls and saving throws.",
-                "Level 4: hit point maximum is halved.",
-                "Level 5: speed becomes 0.",
-                "Level 6: death.",
-                "New exhaustion adds to the current level.",
-                "A creature suffers the effects of its current level and every lower level.",
-                "Removing exhaustion lowers the level by the amount specified by the effect.",
-                "A long rest lowers exhaustion by 1 if the creature also had food and drink.",
-                "Being raised from the dead also lowers exhaustion by 1.",
-            ],
-        ),
-        "Appendix A: Frightened": build_condition_entry(
-            "Fear hampers competence and prevents closing with the source of terror.",
-            "Frightened ties narrative fear directly to battlefield behavior. The condition matters most when a creature can still see what it fears.",
-            [
-                "The creature has disadvantage on ability checks and attack rolls while the source of fear is in line of sight.",
-                "The creature cannot willingly move closer to the source of fear.",
-            ],
-        ),
-        "Appendix A: Grappled": build_condition_entry(
-            "Movement is pinned until the hold is broken.",
-            "Grappled is mainly a movement condition. It stops repositioning and can set up later danger, but it does not automatically stop attacks or spellcasting by itself.",
-            [
-                "The creature's speed becomes 0.",
-                "The creature cannot benefit from bonuses to speed.",
-                "The condition ends if the grappler becomes incapacitated.",
-                "The condition also ends if the creature is moved out of the grappler's reach by an effect.",
-            ],
-        ),
-        "Appendix A: Incapacitated": build_condition_entry(
-            "The core action-lock condition used by several harsher states.",
-            "Incapacitated is a short rules tag, but it sits under several nastier conditions such as paralyzed, stunned, and unconscious.",
-            [
-                "The creature cannot take actions.",
-                "The creature cannot take reactions.",
-            ],
-        ),
-        "Appendix A: Invisible": build_condition_entry(
-            "The creature cannot be seen normally, but it still leaves clues.",
-            "Invisible is not perfect erasure. Other creatures can still infer location from noise, tracks, or magic, but normal sight no longer reveals the target.",
-            [
-                "The creature is impossible to see without magic or a special sense.",
-                "For hiding purposes, the creature counts as heavily obscured.",
-                "Its location can still be detected from noise or tracks.",
-                "Attack rolls against the creature have disadvantage.",
-                "The creature's attack rolls have advantage.",
-            ],
-        ),
-    }
-)
-
-
-APPENDIX_LORE.update(
-    {
-        "Appendix A: Conditions Overview": {
-            "menu": "A rules-reader section for every major status condition in the Basic Rules.",
-            "text": (
-                "Appendix A is the game's condition index. It gathers the named status effects that alter what creatures can do, what they can perceive, "
-                "and how easy they are to hit. Instead of rewriting the same penalties every time a spell, trap, monster, or hazard applies them, the rules "
-                "refer back to these standard condition packages.\n\n"
-                "Use the pages in this subsection as rule references. Each one turns a condition heading from the Basic Rules into a readable summary of what "
-                "that condition does in play."
-            ),
-        },
-    }
-)
-
-APPENDIX_LORE.update(
-    {
-        "Appendix C: Factions Overview": {
-            "menu": "The five major Forgotten Realms factions that recruit and intervene across Faerun.",
-            "text": (
-                "Appendix C is less about abstract history and more about power in motion. It presents five prominent organizations used heavily in Forgotten Realms play, especially "
-                "organized play: the Harpers, the Order of the Gauntlet, the Emerald Enclave, the Lords' Alliance, and the Zhentarim.\n\n"
-                "Each faction has its own philosophy, but all may oppose major threats when the stakes are high enough. These pages work best as a faction field guide: who they help, "
-                "how they operate, and what sort of adventurer naturally fits their methods."
-            ),
-        },
-        "Appendix C: Harpers": {
-            "menu": "Secretive defenders who use intelligence, mobility, and quiet intervention.",
-            "text": (
-                "The Harpers are a clandestine network of spies, spellcasters, and idealists who try to tilt the balance toward the innocent, the weak, and the oppressed. They work behind "
-                "the scenes whenever possible, preferring quiet disruption of tyrants and rising evil to visible conquest.\n\n"
-                "Harper agents often operate alone, leaning on information networks, secret caches, trusted contacts, and false identities. They prize incorruptibility, self-reliance, and "
-                "knowledge gathered before a conflict breaks open. In campaign terms, they are the faction of intelligence work, soft power, and principled interference."
-            ),
-        },
-        "Appendix C: Order of the Gauntlet": {
-            "menu": "Zealous doers who seek out evil directly and smash it before it grows.",
-            "text": (
-                "The Order of the Gauntlet is a comparatively young organization devoted to confronting evil head-on. It believes darkness hides, spreads through weakness, and must be met with "
-                "vigilance, prayer, discipline, and decisive force.\n\n"
-                "Its members ride toward dangerous ruins and foul lairs rather than away from them, but the Order also stresses inward discipline: before cleansing the world, its paladins, clerics, "
-                "and monks are expected to confront the capacity for evil within themselves. It is a faction of honor, faith, and righteous action."
-            ),
-        },
-        "Appendix C: Emerald Enclave": {
-            "menu": "Wardens of the wild who preserve balance and teach others how to survive it.",
-            "text": (
-                "The Emerald Enclave is a scattered but far-reaching network that opposes threats to the natural world and helps people endure wilderness on its own terms. Its branches are often isolated, "
-                "which breeds self-reliance, fieldcraft, and a practical respect for nature.\n\n"
-                "The Enclave does not reject civilization outright. Instead, it tries to stop civilization and wilderness from destroying one another, while resisting what it sees as unnatural corruption. "
-                "Rangers, druids, and frontier defenders fit here naturally."
-            ),
-        },
-        "Appendix C: Lords' Alliance": {
-            "menu": "A coalition of city rulers and loyal agents defending civilized order.",
-            "text": (
-                "The Lords' Alliance is an association of rulers from major towns and cities, especially in the North, who believe solidarity is necessary to keep large threats at bay. Its leaders care deeply "
-                "about the fortune and safety of their own settlements, which gives the faction both strength and friction.\n\n"
-                "Alliance agents tend to be well-equipped professionals backed by wealth, rank, and infrastructure. They fight for security, prosperity, and political stability, often acting before ordinary people "
-                "even know a danger exists. It is the faction of order, statecraft, and hard-nosed civic defense."
-            ),
-        },
-        "Appendix C: Zhentarim": {
-            "menu": "The Black Network of ambitious operators who treat wealth and influence as weapons.",
-            "text": (
-                "The Zhentarim are mercenaries, rogues, traders, and warlocks who want influence, leverage, and the ability to shape events instead of obeying them. They are willing to work near or across legal lines "
-                "if that is what it takes to get results.\n\n"
-                "To the Black Network, wealth is power made visible. Its members provide elite protection, muscle, and logistics, and they understand that gold can command loyalty as surely as ideology can. In a campaign, "
-                "the Zhentarim are the faction of ambition, private power, and ruthlessly practical opportunity."
-            ),
-        },
-        "Appendix D: Planes Overview": {
-            "menu": "A guided reader to the multiverse beyond the Material Plane.",
-            "text": (
-                "Appendix D in the 2014 Basic Rules is not a monster appendix. It is a compact cosmology guide covering the Material Plane, the planes beyond it, methods of planar travel, and the broad structure of "
-                "Inner, Outer, transitive, upper, lower, and demiplanar realities.\n\n"
-                "In lore terms, these pages explain where angels, demons, gods, elemental forces, dreamlike transit realms, and stranger pockets of reality fit into D&D's worldview. In play terms, they tell you why "
-                "high-level travel can move from a normal road to a silver void, a sea of fire, or a divine realm without breaking the setting."
-            ),
-        },
-        "Appendix D: The Material Plane": {
-            "menu": "The mortal baseline from which the rest of the multiverse is understood.",
-            "text": (
-                "The Material Plane is the meeting point where elemental substance and philosophical forces collide into ordinary life, mundane matter, and the playable worlds most campaigns begin in. All fantasy worlds "
-                "used by DMs exist here.\n\n"
-                "The appendix emphasizes its diversity: desert worlds, island worlds, worlds where magic mingles with advanced technology, worlds abandoned by gods, and worlds where gods still walk openly. Everything else "
-                "in the multiverse is defined in relation to this baseline."
-            ),
-        },
-        "Appendix D: Beyond the Material": {
-            "menu": "A shift from ordinary worldbuilding into realms of mythic principle.",
-            "text": (
-                "Beyond the Material Plane lie other planes that are not merely distant worlds, but different qualities of existence. They are shaped by spiritual and elemental principles abstracted away from ordinary reality.\n\n"
-                "This is the jump from familiar fantasy geography to full mythic cosmology: raw elemental domains, divine homes, infernal and celestial regions, and stranger states of being that answer to thought, ethos, or pure energy."
-            ),
-        },
-        "Appendix D: Planar Travel": {
-            "menu": "How spells and portals move adventurers across the boundaries of reality.",
-            "text": (
-                "Planar travel is framed as a legendary journey rather than casual transport. Reaching the realms of the dead, bargaining in an efreet's city, or seeking celestial aid is the stuff of major quests and stories.\n\n"
-                "The appendix gives two major routes. Spells such as plane shift, gate, etherealness, and astral projection can open direct or indirect access. Portals can also bridge planes, whether they appear as doors, fog passages, "
-                "standing stones, towers, ships, whole settlements, or vortices tied to places like volcanoes and ocean depths."
-            ),
-        },
-        "Appendix D: Transitive Planes": {
-            "menu": "The Astral and Ethereal ways between worlds and larger realities.",
-            "text": (
-                "The Ethereal Plane and Astral Plane are called transitive because they mainly function as routes to somewhere else. Characters enter them to pass from one plane to another rather than to settle there permanently.\n\n"
-                "The Ethereal is a mist-heavy border overlapping the Material and Inner Planes, with a deeper region of swirling fog beyond. The Astral is a vast silvery expanse of thought and dream where travelers move like disembodied souls toward divine and demonic realms."
-            ),
-        },
-        "Appendix D: Inner Planes": {
-            "menu": "The elemental engines from which worlds are built.",
-            "text": (
-                "The Inner Planes surround and enfold the Material Plane, providing the raw elemental substance of creation. Air, Earth, Fire, and Water form the main elemental ring around the Material world, all suspended in the Elemental Chaos.\n\n"
-                "Near the Material Plane, these realms resemble recognizable land, sea, and sky. Farther out, they become pure and hostile element: endless stone, blazing fire, clear water, or unsullied air. At the far reaches, the elements break down into the violent churn of the Elemental Chaos."
-            ),
-        },
-        "Appendix D: Outer Planes": {
-            "menu": "Planes of spirit, purpose, gods, and moral direction rather than matter.",
-            "text": (
-                "If the Inner Planes are the material of the multiverse, the Outer Planes are its purpose and alignment. Sages often describe them as divine or spiritual planes because they are most famously the homes of deities.\n\n"
-                "The appendix warns that Outer Planes should be understood metaphorically as much as geographically. Their apparent landscapes can shift according to the will of greater powers, and distance may mean almost nothing there. The best-known grouping is a set of sixteen planes corresponding to the non-neutral alignments and the spaces between them."
-            ),
-        },
-        "Appendix D: Upper and Lower Planes": {
-            "menu": "The broad moral split between celestial and fiendish outer realms.",
-            "text": (
-                "The Upper Planes are those that contain some measure of good, and they are home to celestials such as angels and pegasi. The Lower Planes contain some measure of evil, and fiends such as demons and devils dwell there.\n\n"
-                "A plane's alignment is not just flavor. The appendix says it is the plane's essence, and creatures whose alignment clashes with that essence feel profound dissonance there. A good visitor to Elysium may feel at home, while an evil one feels fundamentally out of tune."
-            ),
-        },
-        "Appendix D: Demiplanes": {
-            "menu": "Small pocket realities with their own rules, origins, and points of entry.",
-            "text": (
-                "Demiplanes are tiny extradimensional realities that do not fit cleanly anywhere else in the multiverse. Some are built by spells such as demiplane, some are made by deities or other great powers, and some arise naturally as folds or splinters of reality.\n\n"
-                "They may be reached through a single touchpoint with another plane, and while plane shift can theoretically reach them, the required tuning fork is difficult to obtain. Gate is more dependable if the caster already knows the demiplane exists."
-            ),
-        },
-    }
-)
-
-APPENDIX_LORE.update(APPENDIX_A_ENTRIES)
-
-APPENDIX_LORE.update(
-    {
-        "Appendix B: Gods Overview": {
-            "menu": "A lore reader for deities, worship, pantheons, and divine domains.",
-            "text": (
-                "Appendix B explains that religion in D&D is practical as well as spiritual. Gods are present enough that clerics channel divine power, paladins "
-                "embody sacred ideals, cults serve dark patrons, and ordinary people may pray to different deities in different moments of daily life.\n\n"
-                "The 2014 Basic Rules use the Forgotten Realms as the primary pantheon reference, then add fantasy-historical pantheons for Celtic, Greek, Egyptian, "
-                "and Norse flavored campaigns. The Life domain is especially broad, while Death is often associated with darker faiths, though the appendix notes a "
-                "few exceptions such as non-evil death deities."
-            ),
-        },
-        "Appendix B: Forgotten Realms Deities": {
-            "menu": "The main Faerunian roster of widely known gods, domains, and holy symbols.",
-            "text": build_deity_roster_text(
-                "The Forgotten Realms section names the deities most commonly recognized across Faerun. People often honor several of them situationally, while priests, "
-                "champions, and devoted servants may commit themselves to one above all others.",
-                FORGOTTEN_REALMS_DEITIES,
-            ),
-        },
-        "Appendix B: Nonhuman Deities": {
-            "menu": "Shared racial gods and the wider pantheons surrounding nonhuman cultures.",
-            "text": (
-                "The appendix notes that some gods closely tied to nonhuman peoples are honored across multiple settings, including the Forgotten Realms and Greyhawk. "
-                "It also points out that many nonhuman races have full pantheons of their own rather than a single patron.\n\n"
-                "The dwarf example is the clearest: beyond Moradin, the source names Berronar Truesilver, Abbathor, Clangeddin Silverbeard, Dugmaren Brightmantle, "
-                "Dumathoin, Gorm Gulthyn, Haela Brightaxe, Marthammor Duin, Sharindlar, Thard Harr, and Vergadain. Different clans and kingdoms may revere some, all, "
-                "or none of these deities, and some may know the same powers by different names."
-            ),
-        },
-        "Appendix B: Celtic Pantheon": {
-            "menu": "Wild, nature-suffused gods tied to streams, woods, moors, and druidic reverence.",
-            "text": build_deity_roster_text(
-                "The Celtic pantheon is presented as primal and landscape-bound. Its gods feel tied to brook, oak, mistletoe, and moor, and the appendix explicitly notes "
-                "that they are often served by druids as well as clerics.",
-                CELTIC_DEITIES,
-            ),
-        },
-        "Appendix B: Greek Pantheon": {
-            "menu": "Olympian deities of sea, storm, city, beauty, war, fate, and hearth.",
-            "text": build_deity_roster_text(
-                "The Greek pantheon centers the gods of Olympus, whose presence echoes through sea, thunder, wooded hills, and the human heart. In game terms it offers a broad "
-                "spread of domains for civilized, heroic, and mythic campaigns.",
-                GREEK_DEITIES,
-            ),
-        },
-        "Appendix B: Egyptian Pantheon": {
-            "menu": "A divine dynasty shaped by order, rulership, judgment, craft, fertility, and death.",
-            "text": build_deity_roster_text(
-                "The Egyptian pantheon is framed around an ancient divine family that maintains Ma'at: truth, justice, law, and right order. The appendix specifically calls out "
-                "that Anubis, Set, and Nephthys all touch the Death domain from different moral positions.",
-                EGYPTIAN_DEITIES,
-            ),
-        },
-        "Appendix B: Norse Pantheon": {
-            "menu": "Hard-country gods of storm, war, winter, luck, fertility, and fate.",
-            "text": build_deity_roster_text(
-                "The Norse pantheon is rooted in fjords, glaciers, longships, and severe survival. The appendix describes the Aesir and Vanir as allied divine families whose domains "
-                "reflect leadership, battle, fertility, prosperity, and the brutal logic of northern life.",
-                NORSE_DEITIES,
-            ),
-        },
-    }
-)
-
-APPENDIX_A_ENTRIES.update(
-    {
-        "Appendix A: Paralyzed": build_condition_entry(
-            "Body locked in place, leaving the victim helpless in melee.",
-            "Paralyzed is one of the most dangerous combat conditions because it removes action, movement, and defense at once, then turns nearby hits into critical strikes.",
-            [
-                "The creature is incapacitated.",
-                "The creature cannot move or speak.",
-                "The creature automatically fails Strength and Dexterity saving throws.",
-                "Attack rolls against the creature have advantage.",
-                "A hit from within 5 feet is a critical hit.",
-            ],
-        ),
-        "Appendix A: Petrified": build_condition_entry(
-            "Turned into inert matter and nearly frozen out of normal life.",
-            "Petrified transforms a creature and what it is carrying into lifeless substance, usually stone. It is one of the heaviest status effects in the appendix because it changes physical state as well as combat capability.",
-            [
-                "The creature and its nonmagical worn or carried objects become a solid inanimate substance, usually stone.",
-                "Its weight increases tenfold and aging stops.",
-                "The creature is incapacitated, cannot move or speak, and is unaware of its surroundings.",
-                "Attack rolls against the creature have advantage.",
-                "The creature automatically fails Strength and Dexterity saving throws.",
-                "The creature has resistance to all damage.",
-                "The creature is immune to poison and disease, though existing poison or disease is suspended rather than cured.",
-            ],
-        ),
-        "Appendix A: Poisoned": build_condition_entry(
-            "Sickness and impairment drag down offense and general capability.",
-            "Poisoned is a broad penalty condition that weakens both combat performance and noncombat competence.",
-            [
-                "The creature has disadvantage on attack rolls.",
-                "The creature has disadvantage on ability checks.",
-            ],
-        ),
-        "Appendix A: Prone": build_condition_entry(
-            "Knocked down, better against distant fire and worse against nearby threats.",
-            "Prone is one of the most positional conditions in the Basic Rules. It changes movement and flips the math on incoming attacks depending on distance.",
-            [
-                "The creature can only crawl unless it stands up to end the condition.",
-                "The creature has disadvantage on attack rolls.",
-                "Attack rolls from within 5 feet have advantage.",
-                "Attack rolls from farther away have disadvantage.",
-            ],
-        ),
-        "Appendix A: Restrained": build_condition_entry(
-            "Held fast, exposing the creature to attacks and failed dodges.",
-            "Restrained is harsher than grappled because it not only stops movement but also makes the victim easier to hit and worse at avoiding effects.",
-            [
-                "The creature's speed becomes 0.",
-                "The creature cannot benefit from bonuses to speed.",
-                "Attack rolls against the creature have advantage.",
-                "The creature's attack rolls have disadvantage.",
-                "The creature has disadvantage on Dexterity saving throws.",
-            ],
-        ),
-        "Appendix A: Stunned": build_condition_entry(
-            "Awareness is broken and the body barely responds.",
-            "Stunned resembles paralyzed in danger level, but the text frames it as a shattered nervous system or mind rather than rigid immobility.",
-            [
-                "The creature is incapacitated.",
-                "The creature cannot move.",
-                "The creature can speak only falteringly.",
-                "The creature automatically fails Strength and Dexterity saving throws.",
-                "Attack rolls against the creature have advantage.",
-            ],
-        ),
-        "Appendix A: Unconscious": build_condition_entry(
-            "Fully senseless, dropped to the ground, and easy prey in close combat.",
-            "Unconscious wraps together several other effects and represents complete lack of awareness, whether from sleep, trauma, or magic.",
-            [
-                "The creature is incapacitated.",
-                "The creature cannot move or speak.",
-                "The creature is unaware of its surroundings.",
-                "The creature drops whatever it is holding.",
-                "The creature falls prone.",
-                "The creature automatically fails Strength and Dexterity saving throws.",
-                "Attack rolls against the creature have advantage.",
-                "A hit from within 5 feet is a critical hit.",
-            ],
-        ),
-    }
-)
-
-
-APPENDIX_LORE = {
-    "Appendix A: Conditions Overview": APPENDIX_LORE["Appendix A: Conditions Overview"],
+    },
     **APPENDIX_A_ENTRIES,
-    "Appendix B: Gods Overview": APPENDIX_LORE["Appendix B: Gods Overview"],
-    "Appendix B: Forgotten Realms Deities": APPENDIX_LORE["Appendix B: Forgotten Realms Deities"],
-    "Appendix B: Nonhuman Deities": APPENDIX_LORE["Appendix B: Nonhuman Deities"],
-    "Appendix B: Celtic Pantheon": APPENDIX_LORE["Appendix B: Celtic Pantheon"],
-    "Appendix B: Greek Pantheon": APPENDIX_LORE["Appendix B: Greek Pantheon"],
-    "Appendix B: Egyptian Pantheon": APPENDIX_LORE["Appendix B: Egyptian Pantheon"],
-    "Appendix B: Norse Pantheon": APPENDIX_LORE["Appendix B: Norse Pantheon"],
-    "Appendix C: Factions Overview": APPENDIX_LORE["Appendix C: Factions Overview"],
-    "Appendix C: Harpers": APPENDIX_LORE["Appendix C: Harpers"],
-    "Appendix C: Order of the Gauntlet": APPENDIX_LORE["Appendix C: Order of the Gauntlet"],
-    "Appendix C: Emerald Enclave": APPENDIX_LORE["Appendix C: Emerald Enclave"],
-    "Appendix C: Lords' Alliance": APPENDIX_LORE["Appendix C: Lords' Alliance"],
-    "Appendix C: Zhentarim": APPENDIX_LORE["Appendix C: Zhentarim"],
-    "Appendix D: Planes Overview": APPENDIX_LORE["Appendix D: Planes Overview"],
-    "Appendix D: The Material Plane": APPENDIX_LORE["Appendix D: The Material Plane"],
-    "Appendix D: Beyond the Material": APPENDIX_LORE["Appendix D: Beyond the Material"],
-    "Appendix D: Planar Travel": APPENDIX_LORE["Appendix D: Planar Travel"],
-    "Appendix D: Transitive Planes": APPENDIX_LORE["Appendix D: Transitive Planes"],
-    "Appendix D: Inner Planes": APPENDIX_LORE["Appendix D: Inner Planes"],
-    "Appendix D: Outer Planes": APPENDIX_LORE["Appendix D: Outer Planes"],
-    "Appendix D: Upper and Lower Planes": APPENDIX_LORE["Appendix D: Upper and Lower Planes"],
-    "Appendix D: Demiplanes": APPENDIX_LORE["Appendix D: Demiplanes"],
+    "Appendix B: Lantern Faith": {
+        "menu": "Road shrines, witness lamps, field mercy, and practical doctrine.",
+        "text": (
+            "The Lantern Faith is not a single centralized church. It is a family of road practices built around lamps, "
+            "names, triage, funeral memory, safe passage, and the belief that people deserve to be witnessed when systems fail."
+        ),
+    },
+    "Appendix B: Shrine-Lanterns": {
+        "menu": "Small lights that mark refuge, warning, and obligation.",
+        "text": "Shrine-lanterns are practical sacred objects: part signal, part promise, part emergency sign that someone still accepts responsibility here.",
+    },
+    "Appendix B: Oaths": {
+        "menu": "Public promises treated as load-bearing social structures.",
+        "text": "In Aethrune, an oath matters because institutions are unreliable. A sworn person becomes a structure others may lean on, for good or harm.",
+    },
+    "Appendix B: Funeral Names": {
+        "menu": "The practice of recording the dead so routes cannot erase them.",
+        "text": "Lantern caretakers record names after ambushes, floods, cave-ins, and failed crossings. A name kept properly is a small refusal of disappearance.",
+    },
+    "Appendix B: False Doctrine": {
+        "menu": "When faith language becomes a tool of control.",
+        "text": "The Quiet Choir often imitates comfort, confession, and order. The danger is not belief itself, but belief turned into obedience without consent.",
+    },
+    "Appendix C: Factions Overview": {
+        "menu": "The major powers competing over roads, records, claims, and truth.",
+        "text": (
+            "Aethrune's factions are defined by what they think should control the future: force, testimony, trade, repair, faith, or hidden authority. "
+            "Most are not pure villains or pure heroes, but each becomes dangerous when its answer is the only answer allowed."
+        ),
+    },
+    "Appendix C: Ashen Brand": {
+        "menu": "Route extortion, forged authority, and profitable fear.",
+        "text": "The Ashen Brand wins by making travelers believe the road already belongs to them. Their tools include raids, fake checkpoints, stolen papers, and selective mercy.",
+    },
+    "Appendix C: Quiet Choir": {
+        "menu": "Signal control, whispered doctrine, and obedience disguised as peace.",
+        "text": "The Quiet Choir wants old systems to answer a new voice. They prefer alignment over argument and call that silence harmony.",
+    },
+    "Appendix C: Free Operators": {
+        "menu": "Independent drivers, scouts, couriers, and troubleshooters.",
+        "text": "Free Operators keep routes alive without waiting for permission. Some are heroic, some are opportunists, and most know exactly what a delayed wagon costs.",
+    },
+    "Appendix C: Meridian Reclaimers": {
+        "menu": "Scholars and salvage crews trying to repair what can be trusted.",
+        "text": "Meridian Reclaimers believe broken infrastructure can be studied, stabilized, and reused. Their best members are careful; their worst confuse usefulness with innocence.",
+    },
+    "Appendix C: Iron Hollow Council": {
+        "menu": "Local leadership balancing fear, claims, trade, and survival.",
+        "text": "The Iron Hollow Council is less grand than necessary. It has to decide which crisis gets labor, guards, marks, and public trust before the next wagon fails to arrive.",
+    },
+    "Appendix C: Ironbound Guild": {
+        "menu": "Supply, tools, claims, and the hard politics of repair.",
+        "text": "The Ironbound Guild controls practical goods and skilled labor. That makes it essential in a crisis and tempting to anyone who wants leverage over the town.",
+    },
+    "Appendix C: Delvers' Exchange": {
+        "menu": "Claim records, salvage reports, and dangerous information.",
+        "text": "The Delvers' Exchange handles claims and discoveries. Its ledgers can settle disputes, start them, or reveal that someone has been mining the wrong truth.",
+    },
+    "Appendix D: Aethrune Cosmology": {
+        "menu": "How the world treats echoes, channels, relics, and system memory.",
+        "text": "Aethrune does not need distant named planes to feel strange. Its wonder comes from resonance, buried command logic, living memory, and old systems that still shape the present.",
+    },
+    "Appendix D: The Near World": {
+        "menu": "The lived surface of roads, towns, ruins, rivers, and weather.",
+        "text": "The Near World is ordinary life under extraordinary inheritance: markets, milehouses, shrines, flood channels, farms, towers, and the people trying to keep them working.",
+    },
+    "Appendix D: Resonance": {
+        "menu": "Patterned force that lets channeling, signals, and old records matter.",
+        "text": "Resonance is the setting's connective logic. Words, symbols, routes, tones, and titles can matter because the world still contains systems built to answer them.",
+    },
+    "Appendix D: Meridian Depths": {
+        "menu": "The old lower systems where infrastructure becomes mythic.",
+        "text": "The Meridian Depths are not one place but a category of buried spaces: vaults, drains, control rooms, sealed galleries, and machine-lit dark below the known map.",
+    },
+    "Appendix D: Echo Pockets": {
+        "menu": "Localized spaces where memory, route, and cause behave strangely.",
+        "text": "Echo pockets are small unstable zones where old events seem to repeat, answer, or resist being contradicted. Some are hazards; some are evidence.",
+    },
+    "Appendix D: Signal Paths": {
+        "menu": "Old routes for command, warning, and coordination.",
+        "text": "Signal paths once moved instructions across the Accord. Broken signal paths can still carry influence, especially when someone learns which phrases wake them.",
+    },
+    "Appendix E: SRD-Derived Mechanics": {
+        "menu": "A plain-language note on the current rules chassis.",
+        "text": (
+            "Roads That Remember currently keeps an SRD-derived d20 math base for character creation, checks, combat timing, conditions, and equipment. "
+            "The public presentation is being rethemed in phases so the story, setting, factions, and terminology belong to Aethrune."
+        ),
+    },
+    "Appendix E: Public Vocabulary": {
+        "menu": "A quick bridge from old mechanics language to Aethrune language.",
+        "text": (
+            "Preferred public terms include Guard, strike check, resist check, edge, strain, channeling, draught, script, relic, and marks. "
+            "Some internals still use legacy keys until the rules-presentation phase adds display-name adapters across combat, inventory, and saves."
+        ),
+    },
 }
 
 
 PLANNED_ACTS_LORE = {
     "Act Roadmap": {
-        "menu": "How the current campaign arc is structured inside the game.",
+        "menu": "How the Aethrune campaign arc is structured inside the game.",
         "text": (
-            "Act I, Ashes on the Triboar Trail, is the currently playable chapter and focuses on caravans, frontier pressure, and the Ashen Brand threat around Neverwinter and Phandalin.\n\n"
-            "Act II, Echoes Beneath the Sword Mountains, is framed as a deeper descent into buried danger and older stone. Act III, The Jewel and the Chasm, points back toward Neverwinter itself and the larger consequences of power, rebuilding, and urban unrest. Together the roadmap keeps the campaign anchored in official Sword Coast geography while giving the game room to escalate from local road trouble to regional stakes."
+            "Act I follows Greywake, the Emberway, Iron Hollow, and the Ashen Brand's attempt to turn route fear into rule. "
+            "Act II descends into the Vein of Glass and the Resonant Vaults, where the Quiet Choir tries to teach old systems a new voice. "
+            "Act III points toward the Meridian Depths and the question of whether a broken world should be restored, rewritten, or refused."
         ),
     }
 }
@@ -1214,13 +767,12 @@ PLANNED_ACTS_LORE = {
 TITLE_LORE_SECTIONS: tuple[tuple[str, LoreSection], ...] = (
     ("World & Locations", LOCATION_LORE),
     ("Classes", CLASS_LORE),
-    ("Races", RACE_LORE),
+    ("Peoples", RACE_LORE),
     ("Backgrounds", BACKGROUND_LORE),
     ("Core Abilities", ABILITY_LORE),
     ("Skills", SKILL_LORE),
     ("Features & Abilities", FEATURE_LORE),
     ("Appendices", APPENDIX_LORE),
-    ("Campaign Roadmap", PLANNED_ACTS_LORE),
 )
 
 
@@ -1252,16 +804,26 @@ CLASS_PRIMARY_STATS = {
 
 ABILITY_GAMEPLAY_NOTES = {
     "STR": "Used for melee force, Athletics, carrying capacity, and physical contests.",
-    "DEX": "Used for initiative, stealth, finesse or ranged accuracy, and many reflex-based saves.",
+    "DEX": "Used for initiative, stealth, finesse or ranged accuracy, and many reflex-based resist checks.",
     "CON": "Adds to hit points and helps endure poison, fatigue, and punishment.",
-    "INT": "Used for learned knowledge, investigation, and wizard spellcasting.",
-    "WIS": "Used for awareness, intuition, survival, medicine, and cleric or druid spellcasting.",
-    "CHA": "Used for social pressure, presence, deception, and bard, sorcerer, paladin, or warlock spellcasting.",
+    "INT": "Used for learned knowledge, investigation, and Scribe channeling.",
+    "WIS": "Used for awareness, intuition, wayfinding, medicine, and Channeler or Wildbinder channeling.",
+    "CHA": "Used for social pressure, presence, deception, and Resonant, Fluxborn, Oathbearer, or Bound channeling.",
 }
 
 
+def public_class_label(class_name: str) -> str:
+    return CLASS_PUBLIC_LABELS.get(class_name, class_name)
+
+
+def public_race_label(race_name: str) -> str:
+    return RACE_PUBLIC_LABELS.get(race_name, race_name)
+
+
 def ability_label(code: str) -> str:
-    return ABILITY_LABELS.get(code, code)
+    base = ABILITY_LABELS.get(code, code)
+    public = ABILITY_PUBLIC_LABELS.get(code)
+    return f"{public} ({base})" if public and public != base else base
 
 
 def format_bonus_list(bonuses: Mapping[str, int]) -> str:
@@ -1269,6 +831,8 @@ def format_bonus_list(bonuses: Mapping[str, int]) -> str:
 
 
 def format_feature_label(feature_id: str) -> str:
+    if feature_id in FEATURE_LORE and FEATURE_LORE[feature_id].get("label"):
+        return FEATURE_LORE[feature_id]["label"]
     label = feature_id.replace("_barbarian", "").replace("_monk", "")
     return label.replace("_", " ").title()
 
@@ -1282,9 +846,9 @@ def format_weapon_summary(class_name: str) -> str:
     weapon = CLASSES[class_name]["weapon"]
     attack_stat = weapon.ability
     if attack_stat == "FINESSE":
-        attack_stat = "Strength or Dexterity"
+        attack_stat = "Power or Agility"
     elif attack_stat == "SPELL":
-        attack_stat = "Spellcasting ability"
+        attack_stat = "channeling ability"
     else:
         attack_stat = ability_label(attack_stat)
     tags: list[str] = []
@@ -1303,13 +867,13 @@ def format_armor_summary(class_name: str) -> str:
     shield = "shield included" if CLASSES[class_name]["shield"] else "no shield"
     if armor is None:
         return f"Starts unarmored with {shield}."
-    armor_bits = [f"{armor.name} (base AC {armor.base_ac})", shield]
+    armor_bits = [f"{armor.name} (base Guard {armor.base_ac})", shield]
     if armor.heavy:
-        armor_bits.append("heavy armor")
+        armor_bits.append("heavy shell")
     elif armor.dex_cap is None:
-        armor_bits.append("full Dexterity modifier applies")
+        armor_bits.append("full Agility modifier applies")
     else:
-        armor_bits.append(f"Dexterity bonus capped at +{armor.dex_cap}")
+        armor_bits.append(f"Agility bonus capped at +{armor.dex_cap}")
     return ". ".join([armor_bits[0], ", ".join(armor_bits[1:])]) + "."
 
 
@@ -1321,19 +885,21 @@ def format_resource_summary(resources: Mapping[str, int]) -> str:
 
 def format_class_manual(class_name: str) -> str:
     details = CLASSES[class_name]
+    public_name = public_class_label(class_name)
     lines = [
         "Gameplay Manual",
+        f"Public role: {public_name}",
         f"Main stats: {', '.join(ability_label(stat) for stat in CLASS_PRIMARY_STATS.get(class_name, [])) or 'Flexible'}",
         f"Hit die: d{details['hit_die']}",
-        f"Saving throw proficiencies: {', '.join(ability_label(save) for save in details['saving_throws'])}",
+        f"Resist proficiencies: {', '.join(ability_label(save) for save in details['saving_throws'])}",
         f"Skill picks: choose {details['skill_picks']} from {', '.join(details['skill_choices'])}",
         f"Starting weapon: {format_weapon_summary(class_name)}",
-        f"Armor profile: {format_armor_summary(class_name)}",
+        f"Guard profile: {format_armor_summary(class_name)}",
         (
-            f"Spellcasting: uses {ability_label(details['spellcasting_ability'])}; "
+            f"Channeling: uses {ability_label(details['spellcasting_ability'])}; "
             f"starting resources {format_resource_summary(details['resources'])}."
             if details["spellcasting_ability"]
-            else f"Spellcasting: none at level 1. Starting resources: {format_resource_summary(details['resources'])}."
+            else f"Channeling: none at level 1. Starting resources: {format_resource_summary(details['resources'])}."
         ),
         "Starting abilities:",
     ]
@@ -1352,14 +918,15 @@ def format_race_manual(race_name: str) -> str:
     details = RACES[race_name]
     lines = [
         "Gameplay Manual",
+        f"Public people: {public_race_label(race_name)}",
         f"Ability bonuses: {format_bonus_list(details['bonuses'])}",
-        f"Automatic racial skills: {', '.join(details['skills']) if details['skills'] else 'None'}",
-        "Racial traits:",
+        f"Automatic people skills: {', '.join(details['skills']) if details['skills'] else 'None'}",
+        "People traits:",
     ]
     if details["features"]:
         lines.extend(format_feature_entry(feature_id, index) for index, feature_id in enumerate(details["features"], start=1))
     else:
-        lines.append("1. No extra racial traits beyond the listed ability increases.")
+        lines.append("1. No extra traits beyond the listed ability increases.")
     return "\n".join(lines)
 
 
@@ -1382,14 +949,14 @@ def format_background_manual(background_name: str) -> str:
 def format_ability_manual(ability_code: str) -> str:
     linked_skills = sorted(skill for skill, ability in SKILL_TO_ABILITY.items() if ability == ability_code)
     matching_classes = sorted(
-        class_name
+        public_class_label(class_name)
         for class_name, stats in CLASS_PRIMARY_STATS.items()
         if ability_code in stats
     )
     return "\n".join(
         [
             "Gameplay Manual",
-            f"Full name: {ability_label(ability_code)}",
+            f"Public name: {ability_label(ability_code)}",
             f"Linked skills: {', '.join(linked_skills) if linked_skills else 'None'}",
             f"Common main stat for: {', '.join(matching_classes) if matching_classes else 'No class listed as primary'}",
             f"Gameplay role: {ABILITY_GAMEPLAY_NOTES.get(ability_code, 'No note recorded yet.')}",
@@ -1399,15 +966,15 @@ def format_ability_manual(ability_code: str) -> str:
 
 def format_skill_manual(skill_name: str) -> str:
     linked_ability = SKILL_TO_ABILITY[skill_name]
-    class_sources = sorted(class_name for class_name, details in CLASSES.items() if skill_name in details["skill_choices"])
-    race_sources = sorted(race_name for race_name, details in RACES.items() if skill_name in details["skills"])
-    background_sources = sorted(name for name, details in BACKGROUNDS.items() if skill_name in details["skills"])
+    class_sources = sorted(public_class_label(class_name) for class_name, details in CLASSES.items() if skill_name in details["skill_choices"])
+    race_sources = sorted(public_race_label(race_name) for race_name, details in RACES.items() if skill_name in details["skills"])
+    background_sources = sorted(BACKGROUND_LORE.get(name, {}).get("label", name) for name, details in BACKGROUNDS.items() if skill_name in details["skills"])
     return "\n".join(
         [
             "Gameplay Manual",
             f"Governing ability: {ability_label(linked_ability)}",
             f"Class access: {', '.join(class_sources) if class_sources else 'No class grants selection access'}",
-            f"Automatic race access: {', '.join(race_sources) if race_sources else 'None'}",
+            f"Automatic people access: {', '.join(race_sources) if race_sources else 'None'}",
             f"Automatic background access: {', '.join(background_sources) if background_sources else 'None'}",
             f"Gameplay role: {SKILL_LORE[skill_name]['text']}",
         ]
@@ -1415,13 +982,13 @@ def format_skill_manual(skill_name: str) -> str:
 
 
 def format_feature_manual(feature_name: str) -> str:
-    class_sources = sorted(class_name for class_name, details in CLASSES.items() if feature_name in details["features"])
-    race_sources = sorted(race_name for race_name, details in RACES.items() if feature_name in details["features"])
+    class_sources = sorted(public_class_label(class_name) for class_name, details in CLASSES.items() if feature_name in details["features"])
+    race_sources = sorted(public_race_label(race_name) for race_name, details in RACES.items() if feature_name in details["features"])
     return "\n".join(
         [
             "Gameplay Manual",
             f"Used by classes: {', '.join(class_sources) if class_sources else 'None at level 1'}",
-            f"Used by races: {', '.join(race_sources) if race_sources else 'None'}",
+            f"Used by peoples: {', '.join(race_sources) if race_sources else 'None'}",
             f"Gameplay role: {FEATURE_LORE[feature_name]['text']}",
         ]
     )
@@ -1430,7 +997,7 @@ def format_feature_manual(feature_name: str) -> str:
 def manual_text_for_entry(section_title: str, entry_name: str) -> str:
     if section_title == "Classes" and entry_name in CLASSES:
         return format_class_manual(entry_name)
-    if section_title == "Races" and entry_name in RACES:
+    if section_title in {"Races", "Peoples"} and entry_name in RACES:
         return format_race_manual(entry_name)
     if section_title == "Backgrounds" and entry_name in BACKGROUNDS:
         return format_background_manual(entry_name)

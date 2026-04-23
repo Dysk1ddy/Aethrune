@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..content import BACKGROUNDS, CLASSES, RACES, build_character
+from ..data.story.public_terms import marks_label
 from ..items import get_item
 from ..data.story.camp_banter import CAMP_BANTERS
 from ..data.story.companions import COMPANION_PROFILES
@@ -35,7 +36,7 @@ class CampMixin:
         status = Table.grid(expand=True, padding=(0, 1))
         status.add_column(style=f"bold {rich_style_name('light_yellow')}", width=12)
         status.add_column(ratio=1)
-        status.add_row("Gold", f"{self.state.gold} gp")
+        status.add_row("Marks", marks_label(self.state.gold))
         status.add_row("Short rests", str(self.state.short_rests_remaining))
         status.add_row(
             "Carry",
@@ -47,7 +48,7 @@ class CampMixin:
         active_party = Group(
             *(
                 self.rich_from_ansi(
-                    f"{member.name}: {self.character_health_summary(member)} | AC {member.armor_class} | "
+                    f"{member.name}: {self.character_health_summary(member)} | Guard {member.armor_class} | "
                     f"{self.character_condition_summary(member)}"
                 )
                 for member in self.state.party_members()
@@ -144,7 +145,7 @@ class CampMixin:
                     "Rest and recovery",
                     "Talk to a companion",
                     "View journal",
-                    "Speak to the magic mirror (100 gp)",
+                    "Speak to the magic mirror (100 marks)",
                     "Break camp",
                 ]
                 if self.available_camp_banters():
@@ -231,10 +232,11 @@ class CampMixin:
         while True:
             dead_allies = self.dead_allies_in_company()
             revivify_ready = bool(dead_allies)
+            revivify_name = get_item("scroll_revivify").name
             revivify_text = (
-                "Use Scroll of Revivify on a dead ally"
+                f"Use {revivify_name} on a dead ally"
                 if self.state.inventory.get("scroll_revivify", 0) > 0
-                else "Use Scroll of Revivify on a dead ally (need one)"
+                else f"Use {revivify_name} on a dead ally (need one)"
             )
             short_rest_text = "Take a short rest"
             if self.state.short_rests_remaining <= 0:
@@ -260,12 +262,13 @@ class CampMixin:
 
     def use_scroll_of_revivify(self) -> bool:
         assert self.state is not None
+        item = get_item("scroll_revivify")
         dead_allies = self.dead_allies_in_company()
         if not dead_allies:
             self.say("No fallen ally in camp can be reached by revivify right now.")
             return False
         if self.state.inventory.get("scroll_revivify", 0) <= 0:
-            self.say("You need a Scroll of Revivify in the shared inventory before you can attempt the rite.")
+            self.say(f"You need {item.name} in the shared inventory before you can attempt the rite.")
             return False
         choice = self.choose(
             "Choose who you restore with the scroll.",
@@ -278,7 +281,6 @@ class CampMixin:
         if not self.remove_inventory_item("scroll_revivify"):
             self.say("The scroll is no longer in the shared inventory.")
             return False
-        item = get_item("scroll_revivify")
         target.dead = False
         target.current_hp = min(target.max_hp, max(1, item.revive_hp))
         target.stable = False
@@ -287,7 +289,7 @@ class CampMixin:
         target.temp_hp = 0
         target.conditions.clear()
         self.say(f"The scroll burns down in silver ash, and {target.name} returns to life at {target.current_hp} HP.")
-        self.add_journal(f"{target.name} was restored to life at camp with a Scroll of Revivify.")
+        self.add_journal(f"{target.name} was restored to life at camp with {item.name}.")
         return True
 
     def show_full_roster(self) -> None:
@@ -659,12 +661,12 @@ class CampMixin:
     def visit_magic_mirror(self) -> None:
         assert self.state is not None
         if self.state.gold < 100:
-            self.say("The mirror's silver frame hums once, then falls quiet. You need 100 gp for a full respec.")
+            self.say("The mirror's silver frame hums once, then falls quiet. You need 100 marks for a full respec.")
             return
         self.say(
             "The magic mirror shows not your reflection, but a dozen possible versions of the life you might have led."
         )
-        if not self.confirm("Spend 100 gp to fully respec your character?"):
+        if not self.confirm("Spend 100 marks to fully respec your character?"):
             return
         previous_level = self.state.player.level
         previous_name = self.state.player.name
@@ -693,5 +695,5 @@ class CampMixin:
         for next_level in range(2, previous_level + 1):
             self.level_up_character(self.state.player, next_level)
         self.state.player.current_hp = self.state.player.max_hp
-        self.add_journal(f"The camp mirror reshaped {previous_name}'s training and talents for 100 gp.")
+        self.add_journal(f"The camp mirror reshaped {previous_name}'s training and talents for 100 marks.")
         self.say(f"The mirror settles. {previous_name} steps away remade, still level {previous_level}.")

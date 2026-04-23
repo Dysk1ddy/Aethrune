@@ -14,6 +14,7 @@ try:
 except ImportError:  # pragma: no cover - Windows-only keyboard support
     msvcrt = None
 
+from ..data.story.public_terms import marks_label, skill_option_label
 from ..models import GameState
 from ..ui.colors import ANSI_RE, colorize, rarity_color, rich_style_name, strip_ansi
 from ..ui.rich_render import Columns, Console, Group, Live, Panel, RICH_AVAILABLE, Table, Text, box, render_rich_lines, text_from_ansi
@@ -31,7 +32,7 @@ class GameIOMixin:
         return self.style_text(amount, "light_green")
 
     def style_skill_label(self, skill: str) -> str:
-        return self.style_text(skill, "light_yellow")
+        return self.style_text(skill_option_label(skill), "light_yellow")
 
     def style_rarity_text(self, text: str, rarity: str) -> str:
         return self.style_text(text, rarity_color(rarity))
@@ -42,12 +43,13 @@ class GameIOMixin:
         name = subject.name
         if self.state is not None and subject is self.state.player:
             return self.style_text(name, "aqua")
+        public_name = self.public_character_name(name) if hasattr(self, "public_character_name") else name
         tags = set(getattr(subject, "tags", []))
         if "enemy" in tags:
-            return self.style_text(name, "light_red")
+            return self.style_text(public_name, "light_red")
         if getattr(subject, "companion_id", "") or "companion" in tags:
-            return self.style_text(name, "light_aqua")
-        return name
+            return self.style_text(public_name, "light_aqua")
+        return public_name
 
     def format_option_text(self, option: str) -> str:
         match = re.match(r"^(\[[^\]]+\])(\s*)(.*)$", option)
@@ -816,7 +818,9 @@ class GameIOMixin:
         return "Press on."
 
     def hud_short_name(self, member) -> str:
-        return str(getattr(member, "name", "")).split()[0] or str(getattr(member, "name", "Party"))
+        name = self.public_character_name(getattr(member, "name", "")) if hasattr(self, "public_character_name") else str(getattr(member, "name", ""))
+        fallback = self.public_character_name(getattr(member, "name", "Party")) if hasattr(self, "public_character_name") else str(getattr(member, "name", "Party"))
+        return name.split()[0] or fallback
 
     def hud_member_health_text(self, member) -> str:
         if getattr(member, "dead", False):
@@ -852,7 +856,7 @@ class GameIOMixin:
             f"{self.style_text('Objective:', 'light_yellow')} {objective}"
         )
         resources_line = (
-            f"{self.style_text('Resources:', 'light_yellow')} {self.state.gold} gp | "
+            f"{self.style_text('Resources:', 'light_yellow')} {marks_label(self.state.gold)} | "
             f"Short rests: {self.state.short_rests_remaining} | "
             f"Carry: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb"
         )

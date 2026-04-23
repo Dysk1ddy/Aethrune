@@ -34,7 +34,7 @@ class D20Outcome:
     def describe(self) -> str:
         if self.advantage_state == 0:
             return f"d20 -> {self.kept}"
-        mode = "adv" if self.advantage_state > 0 else "dis"
+        mode = "edge" if self.advantage_state > 0 else "strain"
         shown = "/".join(str(value) for value in self.rolls)
         return f"d20 ({mode}) -> {shown}, kept {self.kept}"
 

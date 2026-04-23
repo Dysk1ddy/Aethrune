@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from ..content import CLASS_LEVEL_PROGRESSION, CLASSES
+from ..data.story.public_terms import class_label, feature_label, marks_label, rules_text, skill_option_label
 from .magic_points import synchronize_magic_points
 from .spell_slots import synchronize_spell_slots
 from ..models import Character
@@ -79,7 +80,11 @@ class ProgressionMixin:
             actor.resources[resource_name] = actor.max_resources[resource_name]
         for bonus_name, amount in dict(progression.get("equipment_bonuses", {})).items():
             actor.equipment_bonuses[bonus_name] = actor.equipment_bonuses.get(bonus_name, 0) + amount
-        feature_lines = [f"{title}: {description}" for title, description in progression.get("features", [])]
+        feature_lines: list[str] = []
+        for index, (title, description) in enumerate(progression.get("features", [])):
+            feature_id = feature_ids[index] if index < len(feature_ids) else ""
+            public_title = feature_label(feature_id) if feature_id else rules_text(title)
+            feature_lines.append(f"{public_title}: {rules_text(description)}")
         if announce:
             for line in feature_lines:
                 self.say(line)
@@ -98,7 +103,7 @@ class ProgressionMixin:
             gained_parts.append(f"{xp} XP")
         if gold:
             self.state.gold += gold
-            gained_parts.append(f"{gold} gp")
+            gained_parts.append(marks_label(gold))
         if gained_parts:
             self.say(f"Reward gained for {reason}: {', '.join(gained_parts)}.")
             self.say(self.xp_progress_summary())
@@ -130,7 +135,7 @@ class ProgressionMixin:
             picked = self.auto_choose_level_up_skill(actor)
             summary_parts = [f"{actor.name} gains {hp_gain} max HP"]
             if picked is not None:
-                summary_parts.append(f"learns {picked}")
+                summary_parts.append(f"learns {skill_option_label(picked)}")
             self.say(", and ".join(summary_parts) + ".")
             for line in feature_lines:
                 self.say(f"{actor.name}: {line}")
@@ -154,17 +159,17 @@ class ProgressionMixin:
     def choose_level_up_skill(self, actor: Character) -> None:
         available = [skill for skill in CLASSES[actor.class_name]["skill_choices"] if skill not in actor.skill_proficiencies]
         if not available:
-            self.say(f"{actor.name} has no new class skills available to learn.")
+            self.say(f"{actor.name} has no new {class_label(actor.class_name)} skills available to learn.")
             return
         choice = self.choose(
-            f"Choose a new {actor.class_name} skill for {actor.name}.",
-            available,
+            f"Choose a new {class_label(actor.class_name)} skill for {actor.name}.",
+            [skill_option_label(skill) for skill in available],
             allow_meta=False,
         )
         picked = available[choice - 1]
         actor.skill_proficiencies.append(picked)
         actor.skill_proficiencies.sort()
-        self.say(f"{actor.name} learns {picked}.")
+        self.say(f"{actor.name} learns {skill_option_label(picked)}.")
 
     def auto_choose_level_up_skill(self, actor: Character) -> str | None:
         available = [skill for skill in CLASSES[actor.class_name]["skill_choices"] if skill not in actor.skill_proficiencies]
@@ -206,7 +211,7 @@ class ProgressionMixin:
         if announce:
             summary_parts = [f"{actor.name} gains {hp_gain} max HP"]
             if picked is not None:
-                summary_parts.append(f"learns {picked}")
+                summary_parts.append(f"learns {skill_option_label(picked)}")
             self.say(", and ".join(summary_parts) + ".")
             for line in feature_lines:
                 self.say(f"{actor.name}: {line}")

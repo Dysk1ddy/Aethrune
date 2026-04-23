@@ -10,10 +10,10 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
         giver="Mira Thann",
         location="Blackwake Crossing",
         summary=(
-            "Smoke near the river cut points to burned toll records, forged route authority, and an Ashen Brand supply cell operating closer to Neverwinter than expected."
+            "Smoke near the river cut points to burned toll records, forged route authority, and an Ashen Brand supply cell operating closer to Greywake than expected."
         ),
         objective="Investigate Blackwake Crossing, uncover the cache behind the forged papers, and decide what survives the floodgate chamber.",
-        turn_in="Report the Blackwake outcome to Mira in Neverwinter or carry the proof south toward Phandalin.",
+        turn_in="Report the Blackwake outcome to Mira in Greywake or carry the proof south toward Iron Hollow.",
         completion_flags=("blackwake_completed",),
         reward=QuestReward(
             xp=90,
@@ -22,7 +22,7 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
             flags={"quest_reward_blackwake_watch_backing": True},
         ),
         accepted_text=(
-            "The road to Phandalin can wait long enough to answer one ugly question: why are caravans vanishing before they even reach the wider High Road?"
+            "The road to Iron Hollow can wait long enough to answer one ugly question: why are caravans vanishing before they even reach the wider Emberway?"
         ),
         ready_text="The Blackwake cell has been resolved. The crossing's prisoners, ledgers, and cache damage will shape what the road hears next.",
         turn_in_text=(
@@ -60,11 +60,11 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
     "restore_barthen_supplies": QuestDefinition(
         quest_id="restore_barthen_supplies",
         title="Keep the Shelves Full",
-        giver="Barthen",
-        location="Barthen's Provisions",
-        summary="Barthen wants the raiders at Ashfall Watch driven off before Phandalin's simplest needs become luxuries.",
-        objective="Clear Ashfall Watch and report back to Barthen once the road is safer.",
-        turn_in="Return to Barthen's Provisions.",
+        giver="Hadrik",
+        location="Hadrik's Provisions",
+        summary="Hadrik wants the raiders at Ashfall Watch driven off before Iron Hollow's simplest needs become luxuries.",
+        objective="Clear Ashfall Watch and report back to Hadrik once the road is safer.",
+        turn_in="Return to Hadrik's Provisions.",
         completion_flags=("ashfall_watch_cleared",),
         reward=QuestReward(
             xp=75,
@@ -74,26 +74,26 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
             merchant_attitudes={"barthen_provisions": 20},
         ),
         accepted_text=(
-            "Barthen's request is practical to the point of pain: make the road safe enough that flour, bandages, "
+            "Hadrik's request is practical to the point of pain: make the road safe enough that flour, bandages, "
             "and lamp oil stop feeling rarer than courage."
         ),
-        ready_text="With Ashfall Watch broken, Barthen can finally start planning for steady wagons again.",
+        ready_text="With Ashfall Watch broken, Hadrik can finally start planning for steady wagons again.",
         turn_in_text=(
-            "Barthen laughs once under his breath, more tired than cheerful, then immediately starts talking about "
+            "Hadrik laughs once under his breath, more tired than cheerful, then immediately starts talking about "
             "what full shelves will mean for families who have been rationing every meal."
         ),
     ),
     "reopen_lionshield_trade": QuestDefinition(
         quest_id="reopen_lionshield_trade",
         title="Reopen the Trade Lane",
-        giver="Linene Graywind",
-        location="Lionshield Coster",
+        giver="Linene Ironward",
+        location="Ironbound Trading Post",
         summary=(
             "Linene needs proof that the Ashen Brand's chokehold is weakening so honest trade can move without paying "
             "for fear on both ends."
         ),
-        objective="Break Ashfall Watch and return to Linene Graywind with the news.",
-        turn_in="Return to Linene Graywind at the Lionshield trading post.",
+        objective="Break Ashfall Watch and return to Linene Ironward with the news.",
+        turn_in="Return to Linene Ironward at the Ironbound trading post.",
         completion_flags=("ashfall_watch_cleared",),
         reward=QuestReward(
             xp=85,
@@ -106,7 +106,7 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
             "Linene frames it in ledgers and steel, but the meaning is simple enough: if the watchtower stands, "
             "every honest caravan keeps bleeding coin to men with ash on their badges."
         ),
-        ready_text="Ashfall Watch is down. Linene Graywind should know the trade lane finally has room to recover.",
+        ready_text="Ashfall Watch is down. Linene Ironward should know the trade lane finally has room to recover.",
         turn_in_text=(
             "Linene studies the soot on your gear, nods once, and starts reordering tomorrow in her head before you "
             "finish speaking."
@@ -115,14 +115,14 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
     "marked_keg_investigation": QuestDefinition(
         quest_id="marked_keg_investigation",
         title="The Marked Keg",
-        giver="Mara Stonehill",
-        location="Stonehill Inn",
+        giver="Mara Ashlamp",
+        location="Ashlamp Inn",
         summary=(
-            "Mara Stonehill spotted a chalk-marked keg and wants the hand behind it named before Stonehill's common room "
+            "Mara Ashlamp spotted a chalk-marked keg and wants the hand behind it named before the Ashlamp's common room "
             "turns fear into entertainment for the wrong people."
         ),
-        objective="Identify who marked the keg at Stonehill Inn and report back to Mara Stonehill.",
-        turn_in="Return to Mara Stonehill in the Stonehill Inn common room.",
+        objective="Identify who marked the keg at Ashlamp Inn and report back to Mara Ashlamp.",
+        turn_in="Return to Mara Ashlamp in the Ashlamp Inn common room.",
         completion_flags=("marked_keg_resolved",),
         reward=QuestReward(
             xp=70,
@@ -134,7 +134,7 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
             "Mara does not ask for heroics. She asks for judgment fast enough to catch the liar before the first chair "
             "starts pretending it flew on its own."
         ),
-        ready_text="You know who marked the keg. Mara Stonehill is waiting for the name and the reason.",
+        ready_text="You know who marked the keg. Mara Ashlamp is waiting for the name and the reason.",
         turn_in_text=(
             "Mara hears you out without wasting a blink. By the time you finish, the culprit is no longer a rumor in the "
             "room but a problem with a face, a motive, and no more cover."
@@ -144,13 +144,13 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
         quest_id="songs_for_the_missing",
         title="Songs for the Missing",
         giver="Sella Quill",
-        location="Stonehill Inn",
+        location="Ashlamp Inn",
         summary=(
-            "Sella Quill wants three true details from Stonehill's frightened regulars so the missing stop shrinking into "
+            "Sella Quill wants three true details from the Ashlamp's frightened regulars so the missing stop shrinking into "
             "numbers, warnings, and muttered road talk."
         ),
         objective="Bring Sella Quill three true details worth carrying into song.",
-        turn_in="Return to Sella Quill in the Stonehill Inn common room.",
+        turn_in="Return to Sella Quill in the Ashlamp Inn common room.",
         completion_flags=(
             "songs_for_missing_jerek_detail",
             "songs_for_missing_tam_detail",
@@ -176,13 +176,13 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
         quest_id="quiet_table_sharp_knives",
         title="Quiet Table, Sharp Knives",
         giver="Nera Doss",
-        location="Stonehill Inn",
+        location="Ashlamp Inn",
         summary=(
-            "Nera Doss thinks one quiet Stonehill table is buying arguments, editing messages, and steering the common room "
+            "Nera Doss thinks one quiet Ashlamp table is buying arguments, editing messages, and steering the common room "
             "toward useful violence for the Ashen Brand."
         ),
-        objective="Expose the quiet-table scheme in Stonehill Inn and report back to Nera Doss.",
-        turn_in="Return to Nera Doss in the Stonehill Inn common room.",
+        objective="Expose the quiet-table scheme in Ashlamp Inn and report back to Nera Doss.",
+        turn_in="Return to Nera Doss in the Ashlamp Inn common room.",
         completion_flags=("quiet_table_knives_resolved",),
         reward=QuestReward(
             xp=80,
@@ -192,7 +192,7 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
         ),
         accepted_text=(
             "Nera has no patience for melodrama. She has seen what one bought lie can do to a frightened room, and she would "
-            "prefer Stonehill not become another message delivered in bruises."
+            "prefer the Ashlamp not become another message delivered in bruises."
         ),
         ready_text="The quiet-table scheme has been broken open. Nera Doss is waiting to hear exactly how.",
         turn_in_text=(
@@ -204,12 +204,12 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
         quest_id="find_dain_harl",
         title="Bring Back Dain's Name",
         giver="Jerek Harl",
-        location="Stonehill Inn",
+        location="Ashlamp Inn",
         summary=(
             "Jerek Harl wants truth about his brother Dain, one of the east-road workers swallowed by the crews taken toward Ashfall Watch."
         ),
         objective="Search Ashfall Watch for Dain Harl or proof of his fate, then return to Jerek Harl.",
-        turn_in="Return to Jerek Harl in the Stonehill Inn common room.",
+        turn_in="Return to Jerek Harl in the Ashlamp Inn common room.",
         completion_flags=("dain_harl_truth_found",),
         reward=QuestReward(
             xp=85,
@@ -231,10 +231,10 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
         giver="Sabra Kestrel",
         location="Oren Vale's Contract House",
         summary=(
-            "Sabra Kestrel has found one Neverwinter manifest corrected by three different liars. She wants the room's cleanest tells named before the forged line reaches the High Road."
+            "Sabra Kestrel has found one Greywake manifest corrected by three different liars. She wants the room's cleanest tells named before the forged line reaches the Emberway."
         ),
         objective="Cross-check Oren, Vessa, and Garren's truths about the forged manifest line, then return to Sabra Kestrel.",
-        turn_in="Return to Sabra Kestrel at Oren Vale's contract house in Neverwinter.",
+        turn_in="Return to Sabra Kestrel at Oren Vale's contract house in Greywake.",
         completion_flags=("false_manifest_oren_detail", "false_manifest_vessa_detail", "false_manifest_garren_detail"),
         reward=QuestReward(
             xp=75,
@@ -252,14 +252,14 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
     ),
     "silence_old_owl_well": QuestDefinition(
         quest_id="silence_old_owl_well",
-        title="Silence Old Owl Well",
-        giver="Halia Thornton",
-        location="Miner's Exchange",
+        title="Silence Blackglass Well",
+        giver="Halia Vey",
+        location="Delvers' Exchange",
         summary=(
-            "Halia Thornton wants the grave-salvage operation at Old Owl Well destroyed before more prospectors and exchange crews vanish into its dig lines."
+            "Halia Vey wants the grave-salvage operation at Blackglass Well destroyed before more prospectors and exchange crews vanish into its dig lines."
         ),
-        objective="Break the operation at Old Owl Well and return to Halia Thornton.",
-        turn_in="Return to Halia Thornton at the Miner's Exchange.",
+        objective="Break the operation at Blackglass Well and return to Halia Vey.",
+        turn_in="Return to Halia Vey at the Delvers' Exchange.",
         completion_flags=("old_owl_well_cleared",),
         reward=QuestReward(
             xp=100,
@@ -268,23 +268,23 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
             flags={"quest_reward_gravequiet_contacts": True},
         ),
         accepted_text=(
-            "Halia phrases it like a ledger problem, but the meaning is simple enough: Old Owl Well is swallowing people, and every day it stays active makes the town smaller."
+            "Halia phrases it like a ledger problem, but the meaning is simple enough: Blackglass Well is swallowing people, and every day it stays active makes the town smaller."
         ),
-        ready_text="Old Owl Well is quiet. Halia Thornton should hear the grave-salvage line has been broken.",
+        ready_text="Blackglass Well is quiet. Halia Vey should hear the grave-salvage line has been broken.",
         turn_in_text=(
             "Halia's expression barely changes, but the room around her seems to unclench all the same. Even polished pragmatism has room for relief when missing crews stop becoming permanent."
         ),
     ),
     "break_wyvern_tor_raiders": QuestDefinition(
         quest_id="break_wyvern_tor_raiders",
-        title="Break the Wyvern Tor Raiders",
-        giver="Daran Edermath",
-        location="Edermath Orchard",
+        title="Break the Red Mesa Raiders",
+        giver="Daran Orchard",
+        location="Orchard Wall",
         summary=(
-            "Daran Edermath wants the raiders at Wyvern Tor scattered before they keep turning the eastern hills into hunting ground for scouts, drovers, and herders."
+            "Daran Orchard wants the raiders at Red Mesa Hold scattered before they keep turning the eastern hills into hunting ground for scouts, drovers, and herders."
         ),
-        objective="Clear Wyvern Tor and report back to Daran Edermath.",
-        turn_in="Return to Daran Edermath at the orchard.",
+        objective="Clear Red Mesa Hold and report back to Daran Orchard.",
+        turn_in="Return to Daran Orchard at the Orchard Wall.",
         completion_flags=("wyvern_tor_cleared",),
         reward=QuestReward(
             xp=100,
@@ -293,9 +293,9 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
             flags={"quest_reward_edermath_scout_network": True},
         ),
         accepted_text=(
-            "Daran does not romanticize the work. Wyvern Tor is a practical threat on practical roads, and he would prefer the town's scouts stop dying to prove it."
+            "Daran does not romanticize the work. Red Mesa Hold is a practical threat on practical roads, and he would prefer the town's scouts stop dying to prove it."
         ),
-        ready_text="Wyvern Tor is clear. Daran Edermath should know the high-ground raiders are gone.",
+        ready_text="Red Mesa Hold is clear. Daran Orchard should know the high-ground raiders are gone.",
         turn_in_text=(
             "Daran nods once, the kind of nod old soldiers reserve for work done cleanly. The hills will still be dangerous tomorrow, but at least now they will be honestly dangerous."
         ),
@@ -328,7 +328,7 @@ ACT_1_QUESTS: dict[str, QuestDefinition] = {
     "elira_faith_under_ash": QuestDefinition(
         quest_id="elira_faith_under_ash",
         title="Faith Under Ash",
-        giver="Elira Dawnmantle",
+        giver="Elira Lanternward",
         location="Wherever mercy has to stand under pressure",
         summary=(
             "Elira wants to see what kind of justice survives once the Ashen Brand is beaten badly enough to beg. She is asking about you as much as about them."

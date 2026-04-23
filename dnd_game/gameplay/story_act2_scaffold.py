@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from ..content import create_enemy, create_irielle_ashwake, create_nim_ardentglass
 from .encounter import Encounter
@@ -11,9 +11,9 @@ class StoryAct2ScaffoldMixin:
         "woodland_survey_cleared",
     )
     ACT2_BRANCH_LABELS = {
-        "agatha_truth_secured": "Conyberry and Agatha's circuit",
+        "agatha_truth_secured": "Hushfen and the Pale Circuit",
         "stonehollow_dig_cleared": "Stonehollow Dig",
-        "woodland_survey_cleared": "Neverwinter Wood survey line",
+        "woodland_survey_cleared": "Greywake survey line",
     }
     ACT2_METRIC_NAMES = {
         "act2_town_stability": "Town Stability",
@@ -31,14 +31,14 @@ class StoryAct2ScaffoldMixin:
         "act2_whisper_pressure": ("Quieted", "Faint", "Present", "Growing", "Severe", "Overwhelming"),
     }
     ACT2_SPONSOR_LABELS = {
-        "exchange": "Halia's Exchange bloc",
-        "lionshield": "Linene's disciplined supply line",
-        "wardens": "Elira and Daran's cautious wardens",
+        "exchange": "Halia Vey's Exchange bloc",
+        "lionshield": "Linene Ironward's disciplined supply line",
+        "wardens": "Elira Lanternward and Daran Orchard's cautious wardens",
         "council": "a divided but cooperative council",
     }
     ACT2_FORGE_SUBROUTES = (
         ("forge_choir_pit_silenced", "silenced the choir pit"),
-        ("forge_pact_rhythm_found", "recovered the Pact anvil's rhythm"),
+        ("forge_pact_rhythm_found", "recovered the Meridian Compact anvil's rhythm"),
         ("forge_shard_channels_disrupted", "shattered the shard channels"),
     )
     ACT2_MILESTONE_GEAR_IDS = (
@@ -155,15 +155,15 @@ class StoryAct2ScaffoldMixin:
         if not cleared and not self.state.flags.get("forge_threshold_crossed") and not self.state.flags.get("caldra_defeated"):
             return None
         if len(cleared) == 3:
-            line = f"Inside the Forge, you {self.act2_join_phrases(cleared)} before Caldra could stabilize any of them."
+            line = f"Inside the Meridian Forge, you {self.act2_join_phrases(cleared)} before Caldra could stabilize any of them."
         elif len(cleared) == 2:
-            line = f"Inside the Forge, you {self.act2_join_phrases(cleared)} before the final fight, but one live subroute stayed dangerous to the end."
+            line = f"Inside the Meridian Forge, you {self.act2_join_phrases(cleared)} before the final fight, but one live subroute stayed dangerous to the end."
         elif len(cleared) == 1:
-            line = f"Inside the Forge, you only {cleared[0]} before confronting Caldra directly."
+            line = f"Inside the Meridian Forge, you only {cleared[0]} before confronting Caldra directly."
         elif self.state.flags.get("caldra_defeated"):
-            line = "Caldra fell before the Forge's side routes were fully broken, which left the chamber dangerous right up to the end."
+            line = "Caldra fell before the Meridian Forge's side routes were fully broken, which left the chamber dangerous right up to the end."
         else:
-            line = "The Forge threshold is breached, but most of its side routes are still live."
+            line = "The Meridian Forge threshold is breached, but most of its side routes are still live."
         if self.state.flags.get("forge_lens_mapped") and not self.state.flags.get("caldra_defeated"):
             return f"{line} The resonance lens is already mapped from inside."
         if self.state.flags.get("forge_lens_mapped") and self.state.flags.get("caldra_defeated"):
@@ -178,13 +178,13 @@ class StoryAct2ScaffoldMixin:
         if not route_state and not lens_state and not cleared:
             return None
         if route_state == "mastered" and cleared:
-            line = f"Act 3 inherits a Forge where you already {self.act2_join_phrases(cleared)}."
+            line = f"Act 3 inherits a Meridian Forge where you already {self.act2_join_phrases(cleared)}."
         elif route_state == "broken" and cleared:
-            line = f"Act 3 inherits a Forge where you already {self.act2_join_phrases(cleared)}, but one forge line still escaped a clean ruin."
+            line = f"Act 3 inherits a Meridian Forge where you already {self.act2_join_phrases(cleared)}, but one forge line still escaped a clean ruin."
         elif route_state == "partial" and cleared:
-            line = f"Act 3 only inherits one clean break in the Forge: you {cleared[0]}."
+            line = f"Act 3 only inherits one clean break in the Meridian Forge: you {cleared[0]}."
         else:
-            line = "Act 3 inherits the Forge mostly as aftermath rather than as a fully read instrument."
+            line = "Act 3 inherits the Meridian Forge mostly as aftermath rather than as a fully read instrument."
         if lens_state == "mapped":
             return f"{line} The mapped resonance lens gives later scenes a reliable read on how Caldra held witness, ritual, and shard pressure together."
         if lens_state == "shattered_blind":
@@ -199,7 +199,7 @@ class StoryAct2ScaffoldMixin:
         lens_state = str(self.state.flags.get("act3_forge_lens_state", "shattered_blind"))
         if sponsor == "exchange":
             if claims_state == "secured":
-                line = "Halia's Exchange comes out of the cave with the fastest ledgers and the ugliest leverage over what Wave Echo becomes next."
+                line = "Halia Vey's Exchange bloc comes out of the cave with the fastest ledgers and the ugliest leverage over what Resonant Vaults becomes next."
             elif claims_state == "contested":
                 line = "Halia still has crews, cash, and hard proof in the field, but every claim she makes now has witnesses arguing the moral cost."
             else:
@@ -207,23 +207,23 @@ class StoryAct2ScaffoldMixin:
             if lens_state == "mapped":
                 return f"{line} Her people are already talking about the mapped lens lines like inventory."
             if forge_state in {"partial", "direct"}:
-                return f"{line} That ambition is still aimed at a forge nobody fully unraveled."
+                return f"{line} That ambition is still aimed at a Meridian Forge nobody fully unraveled."
             return f"{line} Even the Exchange cannot pretend the place is safe to own cleanly."
         if sponsor == "lionshield":
             if claims_state == "secured":
-                line = "Linene's supply line ends the act controlling the practical routes, which steadies caravans and turns Wave Echo into guarded infrastructure."
+                line = "Linene Ironward's supply line ends the act controlling the practical routes, which steadies caravans and turns Resonant Vaults into guarded infrastructure."
             elif claims_state == "contested":
                 line = "Linene can keep people fed and moving, but not settle whose version of the route gets called legitimate."
             else:
-                line = "Lionshield discipline keeps some wagons moving, but not enough to make the claims war feel governed."
+                line = "Ironbound discipline keeps some wagons moving, but not enough to make the claims war feel governed."
             if lens_state == "mapped":
                 return f"{line} She starts treating the mapped lens lanes like hazardous cargo corridors that must stay locked down."
             if forge_state in {"partial", "direct"}:
-                return f"{line} That order still stops at a forge whose internals were never fully tamed."
+                return f"{line} That order still stops at a Meridian Forge whose internals were never fully tamed."
             return f"{line} It is stability under quarantine, not a clean victory."
         if sponsor == "wardens":
             if claims_state == "secured":
-                line = "Elira and Daran come out with the strongest moral authority over the deepest routework, even if profit has to wait behind burial, warding, and witness."
+                line = "Elira Lanternward and Daran Orchard come out with the strongest moral authority over the deepest routework, even if profit has to wait behind burial, warding, and witness."
             elif claims_state == "contested":
                 line = "The wardens are trusted by the people who saw the worst of the cave, but not obeyed by everyone still counting ore and salvage."
             else:
@@ -231,7 +231,7 @@ class StoryAct2ScaffoldMixin:
             if lens_state == "mapped":
                 return f"{line} The mapped lens gives them a real case for quarantine instead of sounding like superstition."
             if forge_state in {"partial", "direct"}:
-                return f"{line} Their warnings only sharpen because some of the forge still had to be left half-read."
+                return f"{line} Their warnings only sharpen because some of the Meridian Forge still had to be left half-read."
             return f"{line} Their victory reads as containment first and ownership a distant second."
         if claims_state == "secured":
             line = "The council stays barely cooperative because no single bloc can claim the whole win without the others."
@@ -242,8 +242,8 @@ class StoryAct2ScaffoldMixin:
         if lens_state == "mapped":
             return f"{line} The mapped resonance lens keeps at least one argument anchored in something concrete."
         if forge_state in {"partial", "direct"}:
-            return f"{line} None of them get to speak as if the forge was ever fully understood."
-        return f"{line} The forge damage keeps any one faction from sounding fully triumphant."
+            return f"{line} None of them get to speak as if the Meridian Forge was ever fully understood."
+        return f"{line} The Meridian Forge's damage keeps any one faction from sounding fully triumphant."
 
     def act2_companion_digest_line(self) -> str | None:
         assert self.state is not None
@@ -357,7 +357,7 @@ class StoryAct2ScaffoldMixin:
             if not self.state.flags.get("act2_neverwinter_witness_callback_recorded"):
                 self.state.flags["act2_neverwinter_witness_callback_recorded"] = True
                 self.add_journal(
-                    "Neverwinter callback: Oren, Sabra, Vessa, and Garren kept pressure on the false-manifest circuit, giving Act 2's route claims a stronger city-side witness line."
+                    "Greywake callback: Oren, Sabra, Vessa, and Garren kept pressure on the false-manifest circuit, giving Act 2's route claims a stronger city-side witness line."
                 )
         if self.state.flags.get("blackwake_sereth_fate") != "escaped":
             return
@@ -366,7 +366,7 @@ class StoryAct2ScaffoldMixin:
             return
         self.state.flags["act2_sereth_callback_recorded"] = True
         self.add_journal(
-            "Blackwake consequence: Sereth Vane escaped into Act 2's route war; false permits and quiet cargo claims may surface again around Wave Echo."
+            "Blackwake consequence: Sereth Vane escaped into Act 2's route war; false permits and quiet cargo claims may surface again around Resonant Vaults."
         )
 
     def act2_late_route_hub_recap(self) -> str | None:
@@ -431,30 +431,30 @@ class StoryAct2ScaffoldMixin:
         if self.state.flags.get("nim_countermeasure_notes"):
             route_parts.append("Nim's Stonehollow countermeasure notes survived")
         if self.state.flags.get("prospect_markers_decoded") or self.state.flags.get("prospect_route_cache_read"):
-            route_parts.append("Broken Prospect exposed the deeper Pact approach")
+            route_parts.append("Broken Prospect exposed the deeper Meridian Compact approach")
         if self.state.flags.get("wave_echo_outer_cleared"):
             route_parts.append("the outer galleries now hold as a real expedition line")
         elif self.state.flags.get("outer_survey_marks_read") or self.state.flags.get("outer_false_echo_named"):
             route_parts.append("the outer galleries are starting to read cleanly")
         if self.state.flags.get("black_lake_crossed"):
-            route_parts.append("the Black Lake threshold is open")
+            route_parts.append("the Blackglass threshold is open")
         elif self.state.flags.get("black_lake_shrine_purified") or self.state.flags.get("black_lake_barracks_raided"):
-            route_parts.append("the Black Lake crossing is being prepared from multiple angles")
+            route_parts.append("the Blackglass crossing is being prepared from multiple angles")
         if self.state.flags.get("forge_lens_mapped") and not self.state.flags.get("caldra_defeated"):
-            route_parts.append("the Forge's resonance lens has been mapped from inside")
+            route_parts.append("the Meridian Forge's resonance lens has been mapped from inside")
         elif self.state.flags.get("forge_threshold_crossed") and not self.state.flags.get("caldra_defeated"):
-            route_parts.append("the Forge threshold is under direct pressure")
+            route_parts.append("the Meridian Forge threshold is under direct pressure")
         elif self.state.flags.get("caldra_defeated"):
-            route_parts.append("the Forge lens has been broken")
+            route_parts.append("the Meridian Forge lens has been broken")
         if route_parts:
             lines.append(f"Route intelligence: {'; '.join(route_parts)}.")
         if self.state.flags.get("act2_sereth_shadow_active"):
             lines.append(
-                "Blackwake callback: Sereth Vane escaped the crossing and remains a live route-corruption thread around Wave Echo supply claims."
+                "Blackwake callback: Sereth Vane escaped the crossing and remains a live route-corruption thread around Resonant Vaults supply claims."
             )
         if self.state.flags.get("act2_neverwinter_witness_pressure_active"):
             lines.append(
-                "Neverwinter politics: Oren, Sabra, Vessa, and Garren are backing a city-side witness line against false manifests and copied road authority."
+                "Greywake politics: Oren, Sabra, Vessa, and Garren are backing a city-side witness line against false manifests and copied road authority."
             )
         forge_route_line = self.act2_forge_route_summary_line()
         if forge_route_line is not None:
@@ -472,7 +472,7 @@ class StoryAct2ScaffoldMixin:
             if self.state.flags.get("south_adit_counter_cadence_learned"):
                 choir_parts.append("Irielle's augur notes carry a counter-cadence into the forge route")
             if self.state.flags.get("black_lake_barracks_orders_taken"):
-                choir_parts.append("barracks orders confirm the Forge-side reserve plan")
+                choir_parts.append("barracks orders confirm the Meridian Forge reserve plan")
             lines.append(f"Choir intelligence: {'; '.join(choir_parts)}.")
 
         return lines
@@ -521,7 +521,7 @@ class StoryAct2ScaffoldMixin:
         if banner:
             self.banner("Act II Pressures")
         self.say(
-            "Act 2 now tracks how well Phandalin holds together, how much of the expedition map your side controls, and how loudly the mine's wrong music is leaking into the campaign."
+            "Act 2 now tracks how well Iron Hollow holds together, how much of the expedition map your side controls, and how loudly the mine's wrong music is leaking into the campaign."
         )
         for line in self.act2_campaign_snapshot_lines():
             self.output_fn(line)
@@ -550,17 +550,17 @@ class StoryAct2ScaffoldMixin:
             neglected = unresolved[0]
             self.state.flags["act2_neglected_lead"] = neglected
             self.add_journal(
-                f"The party let {self.ACT2_BRANCH_LABELS[neglected]} drift while Phandalin braced for sabotage. The consequences landed before the lead could be recovered."
+                f"The party let {self.ACT2_BRANCH_LABELS[neglected]} drift while Iron Hollow braced for sabotage. The consequences landed before the lead could be recovered."
             )
             if neglected == "agatha_truth_secured":
                 self.state.flags["agatha_circuit_defiled"] = True
                 self.say(
-                    "Without Agatha's warning in hand, the Quiet Choir gets another night to work unchallenged around Conyberry. The town walks into the midpoint with less truth than it needed."
+                    "Without the Pale Witness's warning in hand, the Quiet Choir gets another night to work unchallenged around Hushfen. The town walks into the midpoint with less truth than it needed."
                 )
                 self.act2_shift_metric(
                     "act2_whisper_pressure",
                     1,
-                    "Agatha's circuit was left unanswered long enough for the Choir to stain it",
+                    "the Pale Circuit was left unanswered long enough for the Choir to stain it",
                 )
                 self.act2_shift_metric(
                     "act2_route_control",
@@ -575,7 +575,7 @@ class StoryAct2ScaffoldMixin:
                 self.act2_shift_metric(
                     "act2_town_stability",
                     -1,
-                    "the unbroken wood line fed panic straight into Phandalin",
+                    "the unbroken wood line fed panic straight into Iron Hollow",
                 )
                 self.act2_shift_metric(
                     "act2_route_control",
@@ -774,7 +774,7 @@ class StoryAct2ScaffoldMixin:
                 self.state.flags["stonehollow_lane_forced"] = True
         else:
             self.player_action("Follow the echoing wards and find the scholars before the monsters do.")
-            if self.skill_check(self.state.player, "Arcana", 13, context="to track the scholars through residual Pact warding"):
+            if self.skill_check(self.state.player, "Arcana", 13, context="to track the scholars through residual Meridian Compact warding"):
                 hero_bonus += 2
                 enemies[-1].current_hp = max(1, enemies[-1].current_hp - 3)
                 self.state.flags["stonehollow_ward_path_read"] = True
@@ -799,13 +799,13 @@ class StoryAct2ScaffoldMixin:
         if not self.find_companion("Nim Ardentglass"):
             self.speaker(
                 "Nim Ardentglass",
-                "If you're the reason I'm not dying under my own survey notes, I should probably stop pretending I can solve Wave Echo by myself."
+                "If you're the reason I'm not dying under my own survey notes, I should probably stop pretending I can solve Resonant Vaults by myself."
             )
             recruit = self.scenario_choice(
                 "Nim gathers his satchel and looks between you and the ruined lane.",
                 [
                     self.quoted_option("RECRUIT", "Then walk with us and keep the maps honest."),
-                    self.quoted_option("SAFE", "Get back to Phandalin and recover. We can talk there."),
+                    self.quoted_option("SAFE", "Get back to Iron Hollow and recover. We can talk there."),
                 ],
                 allow_meta=False,
             )
@@ -843,7 +843,7 @@ class StoryAct2ScaffoldMixin:
                 self.act2_shift_metric(
                     "act2_whisper_pressure",
                     -1,
-                    "reading the Pact warding correctly keeps one more part of the cave from teaching through panic",
+                    "reading the Meridian Compact warding correctly keeps one more part of the cave from teaching through panic",
                 )
         self.state.current_scene = "act2_expedition_hub"
 
@@ -853,7 +853,7 @@ class StoryAct2ScaffoldMixin:
         self.banner("Sabotage Night")
         self.say(
             "With at least two routes clarified, the town finally tries to hold a real claims meeting. That is when the Quiet Choir moves openly. "
-            "Lanterns go out, storehouses catch in the wrong places, and somebody inside Phandalin is trying to turn panic into cover for a deeper strike.",
+            "Lanterns go out, storehouses catch in the wrong places, and somebody inside Iron Hollow is trying to turn panic into cover for a deeper strike.",
             typed=True,
         )
         neglected = str(self.state.flags.get("act2_neglected_lead", "none"))
@@ -871,18 +871,18 @@ class StoryAct2ScaffoldMixin:
                 self.state.player,
                 "reeling",
                 1,
-                source="walking blind into the riot without Agatha's full warning",
+                source="walking blind into the riot without the Pale Witness's full warning",
             )
         if self.state.flags.get("conyberry_chapel_relit") and not self.state.flags.get("conyberry_chapel_pressure_payoff_applied"):
             self.state.flags["conyberry_chapel_pressure_payoff_applied"] = True
             self.state.flags["conyberry_chapel_sabotage_payoff"] = True
             self.say(
-                "Pilgrims from Conyberry arrive with lamp discipline instead of rumor. The first fires of sabotage still start, but fewer frightened people turn them into a chorus."
+                "Pilgrims from Hushfen arrive with lamp discipline instead of rumor. The first fires of sabotage still start, but fewer frightened people turn them into a chorus."
             )
             self.act2_shift_metric(
                 "act2_whisper_pressure",
                 -1,
-                "the relit Chapel of Lamps teaches Phandalin's frightened lanes how to move without joining the Choir's panic",
+                "the relit Chapel of Lamps teaches Iron Hollow's frightened lanes how to move without joining the Choir's panic",
             )
         self.run_dialogue_input("act2_midpoint_counsel", max_entries=2)
         choice = self.scenario_choice(
@@ -926,7 +926,7 @@ class StoryAct2ScaffoldMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Midpoint: Sabotage Night",
-                description="The Quiet Choir's local strike team tries to turn Phandalin's first united plan into a riot and a fire.",
+                description="The Quiet Choir's local strike team tries to turn Iron Hollow's first united plan into a riot and a fire.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=True,
@@ -936,7 +936,7 @@ class StoryAct2ScaffoldMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("Phandalin loses its nerve and the expedition fractures before it can truly begin.")
+            self.handle_defeat("Iron Hollow loses its nerve and the expedition fractures before it can truly begin.")
             return
         if outcome == "fled":
             self.state.current_scene = "act2_expedition_hub"
@@ -969,7 +969,7 @@ class StoryAct2ScaffoldMixin:
             self.act2_shift_metric(
                 "act2_town_stability",
                 2,
-                "saving the vulnerable first keeps Phandalin from remembering the mine as a thing that immediately demanded sacrifices",
+                "saving the vulnerable first keeps Iron Hollow from remembering the mine as a thing that immediately demanded sacrifices",
             )
             self.act2_shift_metric(
                 "act2_whisper_pressure",
@@ -1000,7 +1000,7 @@ class StoryAct2ScaffoldMixin:
                     "people remember how alone the square felt while the strike team was being hunted",
                 )
             self.act2_adjust_named_companion("Bryn Underbough", 1, "you trusted her instincts about hidden knives and bad paperwork")
-        self.reward_party(xp=50, gold=15, reason="holding Phandalin together through sabotage night")
+        self.reward_party(xp=50, gold=15, reason="holding Iron Hollow together through sabotage night")
         self.state.current_scene = "act2_expedition_hub"
 
     def scene_broken_prospect(self) -> None:
@@ -1010,7 +1010,7 @@ class StoryAct2ScaffoldMixin:
         delayed = self.state.flags.get("act2_first_late_route") == "south_adit"
         self.banner("Broken Prospect")
         self.say(
-            "Broken Prospect is a jagged approach above Wave Echo Cave: half collapsed survey cut, half old dwarfwork scar, and now one more place where history is trying to decide which footsteps matter.",
+            "Broken Prospect is a jagged approach above the Resonant Vaults: half collapsed survey cut, half old dwarfwork scar, and now one more place where history is trying to decide which footsteps matter.",
             typed=True,
         )
         if delayed:
@@ -1037,11 +1037,11 @@ class StoryAct2ScaffoldMixin:
             self.say("Nim's preserved theorem notes let you predict which part of the prospect's echo is honest and which part is bait.")
         if choice == 1:
             self.player_action("Call the old survey marks before the echoes lie about distance.")
-            if self.skill_check(self.state.player, "History", 14, context="to use the Pact survey marks correctly"):
+            if self.skill_check(self.state.player, "History", 14, context="to use the Meridian Compact survey marks correctly"):
                 hero_bonus += 2
         elif choice == 2:
             self.player_action("Use the broken prospect ledge and slip past the first sentries.")
-            if self.skill_check(self.state.player, "Stealth", 14, context="to slip into Wave Echo cleanly"):
+            if self.skill_check(self.state.player, "Stealth", 14, context="to slip into Resonant Vaults cleanly"):
                 hero_bonus += 2
                 self.apply_status(enemies[0], "surprised", 1, source="your ledge approach")
         else:
@@ -1052,7 +1052,7 @@ class StoryAct2ScaffoldMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Broken Prospect",
-                description="The first Wave Echo guardians still answer old duties, even now that new masters are twisting them.",
+                description="The first Resonant Vaults guardians still answer old duties, even now that new masters are twisting them.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -1061,7 +1061,7 @@ class StoryAct2ScaffoldMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("Wave Echo's threshold throws the company back into the dark above.")
+            self.handle_defeat("Resonant Vaults' threshold throws the company back into the dark above.")
             return
         if outcome == "fled":
             self.state.current_scene = "act2_expedition_hub"
@@ -1096,7 +1096,7 @@ class StoryAct2ScaffoldMixin:
         self.banner("South Adit")
         self.say(
             "The southern workings smell like old iron, cold water, and fear kept quiet too long. Cells have been built into the support chambers. "
-            "The Quiet Choir has not just occupied Wave Echo. It has been sorting people here.",
+            "The Quiet Choir has not just occupied Resonant Vaults. It has been sorting people here.",
             typed=True,
         )
         if delayed:
@@ -1141,7 +1141,7 @@ class StoryAct2ScaffoldMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="South Adit Wardens",
-                description="The prison line beneath Wave Echo tries to bury witnesses before the truth can get out.",
+                description="The prison line beneath Resonant Vaults tries to bury witnesses before the truth can get out.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -1212,7 +1212,7 @@ class StoryAct2ScaffoldMixin:
 
     def scene_wave_echo_outer_galleries(self) -> None:
         assert self.state is not None
-        self.banner("Wave Echo Outer Galleries")
+        self.banner("Resonant Vault Outer Galleries")
         self.say(
             "The outer galleries keep the mine's old grandeur and none of its safety. Echoing rails, broken cranes, and ancient runoffs "
             "turn every line of advance into a place where one mistake could still matter more than courage.",
@@ -1252,7 +1252,7 @@ class StoryAct2ScaffoldMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Outer Gallery Pressure",
-                description="Wave Echo's outer defenses are now a mix of scavengers, predators, and bad old engineering.",
+                description="Resonant Vaults' outer defenses are now a mix of scavengers, predators, and bad old engineering.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -1272,16 +1272,16 @@ class StoryAct2ScaffoldMixin:
         self.act2_shift_metric(
             "act2_route_control",
             1,
-            "the company now owns a real line through Wave Echo's outer galleries",
+            "the company now owns a real line through Resonant Vaults' outer galleries",
         )
         self.state.current_scene = "act2_expedition_hub"
 
     def scene_black_lake_causeway(self) -> None:
         assert self.state is not None
-        self.banner("Black Lake Causeway")
+        self.banner("Blackglass Causeway")
         self.say(
             "The old black water cuts the cave in half beneath a narrow causeway of stone and broken dwarfwork. A drowned shrine leans off one side. A cult barracks squats on the other. "
-            "This is the last clean threshold before the Forge of Spells, and the Quiet Choir knows it.",
+            "This is the last clean threshold before the Meridian Forge, and the Quiet Choir knows it.",
             typed=True,
         )
         self.run_dialogue_input("act2_black_lake_entry", max_entries=2)
@@ -1323,7 +1323,7 @@ class StoryAct2ScaffoldMixin:
                 self.act2_shift_metric(
                     "act2_route_control",
                     1,
-                    "you seize the last organized staging point before the Forge itself",
+                    "you seize the last organized staging point before the Meridian Forge itself",
                 )
         else:
             self.player_action("Sabotage the causeway anchors and fight while the whole line trembles.")
@@ -1333,7 +1333,7 @@ class StoryAct2ScaffoldMixin:
                 self.apply_status(enemies[0], "prone", 1, source="the causeway lurching under your sabotage")
         outcome = self.run_encounter(
             Encounter(
-                title="Black Lake Causeway",
+                title="Blackglass Causeway",
                 description="Constructs, corrupted miners, and old command echoes try to stop the final approach.",
                 enemies=enemies,
                 allow_flee=True,
@@ -1343,26 +1343,26 @@ class StoryAct2ScaffoldMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("The causeway becomes a kill lane and the Forge remains out of reach.")
+            self.handle_defeat("The causeway becomes a kill lane and the Meridian Forge remains out of reach.")
             return
         if outcome == "fled":
             self.state.current_scene = "act2_expedition_hub"
             self.say("You withdraw from the causeway before the line fully collapses around you.")
             return
         self.state.flags["black_lake_crossed"] = True
-        self.reward_party(xp=55, gold=15, reason="crossing the Black Lake causeway")
+        self.reward_party(xp=55, gold=15, reason="crossing the Blackglass causeway")
         self.act2_award_milestone_gear(
             "act2_black_lake_milestone_gear",
             self.act2_black_lake_milestone_item(),
-            source="the Black Lake reliquary",
+            source="the Blackglass reliquary",
         )
         self.state.current_scene = "act2_expedition_hub"
 
     def scene_forge_of_spells(self) -> None:
         assert self.state is not None
-        self.banner("Forge of Spells")
+        self.banner("Meridian Forge")
         self.say(
-            "The Forge of Spells is no longer just a lost wonder. The Quiet Choir has turned it into an instrument. "
+            "The Meridian Forge is no longer just a lost wonder. The Quiet Choir has turned it into an instrument. "
             "Shards hum inside old channels, the air sounds wrong when it moves, and Sister Caldra Voss stands where ancient craft meets a much newer hunger.",
             typed=True,
         )
@@ -1379,7 +1379,7 @@ class StoryAct2ScaffoldMixin:
         if high_pressure:
             enemies.append(self.act2_pick_enemy(("forge_echo_stalker", "obelisk_eye", "covenant_breaker_wight")))
         if self.state.flags.get("black_lake_shrine_purified"):
-            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Black Lake shrine")
+            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Blackglass shrine")
         self.speaker("Sister Caldra Voss", "The Forge does not create. It clarifies.")
         self.speaker("Sister Caldra Voss", "Every vow has an echo. Every echo has an owner.")
         self.speaker("Sister Caldra Voss", "The world is loud because it fears being counted.")
@@ -1422,13 +1422,13 @@ class StoryAct2ScaffoldMixin:
         else:
             self.player_action("Hit the chamber hard and trust momentum before the whispers settle in.")
             hero_bonus += 2
-            self.apply_status(self.state.player, "emboldened", 2, source="storming the Forge of Spells")
+            self.apply_status(self.state.player, "emboldened", 2, source="storming the Meridian Forge")
             if self.state.flags.get("act2_sponsor") == "lionshield":
                 hero_bonus += 1
         outcome = self.run_encounter(
             Encounter(
                 title="Boss: Sister Caldra Voss",
-                description="The Quiet Choir's cult agent makes the final stand at the Forge of Spells.",
+                description="The Quiet Choir's cult agent makes the final stand at the Meridian Forge.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=True,
@@ -1438,19 +1438,19 @@ class StoryAct2ScaffoldMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("Caldra holds the Forge and the mine's song bends further away from anything mortal should trust.")
+            self.handle_defeat("Caldra holds the Meridian Forge and the mine's song bends further away from anything mortal should trust.")
             return
         if outcome == "fled":
             self.state.current_scene = "act2_expedition_hub"
             self.say("You tear yourself out of the forge chamber before the whole room can close around the party.")
             return
         self.state.flags["caldra_defeated"] = True
-        self.add_clue("Caldra's notes describe the Forge as only a lens. Whatever the Quiet Choir truly serves is deeper, older, and not confined to the mine.")
+        self.add_clue("Caldra's notes describe the Meridian Forge as only a lens. Whatever the Quiet Choir truly serves is deeper, older, and not confined to the mine.")
         if self.act2_metric_value("act2_whisper_pressure") >= 4:
             self.add_clue(
-                "Even broken, the Forge keeps trying to answer a call from farther down. The party is not leaving Wave Echo with clean silence."
+                "Even broken, the Meridian Forge keeps trying to answer a call from farther down. The party is not leaving Resonant Vaults with clean silence."
             )
-        self.reward_party(xp=120, gold=40, reason="breaking the Quiet Choir's Wave Echo cell")
+        self.reward_party(xp=120, gold=40, reason="breaking the Quiet Choir's Resonant Vaults cell")
         self.act2_record_epilogue_flags()
         self.state.current_scene = "act2_expedition_hub"
 
@@ -1464,16 +1464,16 @@ class StoryAct2ScaffoldMixin:
         forge_state = str(self.state.flags.get("act3_forge_route_state", "direct"))
         captive_outcome = str(self.state.flags.get("act2_captive_outcome", "uncertain"))
         if town_state == "united":
-            town_line = "Phandalin comes through the act bloodied but unmistakably more united than it began."
+            town_line = "Iron Hollow comes through the act bloodied but unmistakably more united than it began."
         elif town_state == "holding":
-            town_line = "Phandalin survives, but in the careful, tired way frontier towns survive when everyone is counting what almost went worse."
+            town_line = "Iron Hollow survives, but in the careful, tired way frontier towns survive when everyone is counting what almost went worse."
         else:
-            town_line = "Phandalin survives in pieces. The town still stands, but the act leaves strain that Act 3 can exploit."
+            town_line = "Iron Hollow survives in pieces. The town still stands, but the act leaves strain that Act 3 can exploit."
         claims_line = self.act2_sponsor_fallout_line()
         if whisper_state == "contained":
             whisper_line = "You kept the mine's wrong music from spreading far past the cave."
         elif whisper_state == "lingering":
-            whisper_line = "You stopped Caldra, but the song under Wave Echo is still following somebody home in fragments."
+            whisper_line = "You stopped Caldra, but the song under Resonant Vaults is still following somebody home in fragments."
         else:
             whisper_line = "You won the act, but not cleanly. The mine's whisper-pressure leaves the cave with you, which is exactly what Act 3 wants."
         if captive_outcome == "many_saved":
@@ -1485,13 +1485,13 @@ class StoryAct2ScaffoldMixin:
         forge_line = self.act2_forge_route_summary_line()
         if forge_line is None:
             if forge_state == "mastered":
-                forge_line = "You broke the Forge so thoroughly that even its side routes end the act sounding more like ruined craft than living doctrine."
+                forge_line = "You broke the Meridian Forge so thoroughly that even its side routes end the act sounding more like ruined craft than living doctrine."
             elif forge_state == "broken":
-                forge_line = "You broke enough of the Forge's side routes that Act 3 inherits a damaged instrument instead of a clean weapon."
+                forge_line = "You broke enough of the Meridian Forge's side routes that Act 3 inherits a damaged instrument instead of a clean weapon."
             elif forge_state == "partial":
-                forge_line = "You hurt the Forge badly, but one surviving side route still shapes how dangerous its aftermath will be."
+                forge_line = "You hurt the Meridian Forge badly, but one surviving side route still shapes how dangerous its aftermath will be."
             else:
-                forge_line = "You reached Caldra directly, which saved the act but left the Forge's side wounds less thoroughly explored."
+                forge_line = "You reached Caldra directly, which saved the act but left the Meridian Forge's side wounds less thoroughly explored."
         handoff_line = self.act3_forge_handoff_line()
         self.say(
             town_line,
@@ -1520,3 +1520,4 @@ class StoryAct2ScaffoldMixin:
         if choice == 1:
             self.show_party()
         self.state = None
+

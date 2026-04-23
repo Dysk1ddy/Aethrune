@@ -33,7 +33,7 @@ CAMP_BANTERS: list[dict[str, object]] = [
             },
             {
                 "speaker": "elira_dawnmantle",
-                "text": "Names sorted into outcomes. Tymora hates a loaded die.",
+                "text": "Names sorted into outcomes. The Lantern hates a loaded die.",
                 "requires_flags": ["greywake_manifest_preserved"],
             },
             {
@@ -373,7 +373,7 @@ CAMP_BANTERS: list[dict[str, object]] = [
             ("elira_dawnmantle", "I used to think silence was where faith rested. Now I think it is where fear hides its shoes."),
             {
                 "speaker": "kaelis_starling",
-                "text": "Old Owl Well was too quiet after the fight.",
+                "text": "Blackglass Well was too quiet after the fight.",
                 "requires_flags": ["old_owl_well_cleared"],
             },
             {
@@ -433,7 +433,7 @@ CAMP_BANTERS: list[dict[str, object]] = [
             {
                 "set_flags": ["camp_stonehill_order_read"],
                 "companion_deltas": {"tolan_ironshield": 1, "bryn_underbough": 1},
-                "journal": "Tolan and Bryn compared Stonehill's public order to the quieter fear that feeds riots.",
+                "journal": "Tolan and Bryn compared Ashlamp's public order to the quieter fear that feeds riots.",
             },
             {
                 "requires_flags": ["stonehill_marked_keg_named"],
@@ -591,7 +591,7 @@ CAMP_BANTERS: list[dict[str, object]] = [
                 "set_flags": ["camp_cistern_eye_warning"],
                 "companion_deltas": {"bryn_underbough": 1, "kaelis_starling": 1},
                 "journal": "Bryn and Kaelis marked the Cistern Eye as lingering truth-pressure, not just a dead or bargained monster.",
-                "clues": ["The Cistern Eye's truths may keep echoing even after Tresendar Manor is cleared."],
+                "clues": ["The Cistern Eye's truths may keep echoing even after Duskmere Manor is cleared."],
             },
             {
                 "requires_any_flag_values": {"tresendar_nothic_route": ["bargain", "trade"]},

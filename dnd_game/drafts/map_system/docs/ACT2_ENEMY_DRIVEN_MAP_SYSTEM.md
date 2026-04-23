@@ -6,12 +6,12 @@ This draft extends the Act 1 hybrid map idea into a more complex Act 2 structure
 
 Act 1 is mostly a hub-and-branch adventure with short local maps. Act 2 should feel more like an expedition theater:
 
-- the player returns to Phandalin as an operational hub
+- the player returns to Iron Hollow as an operational hub
 - early routes can be completed in different orders
 - delaying a route leaves permanent consequences
 - enemy factions change what each map means
 - late routes are both required, but order changes stakes
-- the final Wave Echo chain becomes a deeper, multi-objective dungeon sequence
+- the final Resonant Vaults chain becomes a deeper, multi-objective dungeon sequence
 
 The companion blueprint lives in:
 
@@ -24,7 +24,7 @@ The live code now covers most of this route shape:
 
 - richer requirement support is wired into the draft/runtime layer and consumed by the playable Act 2 map state
 - the Act 2 hub can render route availability and local site previews through the in-game `map` command
-- `Stonehollow Dig`, `Broken Prospect`, `South Adit`, `Wave Echo Outer Galleries`, `Black Lake Crossing`, and the `Forge of Spells` all exist as playable local maps
+- `Stonehollow Dig`, `Broken Prospect`, `South Adit`, `Resonant Vault Outer Galleries`, `Blackglass Causeway`, and the `Meridian Forge` all exist as playable local maps
 - Act II pressure, rescue, clue, and late-route consequences now surface through map status panels, journal snapshots, and the camp digest
 - the Act II completion scene now records Forge-specific Act 3 handoff flags for route state, cleared subroutes, and resonance-lens state
 
@@ -36,7 +36,7 @@ Act 2 should be mapped around enemy pressure packages rather than around locatio
 | --- | --- | --- |
 | `claim_war` | `expedition_reaver`, `cult_lookout`, `gutter_zealot` | turns the public claims war into route sabotage and false map control |
 | `cave_predators` | `grimlock_tunneler`, `stirge_swarm`, `ochre_slime`, `acidmaw_burrower`, `carrion_lash_crawler`, `hookclaw_burrower` | makes the mine ecology hostile before the cult is fully visible |
-| `pact_haunting` | `animated_armor`, `spectral_foreman`, `graveblade_wight`, `iron_prayer_horror` | shows the old Phandelver Pact defending itself badly or under corrupted orders |
+| `pact_haunting` | `animated_armor`, `spectral_foreman`, `graveblade_wight`, `iron_prayer_horror` | shows the old Meridian Compact defending itself badly or under corrupted orders |
 | `quiet_choir` | `cult_lookout`, `choir_adept`, `starblighted_miner`, `choir_executioner`, `obelisk_eye`, `caldra_voss` | turns Act 2 from claim dispute into cosmic listening-horror |
 | `black_lake` | `animated_armor`, `starblighted_miner`, `blacklake_pincerling`, `spectral_foreman`, `obelisk_eye` | makes the final threshold a tactical and spiritual crossing |
 
@@ -47,19 +47,19 @@ The Act 2 overworld is not a simple line. It has three early leads, a forced mid
 ```text
                      [CLAIMS COUNCIL]
                             |
-                       [PHANDALIN]
+                     [IRON HOLLOW]
              /              |              \
-      [AGATHA]        [WOOD CAMP]       [STONEHOLLOW]
+ [PALE CIRCUIT]   [GREYWAKE CAMP]    [STONEHOLLOW]
              \              |              /
                       [SABOTAGE NIGHT]
                     /                  \
              [BROKEN PROSPECT]     [SOUTH ADIT]
                     \                  /
-                  [WAVE ECHO GALLERIES]
+              [RESONANT VAULT GALLERIES]
                             |
-                       [BLACK LAKE]
+                     [BLACKGLASS]
                             |
-                         [FORGE]
+                   [MERIDIAN FORGE]
                             |
                       [ACT II END]
 ```
@@ -82,15 +82,15 @@ This keeps the text-based map readable while making Act 2 feel wider and more re
 
 | Site | Enemy basis | Complexity upgrade |
 | --- | --- | --- |
-| `Agatha's Circuit` | Quiet Choir defilement, undead omen pressure | social boss room; truth quality depends on whether side branches are resolved |
-| `Neverwinter Wood Saboteur Camp` | rival reavers plus Choir lookouts | ranged roost, spoiled stores, proof cache, and fallback trail |
+| `The Pale Circuit` | Quiet Choir defilement, undead omen pressure | social boss room; truth quality depends on whether side branches are resolved |
+| `Greywake Survey Saboteur Camp` | rival reavers plus Choir lookouts | ranged roost, spoiled stores, proof cache, and fallback trail |
 | `Stonehollow Dig Site` | slimes, grimlocks, collapse predators | rescue and route-truth branches; Nim hook; delayed version can add foreman or hookclaw pressure |
-| `Phandalin Sabotage Night` | Choir lookout plus adept strike cell | three-front town crisis where the player cannot protect everything first |
-| `Broken Prospect Threshold` | Pact armor, spectral foreman, rival scouts | haunted route-control dungeon; stronger if taken after South Adit |
+| `Iron Hollow Sabotage Night` | Choir lookout plus adept strike cell | three-front town crisis where the player cannot protect everything first |
+| `Broken Prospect Threshold` | Meridian Compact armor, spectral foreman, rival scouts | haunted route-control dungeon; stronger if taken after South Adit |
 | `South Adit Prison Line` | starblighted miners and Choir wardens | captive survival map; Irielle hook; stronger if taken after Broken Prospect |
-| `Wave Echo Outer Galleries` | cave predator ecology | bigger five-column map with side runs, slime lanes, false echoes, and a final haul gate |
-| `Black Lake Crossing` | constructs, starblight, lake predators | three objective choices: shrine, barracks, or anchors |
-| `Forge Resonance Lens` | Caldra, adepts, obelisk pressure | final boss map where side objectives modify the boss fight |
+| `Resonant Vault Outer Galleries` | cave predator ecology | bigger five-column map with side runs, slime lanes, false echoes, and a final haul gate |
+| `Blackglass Causeway` | constructs, starblight, lake predators | three objective choices: shrine, barracks, or anchors |
+| `Meridian Forge Resonance Lens` | Caldra, adepts, obelisk pressure | final boss map where side objectives modify the boss fight |
 
 ## Feasible Implementation Steps
 
@@ -125,7 +125,7 @@ This keeps the text-based map readable while making Act 2 feel wider and more re
   - Start with `Stonehollow Dig`, because it has clear enemies, a companion hook, and a simple rescue outcome.
   - `Stonehollow Dig` is now the first playable Act 2 local map. It uses `act2_map_state`, room navigation, room-specific encounters/events, Nim recruitment, and the original route-control/whisper consequences.
   - Then convert `South Adit`, because it tests order consequences and companion recruitment.
-  - `Broken Prospect`, `South Adit`, `Wave Echo Outer Galleries`, `Black Lake Crossing`, and `Forge of Spells` are now also playable local maps, with the later sites carrying order-sensitive fallout into the finale.
+  - `Broken Prospect`, `South Adit`, `Resonant Vault Outer Galleries`, `Blackglass Causeway`, and `Meridian Forge` are now also playable local maps, with the later sites carrying order-sensitive fallout into the finale.
 
 7. Add enemy-pressure overlays
    - Instead of only showing room symbols, expose the enemy package:

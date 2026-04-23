@@ -27,36 +27,36 @@ The final section also includes a design appendix with proposed future enemies w
 
 | Archetype | Display Name | Act | Typical Use |
 | --- | --- | --- | --- |
-| `goblin` | Goblin Skirmisher | Act 1 | road raiders, scavengers, prologue threats |
-| `wolf` | Ash Wolf | Act 1 | road beast, prologue threat, random encounters |
-| `bandit` | Ashen Brand Bandit | Act 1 | human raider baseline |
-| `bandit_archer` | Ashen Brand Lookout | Act 1 | ranged Ashen Brand support |
+| `goblin` | Scrapling Raider | Act 1 | road raiders, scavengers, prologue threats |
+| `wolf` | Ashfang Hound | Act 1 | road beast, prologue threat, random encounters |
+| `bandit` | Ashen Brand Cutter | Act 1 | human raider baseline |
+| `bandit_archer` | Ashen Brand Marksman | Act 1 | ranged Ashen Brand support |
 | `ash_brand_enforcer` | Ashen Brand Enforcer | Act 1 | anti-momentum bruiser that punishes buffed heroes |
 | `ember_channeler` | Ember Channeler | Act 1 | support caster that paints focus-fire targets |
 | `carrion_stalker` | Carrion Stalker | Act 1 | stealth predator used in Cinderfall and relay ambushes |
 | `skeletal_sentry` | Skeletal Sentry | Act 1 | Old Owl Well and manor undead guards |
-| `worg` | Worg | Act 1 | Wyvern Tor and Ashfall support beast |
-| `orc_raider` | Orc Raider | Act 1 | Wyvern Tor and Ashfall muscle |
-| `orc_bloodchief` | Orc Bloodchief | Act 1 | Wyvern Tor miniboss base |
-| `ogre_brute` | Ogre Brute | Act 1 | Wyvern Tor heavy support |
+| `worg` | Ashfang Beast | Act 1 | Wyvern Tor and Ashfall support beast |
+| `orc_raider` | Red Mesa Raider | Act 1 | Wyvern Tor and Ashfall muscle |
+| `orc_bloodchief` | Mesa Warlord | Act 1 | Wyvern Tor miniboss base |
+| `ogre_brute` | Hollow Giant | Act 1 | Wyvern Tor heavy support |
 | `gravecaller` | Gravecaller | Act 1 | Old Owl Well miniboss base |
-| `nothic` | Nothic | Act 1 | Tresendar cistern horror |
+| `nothic` | Cistern Eye | Act 1 | Tresendar cistern horror |
 | `rukhar` | Rukhar Cinderfang | Act 1 | Ashfall Watch miniboss |
 | `varyn` | Varyn Sable | Act 1 | Emberhall final boss |
 | `expedition_reaver` | Rival Expedition Reaver | Act 2 | expedition-rival muscle |
-| `cult_lookout` | Quiet Choir Lookout | Act 2 | ranged cult support |
+| `cult_lookout` | Quiet Choir Agent | Act 2 | ranged cult support |
 | `choir_adept` | Quiet Choir Adept | Act 2 | cult caster / leader |
-| `grimlock_tunneler` | Grimlock Tunneler | Act 2 | ambusher in tunnels and routes |
-| `stirge_swarm` | Stirge Swarm | Act 2 | swarm nuisance in cramped spaces |
-| `ochre_slime` | Ochre Slime | Act 2 | chokepoint ooze |
-| `animated_armor` | Pact Sentinel Armor | Act 2 | construct guardian |
+| `grimlock_tunneler` | Tunnel Scavenger | Act 2 | ambusher in tunnels and routes |
+| `stirge_swarm` | Bloodmote Swarm | Act 2 | swarm nuisance in cramped spaces |
+| `ochre_slime` | Corrosive Mass | Act 2 | chokepoint ooze |
+| `animated_armor` | Meridian Sentinel | Act 2 | construct guardian |
 | `spectral_foreman` | Spectral Foreman | Act 2 | undead command unit |
 | `starblighted_miner` | Starblighted Miner | Act 2 | corrupted worker / whisper victim |
 | `caldra_voss` | Sister Caldra Voss | Act 2 | final cult boss |
 
 ## Act 1 Enemies
 
-### Goblin Skirmisher
+### Scrapling Raider
 
 - Archetype: `goblin`
 - Base sheet: level 1, 6 HP, AC 13, Scimitar `1d4+1`, XP 50, Gold 4
@@ -77,10 +77,10 @@ The final section also includes a design appendix with proposed future enemies w
   - Potential: `Abandoned Cottage` -> `Cottage Squatters` or `Cellar Door Rush`
   - Potential: `Ruined Wayhouse` -> `Wayhouse Scavengers`, `Wayhouse Holdouts`, or `Trapdoor Drop`
 - Named variants seen in content:
-  - `Goblin Cutthroat`
-  - `Goblin Scavenger`
+  - `Scrapling Cutthroat`
+  - `Scrapling Scavenger`
 
-### Ash Wolf
+### Ashfang Hound
 
 - Archetype: `wolf`
 - Base sheet: level 1, 11 HP, AC 13, Bite `1d6+1`, XP 50, Gold 6
@@ -95,10 +95,10 @@ The final section also includes a design appendix with proposed future enemies w
   - Forced or potential: `Hospice Gate` (Acolyte prologue)
   - Forced or potential: `Camp at First Light` (Outlander prologue)
   - Forced: `Roadside Ambush`
-  - Potential: `Lone Wolf at the Kill` -> `Wolf on the Trail` or `Cornered Wolf`
+  - Potential: `Lone Wolf at the Kill` -> `Hound on the Trail` or `Cornered Hound`
   - Potential: `Frightened Draft Horse` -> `Brush Stalker`
 
-### Ashen Brand Bandit
+### Ashen Brand Cutter
 
 - Archetype: `bandit`
 - Base sheet: level 1, 11 HP, AC 12, Scimitar `1d6`, XP 50, Gold 8
@@ -133,7 +133,7 @@ The final section also includes a design appendix with proposed future enemies w
     - `Returning Campers`
     - `Milestone Scavengers`
 
-### Ashen Brand Lookout
+### Ashen Brand Marksman
 
 - Archetype: `bandit_archer`
 - Base sheet: level 1, 9 HP, AC 12, Shortbow `1d6`, XP 50, Gold 9
@@ -150,7 +150,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Forced or potential: `Counting-House Yard` (Guild Artisan prologue) as `Ashen Brand Teamster`
   - Potential: `Panicked Holdouts`
   - Potential: `Chest Scavengers` on parties of 3 or more
-  - Forced or potential: `Miniboss: Vaelith Marr` as `Ashen Brand Lookout` on large parties
+  - Forced or potential: `Miniboss: Vaelith Marr` as `Ashen Brand Marksman` on large parties
   - Forced: `Ashfall Gate`
   - Forced: `Tresendar Cellars` as `Archive Cutout`
   - Forced: `Emberhall Antechamber` as `Cellar Sniper`
@@ -233,7 +233,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Forced: `Tresendar Cellars`
   - Potential: `The Cistern Eye`
 
-### Worg
+### Ashfang Beast
 
 - Archetype: `worg`
 - Base sheet: level 1, 18 HP, AC 13, Rending Bite `2d4+1`, XP 75, Gold 8
@@ -249,7 +249,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Forced: `Wyvern Tor Shelf Fight`
   - Potential: `Ashfall Gate` on larger parties
 
-### Orc Raider
+### Red Mesa Raider
 
 - Archetype: `orc_raider`
 - Base sheet: level 1, 16 HP, AC 14, Battleaxe `1d8+1`, XP 75, Gold 10
@@ -270,7 +270,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Potential: `Miniboss: Rukhar Cinderfang`
   - Named variant: `Tor Lookout`
 
-### Orc Bloodchief
+### Mesa Warlord
 
 - Archetype: `orc_bloodchief`
 - Base sheet: level 2, 33 HP, AC 15, Great Axe `1d12+1`, XP 150, Gold 30
@@ -288,7 +288,7 @@ The final section also includes a design appendix with proposed future enemies w
 - Scripted scene reward near this fight:
   - `greater_healing_draught` from `Brughor's travel chest`
 
-### Ogre Brute
+### Hollow Giant
 
 - Archetype: `ogre_brute`
 - Base sheet: level 2, 38 HP, AC 11, Maul Club `2d8`, XP 125, Gold 18
@@ -323,7 +323,7 @@ The final section also includes a design appendix with proposed future enemies w
 - Scripted scene reward near this fight:
   - `scroll_lesser_restoration` from `Vaelith's ritual satchel`
 
-### Nothic
+### Cistern Eye
 
 - Archetype: `nothic`
 - Base sheet: level 2, 29 HP, AC 14, Hooked Claws `2d4`, XP 150, Gold 22
@@ -405,7 +405,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Potential: `Woodland Saboteurs`
   - Potential: `Midpoint: Sabotage Night`
 
-### Quiet Choir Lookout
+### Quiet Choir Agent
 
 - Archetype: `cult_lookout`
 - Base sheet: level 2, 16 HP, AC 13, Marked Shortbow `1d6+2`, XP 75, Gold 9
@@ -437,7 +437,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Forced: `South Adit Wardens`
   - Forced: `Boss: Sister Caldra Voss`
 
-### Grimlock Tunneler
+### Tunnel Scavenger
 
 - Archetype: `grimlock_tunneler`
 - Base sheet: level 2, 20 HP, AC 14, Hooked Blade `1d6+2`, XP 100, Gold 6
@@ -453,7 +453,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Potential: `Midpoint: Sabotage Night`
   - Forced: `Outer Gallery Pressure`
 
-### Stirge Swarm
+### Bloodmote Swarm
 
 - Archetype: `stirge_swarm`
 - Base sheet: level 2, 17 HP, AC 14, Proboscis `1d6`, XP 75, Gold 0
@@ -467,7 +467,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Potential: `Stonehollow Breakout`
   - Potential: `Outer Gallery Pressure`
 
-### Ochre Slime
+### Corrosive Mass
 
 - Archetype: `ochre_slime`
 - Base sheet: level 2, 28 HP, AC 8, Pseudopod `2d6`, XP 100, Gold 0
@@ -481,7 +481,7 @@ The final section also includes a design appendix with proposed future enemies w
   - Forced: `Stonehollow Breakout`
   - Forced: `Outer Gallery Pressure`
 
-### Pact Sentinel Armor
+### Meridian Sentinel
 
 - Archetype: `animated_armor`
 - Base sheet: level 2, 26 HP, AC 16, Gauntlet Slam `1d6+2`, XP 100, Gold 12
@@ -494,7 +494,7 @@ The final section also includes a design appendix with proposed future enemies w
   - No item loot table currently defined in `LOOT_TABLES`
 - Encounter locations:
   - Forced: `Broken Prospect`
-  - Forced: `Black Lake Causeway`
+  - Forced: `Blackglass Causeway`
 
 ### Spectral Foreman
 
@@ -509,7 +509,7 @@ The final section also includes a design appendix with proposed future enemies w
 - Encounter locations:
   - Potential: `Stonehollow Breakout` when delayed
   - Forced: `Broken Prospect`
-  - Potential: `Black Lake Causeway`
+  - Potential: `Blackglass Causeway`
 
 ### Starblighted Miner
 
@@ -524,7 +524,7 @@ The final section also includes a design appendix with proposed future enemies w
 - Encounter locations:
   - Forced: `South Adit Wardens`
   - Potential: `Outer Gallery Pressure`
-  - Forced: `Black Lake Causeway`
+  - Forced: `Blackglass Causeway`
   - Potential: `Boss: Sister Caldra Voss`
 
 ### Sister Caldra Voss
@@ -544,9 +544,9 @@ The final section also includes a design appendix with proposed future enemies w
 
 ## Act 2 Thematic Expansion: Control Of Truth
 
-These fifteen enemies are designed specifically around Act 2's core themes: control of truth, dangerous knowledge, false authority, expedition sabotage, corrupted custody, and listening-horror rising out of Wave Echo Cave.
+These fifteen enemies are designed specifically around Act 2's core themes: control of truth, dangerous knowledge, false authority, expedition sabotage, corrupted custody, and listening-horror rising out of Resonant Vaults.
 
-They are intentionally stronger than the existing Act 1 filler pool. Early Act 2 should already feel like fighting disciplined saboteurs, ritual specialists, warped cave predators, and old Pact defenses that have outlived their judgment.
+They are intentionally stronger than the existing Act 1 filler pool. Early Act 2 should already feel like fighting disciplined saboteurs, ritual specialists, warped cave predators, and old Meridian Compact defenses that have outlived their judgment.
 
 ### Expansion Summary
 
@@ -555,7 +555,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 | `false_map_skirmisher` | False-Map Skirmisher | 4 | 38 / 15 | Route Knife `1d8+3` | mobile sabotage attacker |
 | `claimbinder_notary` | Claimbinder Notary | 4 | 40 / 15 | Seal Mace `1d6+3` | control debuffer |
 | `echo_sapper` | Echo Sapper | 4 | 42 / 14 | Breach Hammer `1d10+2` | line-breaker |
-| `pact_archive_warden` | Pact Archive Warden | 4 | 44 / 16 | Archive Spear `1d8+3` | defensive sentinel |
+| `pact_archive_warden` | Meridian Archive Warden | 4 | 44 / 16 | Archive Spear `1d8+3` | defensive sentinel |
 | `blackglass_listener` | Blackglass Listener | 4 | 41 / 15 | Thought Spike `1d8+2` psychic | anti-caster scout |
 | `choir_cartographer` | Choir Cartographer | 5 | 48 / 15 | Survey Blade `1d8+3` | route-control leader |
 | `resonance_leech` | Resonance Leech | 5 | 50 / 14 | Siphon Tendril `2d6+2` | sustain drain monster |
@@ -563,7 +563,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 | `censer_horror` | Iron Censer Horror | 5 | 55 / 16 | Smothering Swing `2d6+2` | construct area denial |
 | `memory_taker_adept` | Memory-Taker Adept | 5 | 46 / 15 | Quietus Dagger `1d8+3` | psychic assassin |
 | `obelisk_chorister` | Obelisk Chorister | 6 | 58 / 16 | Choir Staff `1d8+4` | elite cult caster |
-| `blacklake_adjudicator` | Black Lake Adjudicator | 6 | 60 / 17 | Judgement Pike `1d10+4` | elite Pact guardian |
+| `blacklake_adjudicator` | Blackglass Adjudicator | 6 | 60 / 17 | Judgement Pike `1d10+4` | elite Meridian guardian |
 | `forge_echo_stalker` | Forge-Echo Stalker | 6 | 62 / 16 | Echo Claws `2d6+4` | ambush predator |
 | `covenant_breaker_wight` | Covenant Breaker Wight | 6 | 64 / 17 | Oathsplitter `1d10+4` | commander-killer undead |
 | `hollowed_survey_titan` | Hollowed Survey Titan | 6 | 72 / 15 | Survey Maul `2d8+4` | late-route brute |
@@ -607,7 +607,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - Potential: `Broken Prospect`
   - Potential: collapse or breach scenes
 
-### Pact Archive Warden
+### Meridian Archive Warden
 
 - Archetype: `pact_archive_warden`
 - Base sheet: level 4, 44 HP, AC 16, Archive Spear `1d8+3`, XP 200, Gold 18
@@ -618,7 +618,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 - Encounter locations:
   - Potential: `Broken Prospect`
   - Potential: archive thresholds
-  - Potential: sealed Pact record rooms
+  - Potential: sealed Meridian record rooms
 
 ### Blackglass Listener
 
@@ -629,8 +629,8 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `overhear_intent` once: WIS save DC 14 or target becomes `frightened` 1 and cannot gain advantage-like bonuses until its next turn
   - `feedback_pulse` once: deals `2d6` psychic to a target that used a spell or support action last round
 - Encounter locations:
-  - Potential: `Conyberry and Agatha's Circuit`
-  - Potential: `Black Lake Causeway`
+  - Potential: `Hushfen and the Pale Circuit`
+  - Potential: `Blackglass Causeway`
   - Potential: high-whisper route events
 
 ### Choir Cartographer
@@ -644,7 +644,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 - Encounter locations:
   - Potential: `Midpoint: Sabotage Night`
   - Potential: late early-route convergence
-  - Potential: `Wave Echo Outer Galleries`
+  - Potential: `Resonant Vault Outer Galleries`
 
 ### Resonance Leech
 
@@ -656,8 +656,8 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `echo_feast` passive: deals +`1d6` damage to `frightened`, `reeling`, or `silenced` targets
 - Encounter locations:
   - Potential: `South Adit`
-  - Potential: `Wave Echo Outer Galleries`
-  - Potential: `Black Lake Causeway`
+  - Potential: `Resonant Vault Outer Galleries`
+  - Potential: `Blackglass Causeway`
 
 ### Survey-Chain Revenant
 
@@ -682,8 +682,8 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `cinder_liturgy` passive: enemies starting adjacent while `frightened` take `1d4` fire
 - Encounter locations:
   - Potential: cult chapel rooms
-  - Potential: forge-approach chambers
-  - Potential: shrine profanation fights
+  - Potential: Meridian Forge-approach chambers
+  - Potential: sanctum profanation fights
 
 ### Memory-Taker Adept
 
@@ -696,7 +696,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 - Encounter locations:
   - Potential: Quiet Choir kill teams
   - Potential: sponsor assassination scenes
-  - Potential: `Black Lake Causeway`
+  - Potential: `Blackglass Causeway`
 
 ### Obelisk Chorister
 
@@ -707,11 +707,11 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `shard_hymn` once: WIS save DC 15 or target takes `3d6` psychic, `frightened` 2, and `reeling` 2
   - `choral_screen` once: self and allies gain 6 temp HP; cult allies also clear `frightened`
 - Encounter locations:
-  - Potential: forge antechambers
+  - Potential: Meridian Forge antechambers
   - Potential: elite cult escort fights
   - Potential: high-whisper late-route encounters
 
-### Black Lake Adjudicator
+### Blackglass Adjudicator
 
 - Archetype: `blacklake_adjudicator`
 - Base sheet: level 6, 60 HP, AC 17, Judgement Pike `1d10+4`, XP 310, Gold 26
@@ -720,9 +720,9 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `sentence_of_entry` once: WIS save DC 15 or target becomes `slowed` and cannot move closer to the threshold next turn
   - `mirror_verdict` passive: the first ranged hit it suffers each round reflects `1d6` force back to the attacker
 - Encounter locations:
-  - Potential: `Black Lake Causeway`
+  - Potential: `Blackglass Causeway`
   - Potential: ritual bridgeheads
-  - Potential: pre-Forge threshold rooms
+  - Potential: pre-Meridian Forge threshold rooms
 
 ### Forge-Echo Stalker
 
@@ -733,7 +733,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `answering_screech` once: against a `reeling` target, deals an extra `2d6` thunder and can knock `prone` on CON save DC 15 failure
   - `heatshadow_prowl` once: gains `invisible` 1 and bonus movement through forge-lit terrain
 - Encounter locations:
-  - Potential: `Wave Echo Outer Galleries`
+  - Potential: `Resonant Vault Outer Galleries`
   - Potential: forge side halls
   - Potential: whisper-surged boss support fights
 
@@ -760,7 +760,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `loadbearing_frame` passive: while above half HP, forced movement against the titan automatically fails
 - Encounter locations:
   - Potential: `Broken Prospect`
-  - Potential: `Wave Echo Outer Galleries`
+  - Potential: `Resonant Vault Outer Galleries`
   - Potential: Forge boss-support variant
 
 ## Encounter Cross-Reference
@@ -793,7 +793,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 
 ### Random Encounter Combat Pool
 
-- Bandit / bandit_archer:
+- Ashen Brand cutter / marksman:
   - `Chest Scavengers`
   - `Panicked Holdouts`
   - `Road Toll Collectors`
@@ -804,15 +804,15 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
   - `Returning Scavengers`
   - `Returning Campers`
   - `Milestone Scavengers`
-- Goblin:
+- Scrapling:
   - `Cottage Squatters`
   - `Cellar Door Rush`
   - `Wayhouse Scavengers`
   - `Wayhouse Holdouts`
   - `Trapdoor Drop`
-- Wolf:
-  - `Wolf on the Trail`
-  - `Cornered Wolf`
+- Ashfang Hound:
+  - `Hound on the Trail`
+  - `Cornered Hound`
   - `Brush Stalker`
 
 ### Act 2 Forced Or Conditional Fights
@@ -823,12 +823,12 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 - `Broken Prospect`: animated_armor + spectral_foreman, with conditional cult_lookout
 - `South Adit Wardens`: starblighted_miner + choir_adept, with conditional cult_lookout support
 - `Outer Gallery Pressure`: grimlock_tunneler + ochre_slime, with conditional starblighted_miner or stirge_swarm
-- `Black Lake Causeway`: animated_armor + starblighted_miner, with conditional spectral_foreman
+- `Blackglass Causeway`: animated_armor + starblighted_miner, with conditional spectral_foreman
 - `Boss: Sister Caldra Voss`: caldra_voss + choir_adept, with conditional cult_lookout and/or starblighted_miner
 
 ## Important Implementation Notes
 
-- The combat engine keys special behavior off `archetype`, so renamed enemies like `Ashen Brand Fixer`, `Goblin Cutthroat`, or `Cistern Eye` still use the same base enemy logic.
+- The combat engine keys special behavior off `archetype`, so renamed enemies like `Ashen Brand Fixer`, `Scrapling Cutthroat`, or `Cistern Eye` still use the same base enemy logic.
 - Only Act 1 archetypes currently have item loot tables in `dnd_game/data/items/catalog.py`.
 - Act 2 enemies still award their built-in gold values, but they do not currently roll item drops.
 - Several major scenes also grant scripted environmental rewards that are not part of enemy drop tables:
@@ -839,7 +839,7 @@ They are intentionally stronger than the existing Act 1 filler pool. Early Act 2
 
 ## Design Expansion: 25 New Enemy Concepts
 
-These entries are designed to slot cleanly into the game's current status vocabulary and encounter style while drawing broad inspiration from official D&D monster patterns such as kobolds, cultists, giant spiders, ankhegs, bugbears, mimics, basilisks, harpies, wights, will-o'-wisps, gargoyles, spectator-like sentries, helmed horrors, hook horrors, shambling mounds, and revenants.
+These entries are designed to slot cleanly into the game's current status vocabulary and encounter style while drawing from frontier scavengers, Quiet Choir cells, engineered sentries, ruin predators, drowned revenants, and other Aethrune-aligned threat shapes.
 
 They are ordered from easy to hard so you can lift early-game skirmishers, mid-tier specialists, or boss-grade threats as needed.
 
@@ -847,12 +847,12 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
 
 | Archetype | Display Name | Difficulty | Role |
 | --- | --- | --- | --- |
-| `cinder_kobold` | Cinder Kobold Sneak | Easy | pack skirmisher |
+| `cinder_kobold` | Cinderkin Scavenger | Easy | pack skirmisher |
 | `briar_twig` | Briar Twig Ambusher | Easy | hidden opener |
 | `mireweb_spider` | Mireweb Spider | Easy | restraining hunter |
-| `gutter_zealot` | Gutter Cult Zealot | Easy | fanatic support |
+| `gutter_zealot` | Quiet Choir Listener | Easy | fanatic support |
 | `rust_shell_scuttler` | Rust-Shell Scuttler | Easy | corrosion nuisance |
-| `lantern_fen_wisp` | Lantern Fen Wisp | Easy | evasive lure |
+| `lantern_fen_wisp` | Lantern Wisp | Easy | evasive lure |
 | `ashstone_percher` | Ashstone Percher | Easy | ruin ambusher |
 | `acidmaw_burrower` | Acidmaw Burrower | Easy | tunnel bruiser |
 | `bugbear_reaver` | Bugbear Tunnel Reaver | Standard | ambush striker |
@@ -862,7 +862,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
 | `stonegaze_skulker` | Stonegaze Skulker | Standard | gaze disabler |
 | `cliff_harpy` | Shrieking Cliff Harpy | Standard | charm disruptor |
 | `whispermaw_blob` | Whispermaw Blob | Standard | chaos brawler |
-| `blacklake_pincerling` | Blacklake Pincerling | Standard | grapple-lock hunter |
+| `blackglass_pincerling` | Blackglass Pincerling | Standard | grapple-lock hunter |
 | `graveblade_wight` | Graveblade Wight | Standard | undead captain |
 | `cinderflame_skull` | Cinderflame Skull | Hard | mobile fire caster |
 | `obelisk_eye` | Eye of the Obelisk | Hard | ray sentinel |
@@ -875,7 +875,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
 
 ### Easy Expansion Enemies
 
-#### Cinder Kobold Sneak
+#### Cinderkin Scavenger
 
 - Description: A soot-stained tunnel raider that fights in pairs, pelts foes with ash pots, and bolts the moment the line breaks.
 - Archetype: `cinder_kobold`
@@ -911,7 +911,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
 - Suggested encounter use:
   - Marsh bridges, cave mouths, canopy fights, or spider brood support
 
-#### Gutter Cult Zealot
+#### Quiet Choir Listener
 
 - Description: A street preacher turned knife-handed fanatic, eager to bleed for a promise no sane person would trust.
 - Archetype: `gutter_zealot`
@@ -921,7 +921,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
   - `blood_prayer` once below half HP: gains `blessed` 2 and 4 temp HP
   - Leans into charm- and fear-resistant fanatic behavior in encounter scripting
 - Suggested encounter use:
-  - Cult safehouses, alley shrines, or low-tier support for stronger choir leaders
+  - Cult safehouses, alley sanctums, or low-tier support for stronger choir leaders
 
 #### Rust-Shell Scuttler
 
@@ -935,7 +935,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
 - Suggested encounter use:
   - Armories, ruined barracks, old battlefields, or alchemical refuse pits
 
-#### Lantern Fen Wisp
+#### Lantern Wisp
 
 - Description: A swamp light that floats just ahead of travelers until the path beneath them turns to black water and roots.
 - Archetype: `lantern_fen_wisp`
@@ -1031,7 +1031,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
   - `petrifying_gaze` once: CON save DC 13 or `restrained` 1; repeat next turn or become `petrified` 1
   - Bite deals an extra `1d4` poison damage against `restrained` targets
 - Suggested encounter use:
-  - Statue gardens, crystal caves, cursed quarries, or shrine guardians
+  - Statue gardens, crystal caves, cursed quarries, or sanctum guardians
 
 #### Shrieking Cliff Harpy
 
@@ -1058,10 +1058,10 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
 - Suggested encounter use:
   - Aberrant tunnels, ritual failures, sinkhole chambers, or polluted caverns
 
-#### Blacklake Pincerling
+#### Blackglass Pincerling
 
 - Description: A glossy shell-hunter that waits in black water until the first warm body steps close enough to clamp.
-- Archetype: `blacklake_pincerling`
+- Archetype: `blackglass_pincerling`
 - Suggested base sheet: level 4, 40 HP, AC 15, Shock Pincer `1d8+3`, XP 175, Gold 18
 - Tags and traits: `enemy`, `aberration`, features `pincer_hold`, `shock_spines`
 - Suggested runtime behavior:
@@ -1109,7 +1109,7 @@ They are ordered from easy to hard so you can lift early-game skirmishers, mid-t
     - STR save DC 14 or `restrained` 1
   - Prefers different targets each round to spread pressure across the party
 - Suggested encounter use:
-  - Vault sentry, puzzle chamber boss, or aberrant shrine guardian
+  - Vault sentry, puzzle chamber boss, or aberrant sanctum guardian
 
 #### Iron Prayer Horror
 

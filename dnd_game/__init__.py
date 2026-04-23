@@ -1,2 +1,1 @@
-"""Text-based D&D adventure package."""
-
+"""Roads That Remember text-adventure package."""

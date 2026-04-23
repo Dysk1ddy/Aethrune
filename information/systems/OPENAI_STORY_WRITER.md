@@ -1,24 +1,44 @@
 # OpenAI Story Writer
 
-This project now includes an optional OpenAI-backed drafting tool for story work:
+This project includes an optional OpenAI-backed drafting tool for story work:
 
 - module: `dnd_game/ai/story_writer.py`
 - CLI wrapper: `tools/story_writer.py`
 - desktop studio: `story_writer_studio.py`
 - Windows launcher: `Launch Story Writer Studio.bat`
 
-It is designed as a writing assistant, not as runtime story control. That fits this codebase much better because scene logic, flags, quest state, and route outcomes are currently authored directly in Python scene files.
+It is designed as a writing assistant, not as runtime story control. That fits this codebase because scene logic, flags, quest state, route outcomes, and save-sensitive identifiers are authored in Python scene files and data files.
 
-## Why this shape
+## Retcon Use
+
+The current writing target is the Aethrune retcon.
+
+Use the tool for:
+
+- rewriting legacy scene prose into Aethrune language
+- testing NPC voice revisions before editing runtime files
+- drafting retcon-safe lore snippets
+- creating alternate dialogue options that preserve existing flags and routes
+- producing markdown drafts for review before code changes
+
+Do not use model output as source of truth. The active retcon source of truth is:
+
+- `information/Retcon story/Plans/AETHRUNE_RETCON_IMPLEMENTATION_PLAN.md`
+- `information/Retcon story/World/`
+- `information/Retcon story/NPCs/`
+- `information/Retcon story/Systems/`
+
+## Why This Shape
 
 For Roads That Remember, the safest AI workflow is:
 
-1. keep plot logic deterministic in code
-2. let the model draft or revise dialogue and scene prose
-3. paste the parts you like back into the relevant source file or story reference
-4. run tests after each accepted change
+1. Keep plot logic deterministic in code.
+2. Let the model draft or revise dialogue and scene prose.
+3. Review the draft against the retcon plan.
+4. Move only accepted lines into the relevant source file or retcon reference.
+5. Run tests after each accepted code change.
 
-That avoids the biggest failure mode of live AI narrative systems in games like this: beautiful text that quietly contradicts flags, quest outcomes, companion state, or future scenes.
+This avoids the biggest failure mode of live AI narrative systems in games like this: strong prose that quietly contradicts flags, quest outcomes, companion state, or future scenes.
 
 ## Setup
 
@@ -59,38 +79,42 @@ The studio lets you:
 - write the brief you want to send to `story_writer.py`
 - watch the live command output in an embedded console
 - review the rewritten text in a dedicated draft pane
-- save the rewritten markdown into `information/Story/generated` with the `Save Draft` button
+- save rewritten markdown with the `Save Draft` button
 - optionally install or upgrade `openai` from the same window
 
-## Recommended workflow
+The studio currently defaults generated drafts to `information/Story/generated`. During the Aethrune retcon, prefer saving canon-bound drafts under `information/Retcon story/` when you want them to feed the implementation plan.
+
+## Recommended Workflow
 
 - Use `gpt-5.4` when you want the strongest pass on difficult scene rewrites.
 - Use `gpt-5.4-mini` when you want faster, cheaper iteration.
-- Feed the tool the exact scene file you plan to edit plus the relevant story reference markdown.
+- Attach the exact scene file you plan to edit plus the relevant Aethrune retcon markdown.
 - Keep briefs concrete: who is speaking, what must stay true, and what emotional effect you want.
 
 Good brief ingredients:
 
-- the scene key or chapter
+- the scene key or route role
 - which NPC voices matter
-- what canon facts must not change
+- what retcon facts must not change
 - what should improve: tension, pacing, subtext, clarity, menace, tenderness, or payoff
+- which internal IDs must remain untouched
 
-## Example commands
+## Example Commands
 
-Revise an implemented scene while keeping Act II canon in view:
+Revise an implemented scene while keeping the Aethrune Act 1 route map in view:
 
 ```powershell
 python tools/story_writer.py `
   --mode revision `
-  --scene-key conyberry_agatha `
-  --title "Agatha first meeting rewrite" `
-  --speaker "Agatha" `
-  --speaker "Bryn Underbough" `
-  --brief "Rewrite Agatha's opening exchange so she feels colder, stranger, and more deliberate without changing the route logic or revelations." `
-  --context information/Story/ACT2_CONTENT_REFERENCE.md `
-  --context dnd_game/gameplay/act2/conyberry.py `
-  --save information/Story/generated/agatha_first_meeting.md
+  --scene-key blackwake_crossing `
+  --title "Blackwake Crossing Aethrune pass" `
+  --speaker "Mira Thann" `
+  --speaker "Sabra Kestrel" `
+  --brief "Rewrite this route-control exchange so it reads as Greywake and Emberway logistics. Preserve existing route logic, flags, and quest outcomes." `
+  --context "information/Retcon story/Plans/AETHRUNE_RETCON_IMPLEMENTATION_PLAN.md" `
+  --context "information/Retcon story/World/act1_map_system_remap_aethrune.md" `
+  --context dnd_game/gameplay/story_intro.py `
+  --save "information/Retcon story/Lore/generated/blackwake_aethrune_pass.md"
 ```
 
 Draft a fresh camp banter packet:
@@ -98,42 +122,53 @@ Draft a fresh camp banter packet:
 ```powershell
 python tools/story_writer.py `
   --mode banter `
-  --speaker "Elira Dawnmantle" `
+  --speaker "Elira Lanternward" `
   --speaker "Bryn Underbough" `
-  --brief "Write 6 short campfire lines after a costly road fight. Keep Bryn defensive and Elira steady without making either sentimental." `
-  --context information/Story/ACT1_DIALOGUE_REFERENCE.md
+  --brief "Write 6 short campfire lines after a costly Emberway fight. Keep Bryn defensive and Elira steady without making either sentimental." `
+  --context "information/Retcon story/NPCs/NPC_relationship_map.md" `
+  --context "information/Retcon story/World/act1_map_system_remap_aethrune.md"
 ```
 
-Draft a new scene skeleton:
+Draft a new lore note:
 
 ```powershell
 python tools/story_writer.py `
-  --mode scene `
-  --scene-key blackwake_crossing `
-  --title "Blackwake consequence scene" `
-  --brief "Draft a follow-up scene that shows the cost of exposing the Blackwake cell. Keep the tone tense and administrative rather than heroic." `
-  --context information/Story/STORY_CONTENT_SUMMARY.md
+  --mode lore `
+  --title "Meridian Accord roadside relay" `
+  --brief "Draft a compact lore note explaining how old Meridian relay stations shape modern route control without revealing Act 3 secrets." `
+  --context "information/Retcon story/World/aethrune_world_v1.md" `
+  --context "information/Retcon story/Lore/roads_that_remember_v2_world.md"
 ```
 
-## Notes on defaults
+## Notes On Defaults
 
-If you pass a `--scene-key`, the tool automatically adds:
+If you pass a `--scene-key`, the tool may automatically add legacy story-summary context when available.
 
-- `information/Story/STORY_CONTENT_SUMMARY.md`
-- the matching act reference file when available
+You can disable default context with:
 
-You can disable that with `--no-default-context` and provide only the files you want.
+```powershell
+--no-default-context
+```
 
-## Best practices for this repo
+For retcon work, use `--no-default-context` when old references are distracting and provide only the Aethrune files you want.
+
+## Best Practices For This Repo
 
 - Treat generated text as draft material, not source of truth.
 - Keep gameplay effects in Python and data files, not in model output.
 - When revising an existing scene, include the actual source file as context.
-- When inventing new content, route the first pass into `information/Story/` before moving it into runtime code.
-- After accepting a draft into code, run the relevant tests:
+- When inventing new content, route the first pass into `information/Retcon story/` before moving it into runtime code.
+- Preserve internal scene IDs, quest IDs, save keys, and flags unless an implementation plan explicitly says migration code is ready.
+- After accepting a draft into code, run the relevant tests.
+
+Core test:
 
 ```powershell
 python -m pytest tests/test_core.py
 ```
 
-or a smaller focused test target.
+Focused smoke test:
+
+```powershell
+python -m pytest -m smoke
+```

@@ -208,7 +208,7 @@ class MapSystemMixin:
         if bryn is None:
             return
         self.say(
-            "Back in Phandalin, Bryn unwraps the smoke-stained ledger from the old cache. The names inside are part smugglers, part frightened teamsters, and part people who still live close enough to get hurt for what they once did."
+            "Back in Iron Hollow, Bryn unwraps the smoke-stained ledger from the old cache. The names inside are part smugglers, part frightened teamsters, and part people who still live close enough to get hurt for what they once did."
         )
         choice = self.scenario_choice(
             "What do you tell Bryn to do with the ledger?",
@@ -281,7 +281,7 @@ class MapSystemMixin:
         if elira is None:
             return
         self.say("In the wrecked barracks you find one gutter zealot alive under a collapsed bunk, too wounded to keep lying convincingly and too proud to beg well.")
-        self.speaker("Elira Dawnmantle", "This is the moment that matters more than speeches ever do.")
+        self.speaker("Elira Lanternward", "This is the moment that matters more than speeches ever do.")
         choice = self.scenario_choice(
             "What do you do with the captive cultist?",
             [
@@ -304,7 +304,7 @@ class MapSystemMixin:
         self.reward_party(xp=20, reason="deciding Elira's question under fire")
         self.state.flags["elira_faith_under_ash_resolved"] = True
         self.refresh_quest_statuses(announce=False)
-        self.turn_in_quest("elira_faith_under_ash", giver="Elira Dawnmantle")
+        self.turn_in_quest("elira_faith_under_ash", giver="Elira Lanternward")
 
     def act1_victory_tier(self) -> str:
         assert self.state is not None
@@ -539,7 +539,7 @@ class MapSystemMixin:
             self._remember_act1_nodes(payload, *opening_path, "high_road_ambush")
             return
 
-        # Reaching any Phandalin-era node means the opening road, briefing, and ambush already happened.
+        # Reaching any Iron Hollow-era node means the opening road, briefing, and ambush already happened.
         self._remember_act1_nodes(payload, *opening_path, "high_road_ambush", "phandalin_hub")
 
         later_than_branches = {"ashfall_watch", "tresendar_manor", "emberhall_cellars"}
@@ -902,15 +902,15 @@ class MapSystemMixin:
         to_title = ACT1_HYBRID_MAP.nodes[to_node_id].title
         if to_node_id == "neverwinter_briefing":
             return (
-                "You backtrack north toward Neverwinter, letting the familiar city road pull the party "
+                "You backtrack north toward Greywake, letting the familiar city road pull the party "
                 "back to Mira's briefing room instead of pressing farther into the frontier."
             )
         if to_node_id == "high_road_ambush":
-            return "You backtrack north along the High Road, returning to the scarred wagon site between Phandalin and Neverwinter."
+            return "You backtrack north along the Emberway, returning to the scarred wagon site between Iron Hollow and Greywake."
         if from_node_id == "road_decision_post_blackwake" and to_node_id == "blackwake_crossing":
             return "You double back toward Blackwake Crossing, following the wet wagon scars and smoke-stained reeds instead of committing to the south road."
         if from_node_id == "phandalin_hub":
-            return f"You leave Phandalin by the same track you used before, letting the road back to {to_title} replace the town's noise behind you."
+            return f"You leave Iron Hollow by the same track you used before, letting the road back to {to_title} replace the town's noise behind you."
         return f"You backtrack from {from_title} toward {to_title}, choosing the familiar route over a new lead."
 
     def _narrate_act1_overworld_backtrack_context(self, from_node_id: str, to_node_id: str) -> None:
@@ -924,7 +924,7 @@ class MapSystemMixin:
             self.say("Mira is not on this muddy bend, but her unanswered questions sit in the background as you retrace Blackwake's broken approach.")
             return
         if from_node_id == "phandalin_hub":
-            self.say("Behind you, Phandalin keeps moving: Tessa's runners argue supplies, road watches trade signals, and familiar voices fade into background work.")
+            self.say("Behind you, Iron Hollow keeps moving: Tessa's runners argue supplies, road watches trade signals, and familiar voices fade into background work.")
 
     def backtrack_act1_overworld_node(self) -> bool:
         assert self.state is not None
@@ -1168,7 +1168,7 @@ class MapSystemMixin:
         from_title = ACT2_ENEMY_DRIVEN_MAP.nodes[from_node_id].title
         to_title = ACT2_ENEMY_DRIVEN_MAP.nodes[to_node_id].title
         if from_node_id == "act2_expedition_hub":
-            return f"You reopen the same expedition line from Phandalin, backtracking toward {to_title} before the council can turn the map into another argument."
+            return f"You reopen the same expedition line from Iron Hollow, backtracking toward {to_title} before the council can turn the map into another argument."
         return f"You backtrack from {from_title} toward {to_title}, choosing the route you already know."
 
     def _narrate_act2_overworld_backtrack_context(self, from_node_id: str, to_node_id: str) -> None:
@@ -1278,7 +1278,7 @@ class MapSystemMixin:
         if dungeon.exit_to_node_id == "road_decision_post_blackwake":
             options.append(("withdraw", "road_decision_post_blackwake", self.action_option("Withdraw to the Blackwake road decision")))
         else:
-            options.append(("withdraw", "phandalin_hub", self.action_option("Withdraw to Phandalin")))
+            options.append(("withdraw", "phandalin_hub", self.action_option("Withdraw to Iron Hollow")))
         return options
 
     def open_map_menu(self) -> None:
@@ -1376,22 +1376,22 @@ class MapSystemMixin:
         assert self.state is not None
         self.act1_initialize_metrics()
         self._sync_map_state_with_scene(force_node_id="phandalin_hub")
-        self.banner("Phandalin")
+        self.banner("Iron Hollow")
         if not self.state.flags.get("phandalin_arrived"):
             self.say(
-                "Phandalin rises from rocky foothills in a scatter of rebuilt homes, old stone scars, orchard walls, wagon sheds, and lantern-lit mud lanes. "
+                "Iron Hollow rises from rocky foothills in a scatter of rebuilt homes, old stone scars, orchard walls, wagon sheds, and lantern-lit mud lanes. "
                 "There are no proper walls, no garrison worth the name, and too many decent people living one bad week away from disaster.",
                 typed=True,
             )
             self.state.flags["phandalin_arrived"] = True
-            self.add_journal("You reached Phandalin, a hard-bitten frontier town under growing Ashen Brand pressure.")
+            self.add_journal("You reached Iron Hollow, a hard-bitten frontier town under growing Ashen Brand pressure.")
             if self.state.flags.get("blackwake_completed"):
                 self.describe_blackwake_phandalin_arrival()
             choice = self.scenario_choice(
                 "How do you enter town?",
                 [
                     self.quoted_option("INSIGHT", "I want to read the mood of the town before I speak."),
-                    self.quoted_option("PERSUASION", "Let them know Neverwinter sent help."),
+                    self.quoted_option("PERSUASION", "Let them know Greywake sent help."),
                     self.skill_tag("INVESTIGATION", self.action_option("Survey the tracks, barricades, and weak points first.")),
                 ]
                 + [text for _, text in self.scene_identity_options("phandalin_arrival")],
@@ -1410,25 +1410,25 @@ class MapSystemMixin:
                         "You catch the way fear keeps pulling the crowd's attention toward manor-side ruins, the east road, and a handful of people everybody seems to quietly trust."
                     )
                     self.add_clue(
-                        "Phandalin's fear points in three directions: the east road, the old manor hill, and the few locals still holding the place together."
+                        "Iron Hollow's fear points in three directions: the east road, the old manor hill, and the few locals still holding the place together."
                     )
                     self.add_clue(
                         "Old evacuation marks and nervous traffic patterns point toward Cinderfall Ruins, an abandoned relay east of Ashfall Watch."
                     )
                     self.unlock_act1_hidden_route(
-                        "Reading Phandalin's fear exposes a third route: the abandoned Cinderfall Ruins, where Ashfall's reserve line still flickers behind the main road."
+                        "Reading Iron Hollow's fear exposes a third route: the abandoned Cinderfall Ruins, where Ashfall's reserve line still flickers behind the main road."
                     )
                     self.act1_adjust_metric("act1_town_fear", -1)
-                    self.reward_party(xp=10, reason="reading Phandalin's mood on arrival")
+                    self.reward_party(xp=10, reason="reading Iron Hollow's mood on arrival")
                 else:
                     self.say("The town's fear is real, but too tangled to untangle in one glance.")
             elif choice == 2:
-                self.player_speaker("Let them know Neverwinter sent help.")
+                self.player_speaker("Let them know Greywake sent help.")
                 success = self.skill_check(self.state.player, "Persuasion", 12, context="to steady the town's nerves")
                 if success:
                     self.say("A few shoulders ease as your words sound more like a promise than a performance.")
                     self.act1_adjust_metric("act1_town_fear", -1)
-                    self.reward_party(xp=10, gold=6, reason="reassuring Phandalin on arrival")
+                    self.reward_party(xp=10, gold=6, reason="reassuring Iron Hollow on arrival")
                 else:
                     self.say("People listen, but frontier caution clings harder than hope.")
             else:
@@ -1437,7 +1437,7 @@ class MapSystemMixin:
                 if success:
                     self.say("Fresh wagon ruts, anxious repairs, and redirected lanes give you a usable picture of how fear is reshaping the town.")
                     self.add_clue("Recent wagon ruts suggest the Ashen Brand watches both the east road and the manor-side lanes.")
-                    self.reward_party(xp=10, reason="surveying Phandalin's defenses")
+                    self.reward_party(xp=10, reason="surveying Iron Hollow's defenses")
                 else:
                     self.say("There are too many overlapping tracks and half-finished repairs for a quick clean read.")
 
@@ -1452,19 +1452,19 @@ class MapSystemMixin:
             options: list[tuple[str, str]] = []
             if self.has_steward_interactions():
                 options.append(("steward", self.action_option("Report to Steward Tessa Harrow")))
-            options.append(("inn", self.action_option("Visit the Stonehill Inn")))
+            options.append(("inn", self.action_option("Visit the Ashlamp Inn")))
             if self.has_shrine_interactions():
-                options.append(("shrine", self.action_option("Stop by the shrine of Tymora")))
+                options.append(("shrine", self.action_option("Stop by the Lantern shrine")))
             options.extend(
                 [
-                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Barthen's Provisions"))),
-                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Graywind at the Lionshield trading post"))),
+                    ("barthen", self.skill_tag("TRADE", self.action_option("Browse Hadrik's Provisions"))),
+                    ("linene", self.skill_tag("TRADE", self.action_option("Call on Linene Ironward at the Ironbound trading post"))),
                 ]
             )
             if self.has_edermath_orchard_interactions():
-                options.append(("orchard", self.action_option("Walk the old walls of Edermath Orchard")))
+                options.append(("orchard", self.action_option("Walk the old walls of Orchard Wall")))
             if self.has_miners_exchange_interactions():
-                options.append(("exchange", self.action_option("Step into the Miner's Exchange")))
+                options.append(("exchange", self.action_option("Step into the Delvers' Exchange")))
             options.extend(
                 [
                     ("camp", self.action_option("Return to camp")),
@@ -1472,17 +1472,17 @@ class MapSystemMixin:
                 ]
             )
             if not self.state.flags.get("old_owl_well_cleared"):
-                label = self.action_option("Investigate Old Owl Well")
+                label = self.action_option("Investigate Blackglass Well")
                 if not self.can_visit_old_owl_well():
-                    label = self.action_option("Investigate Old Owl Well (need a lead)")
+                    label = self.action_option("Investigate Blackglass Well (need a lead)")
                 options.append(("old_owl", label))
             if not self.state.flags.get("wyvern_tor_cleared"):
-                label = self.action_option("Hunt the raiders at Wyvern Tor")
+                label = self.action_option("Hunt the raiders at Red Mesa Hold")
                 if not self.can_visit_wyvern_tor():
-                    label = self.action_option("Hunt the raiders at Wyvern Tor (need a lead)")
+                    label = self.action_option("Hunt the raiders at Red Mesa Hold (need a lead)")
                 elif self.should_warn_for_wyvern_tor():
                     label = self.action_option(
-                        f"Hunt the raiders at Wyvern Tor (recommended level {self.wyvern_tor_recommended_level()})"
+                        f"Hunt the raiders at Red Mesa Hold (recommended level {self.wyvern_tor_recommended_level()})"
                     )
                 options.append(("wyvern", label))
             if (
@@ -1494,12 +1494,12 @@ class MapSystemMixin:
             if not self.state.flags.get("ashfall_watch_cleared"):
                 label = self.action_option("Ride for Ashfall Watch")
                 if not self.act1_side_paths_cleared():
-                    label = self.action_option("Ride for Ashfall Watch (clear Old Owl Well and Wyvern Tor first)")
+                    label = self.action_option("Ride for Ashfall Watch (clear Blackglass Well and Red Mesa Hold first)")
                 options.append(("ashfall", label))
             elif not self.state.flags.get("tresendar_cleared"):
-                label = self.action_option("Descend beneath Tresendar Manor")
+                label = self.action_option("Descend beneath Duskmere Manor")
                 if not self.state.flags.get("tresendar_revealed"):
-                    label = self.action_option("Descend beneath Tresendar Manor (wait for a firmer lead)")
+                    label = self.action_option("Descend beneath Duskmere Manor (wait for a firmer lead)")
                 options.append(("tresendar", label))
             else:
                 options.append(("emberhall", self.action_option("Descend into Emberhall Cellars")))
@@ -1585,8 +1585,8 @@ class MapSystemMixin:
             typed=True,
         )
         options: list[tuple[str, str]] = [
-            ("neverwinter", self.action_option("Return to Neverwinter with what you found.")),
-            ("south", self.action_option("Press south toward the road to Phandalin.")),
+            ("neverwinter", self.action_option("Return to Greywake with what you found.")),
+            ("south", self.action_option("Press south toward the road to Iron Hollow.")),
             ("camp", self.action_option("Camp first, then decide.")),
         ]
         backtrack_node = self.peek_act1_overworld_backtrack_node()
@@ -1595,7 +1595,7 @@ class MapSystemMixin:
         choice = self.scenario_choice("Where do you go now?", [text for _, text in options], allow_meta=False)
         selection_key, _ = options[choice - 1]
         if selection_key == "neverwinter":
-            self.player_action("Return to Neverwinter with what you found.")
+            self.player_action("Return to Greywake with what you found.")
             self.state.flags["blackwake_return_destination"] = "neverwinter"
             self.speaker(
                 "Mira Thann",
@@ -1604,7 +1604,7 @@ class MapSystemMixin:
             if not self.state.flags.get("blackwake_neverwinter_reported"):
                 self.state.flags["blackwake_neverwinter_reported"] = True
                 if resolution == "evidence":
-                    self.reward_party(xp=20, gold=18, reason="bringing Blackwake proof back to Neverwinter")
+                    self.reward_party(xp=20, gold=18, reason="bringing Blackwake proof back to Greywake")
                     self.say("Mira pays for the ledgers without pretending coin is the point.")
                 elif resolution == "rescue":
                     self.add_inventory_item("potion_healing", 1, source="Mira's emergency stores")
@@ -1615,7 +1615,7 @@ class MapSystemMixin:
                 if self.state.flags.get("neverwinter_private_room_intel") and not self.state.flags.get("neverwinter_contract_house_blackwake_reported"):
                     self.state.flags["neverwinter_contract_house_blackwake_reported"] = True
                     self.state.flags["neverwinter_contract_house_political_callback"] = True
-                    self.reward_party(xp=15, gold=10, reason="turning contract-house witnesses into Neverwinter pressure")
+                    self.reward_party(xp=15, gold=10, reason="turning contract-house witnesses into Greywake pressure")
                     self.speaker(
                         "Sabra Kestrel",
                         "That is the same correction hand. Blackwake did not steal the manifests after the fact; someone in the city pre-taught the road where to bleed.",
@@ -1634,17 +1634,17 @@ class MapSystemMixin:
                     )
                     self.speaker(
                         "Mira Thann",
-                        "Good. Then this stops being rumor and becomes pressure. I can make Neverwinter's quiet offices answer a thing they can no longer call frontier panic.",
+                        "Good. Then this stops being rumor and becomes pressure. I can make Greywake's quiet offices answer a thing they can no longer call frontier panic.",
                     )
                     self.add_journal(
-                        "Oren, Sabra, Vessa, and Garren backed your Blackwake report, turning the contract-house intel into Neverwinter political pressure against the false-manifest circuit."
+                        "Oren, Sabra, Vessa, and Garren backed your Blackwake report, turning the contract-house intel into Greywake political pressure against the false-manifest circuit."
                     )
             self.turn_in_quest("trace_blackwake_cell", giver="Mira Thann")
-            self.say("With the report made, the south road waits again. The Phandalin writ is still yours to carry.")
+            self.say("With the report made, the south road waits again. The Iron Hollow writ is still yours to carry.")
             self.travel_to_act1_node("high_road_ambush")
             return
         if selection_key == "south":
-            self.player_action("Press south toward the road to Phandalin.")
+            self.player_action("Press south toward the road to Iron Hollow.")
             self.state.flags["blackwake_return_destination"] = "south_road"
             if resolution == "sabotage":
                 self.say("Behind you, the ruined cache leaves the Ashen Brand's next road crew short on warning, arrows, and patience.")
@@ -1657,7 +1657,7 @@ class MapSystemMixin:
         if selection_key == "camp":
             self.player_action("Camp first, then decide.")
             self.open_camp_menu()
-            self.say("The fire burns low. Blackwake is behind you; Neverwinter and Phandalin both still have claims on the morning.")
+            self.say("The fire burns low. Blackwake is behind you; Greywake and Iron Hollow both still have claims on the morning.")
             return
         if not self.backtrack_act1_overworld_node():
             self.say("There is no familiar Blackwake route to backtrack right now.")
@@ -1770,7 +1770,7 @@ class MapSystemMixin:
             if dungeon.exit_to_node_id == "road_decision_post_blackwake":
                 self.return_to_blackwake_decision(f"You pull back from {node.title} and regroup on the road beyond the river cut.")
                 return
-            self.return_to_phandalin(f"You withdraw from {node.title} and ride back to Phandalin to regroup.")
+            self.return_to_phandalin(f"You withdraw from {node.title} and ride back to Iron Hollow to regroup.")
             return
 
     def _run_act1_room(self, node_id: str, dungeon: DungeonMap, room: DungeonRoom) -> None:
@@ -2001,14 +2001,14 @@ class MapSystemMixin:
             self.player_action("Drag the lookout behind the reeds and make them talk.")
             if self.skill_check(self.state.player, "Intimidation", 12, context="to break the lookout's false authority"):
                 self.state.flags["blackwake_lookout_interrogated"] = True
-                self.add_clue("A Reedbank lookout says someone in Neverwinter is paid to ignore missing toll seals.")
+                self.add_clue("A Reedbank lookout says someone in Greywake is paid to ignore missing toll seals.")
                 self.say("The lookout gives up the cave name and keeps insisting the city side is not as clean as Mira hopes.")
         else:
             self.player_action("Copy the names and route marks before disturbing anything.")
             if self.skill_check(self.state.player, "Investigation", 12, context="to copy the forged route marks accurately"):
                 self.state.flags["blackwake_route_names_copied"] = True
                 self.state.flags["blackwake_forged_papers_found"] = True
-                self.add_clue("Copied route marks tie Blackwake permits to a Neverwinter-facing paymaster mark.")
+                self.add_clue("Copied route marks tie Blackwake permits to a Greywake-facing paymaster mark.")
                 self.say("The route marks are ugly in the useful way: repeatable, provable, and too neat to be local chaos.")
         self.complete_map_room(dungeon, room.room_id)
 
@@ -2331,7 +2331,7 @@ class MapSystemMixin:
             if self.skill_check(self.state.player, "Investigation", 13, context="to copy the Blackwake route marks under pressure"):
                 self.state.flags["blackwake_route_names_copied"] = True
                 self.state.flags["blackwake_evidence_secured"] = True
-                self.add_clue("Copied Blackwake marks name route payments, seized cargo categories, and a future Phandalin pressure chain.")
+                self.add_clue("Copied Blackwake marks name route payments, seized cargo categories, and a future Iron Hollow pressure chain.")
                 self.say("You take the names before the workshop loses its shape.")
             self.state.flags["blackwake_workshop_destroyed"] = True
         self.complete_map_room(dungeon, room.room_id)
@@ -2339,21 +2339,21 @@ class MapSystemMixin:
     def _blackwake_ash_office(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         self.say(
-            "Sereth's ash office is a command room pretending to be a storeroom: partial Phandalin pressure routes, caravan hijack summaries, and a note about hobgoblin supervision farther south."
+            "Sereth's ash office is a command room pretending to be a storeroom: partial Iron Hollow pressure routes, caravan hijack summaries, and a note about hobgoblin supervision farther south."
         )
         choice = self.scenario_choice(
             "Which record do you focus on?",
             [
-                self.action_option("Trace the Phandalin pressure sites."),
+                self.action_option("Trace the Iron Hollow pressure sites."),
                 self.action_option("Read the caravan hijack summaries."),
                 self.action_option("Search for the southern supervisor note."),
             ],
             allow_meta=False,
         )
         if choice == 1:
-            self.player_action("Trace the Phandalin pressure sites.")
+            self.player_action("Trace the Iron Hollow pressure sites.")
             self.state.flags["blackwake_phandalin_pressure_clue"] = True
-            self.add_clue("Blackwake notes point to Phandalin pressure sites and supply timing, not isolated roadside theft.")
+            self.add_clue("Blackwake notes point to Iron Hollow pressure sites and supply timing, not isolated roadside theft.")
         elif choice == 2:
             self.player_action("Read the caravan hijack summaries.")
             self.state.flags["blackwake_caravan_hijack_clue"] = True
@@ -2361,7 +2361,7 @@ class MapSystemMixin:
         else:
             self.player_action("Search for the southern supervisor note.")
             self.state.flags["blackwake_hobgoblin_supervision_clue"] = True
-            self.add_clue("A Blackwake order references hobgoblin supervision farther south, foreshadowing the High Road and Ashfall chain.")
+            self.add_clue("A Blackwake order references hobgoblin supervision farther south, foreshadowing the Emberway and Ashfall chain.")
         self.complete_map_room(dungeon, room.room_id)
 
     def _blackwake_floodgate_chamber(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
@@ -2509,7 +2509,7 @@ class MapSystemMixin:
             self._blackwake_adjust_named_companion("Bryn Underbough", 1, "you understood the value of proof before officials could deny it")
             self._blackwake_adjust_named_companion("Elira Dawnmantle", -1, "you chose ledgers while wounded people were still calling for help")
             self.reward_party(xp=35, gold=22, reason="securing Blackwake ledgers")
-            self.add_clue("Blackwake ledgers prove organized route corruption from Neverwinter's edge toward Phandalin.")
+            self.add_clue("Blackwake ledgers prove organized route corruption from Greywake's edge toward Iron Hollow.")
             self.say("You leave with proof heavy enough to change official conversations, though not every voice in the chamber leaves with you.")
         else:
             self.player_action("Sabotage the entire cache and floodgate.")
@@ -2523,7 +2523,7 @@ class MapSystemMixin:
             self.say("The floodgate takes the cache apart in a roar. Evidence and loot go with it, but so does a working supply line.")
         self.complete_map_room(dungeon, room.room_id)
         self.refresh_quest_statuses()
-        self.return_to_blackwake_decision("Blackwake Crossing is resolved. The choice now is whether its ashes go north to Mira or south toward Phandalin.")
+        self.return_to_blackwake_decision("Blackwake Crossing is resolved. The choice now is whether its ashes go north to Mira or south toward Iron Hollow.")
 
     def run_act2_dungeon(self, node_id: str) -> None:
         assert self.state is not None
@@ -2562,7 +2562,7 @@ class MapSystemMixin:
                 if not self.backtrack_act2_map_room(dungeon):
                     self.say("There is nowhere useful to backtrack from here.")
                 continue
-            self.return_to_act2_hub(f"You withdraw from {node.title} and return to Phandalin's expedition table.")
+            self.return_to_act2_hub(f"You withdraw from {node.title} and return to Iron Hollow's expedition table.")
             return
 
     def _run_act2_room(self, node_id: str, dungeon: DungeonMap, room: DungeonRoom) -> None:
@@ -2649,7 +2649,7 @@ class MapSystemMixin:
             ),
             (
                 "arcana",
-                self.skill_tag("ARCANA", self.action_option("Listen for the old Pact warding under the fresh collapse noise.")),
+                self.skill_tag("ARCANA", self.action_option("Listen for the old Meridian Compact warding under the fresh collapse noise.")),
             ),
         ]
         if self.state.flags.get("quest_reward_jerek_road_knot"):
@@ -2686,7 +2686,7 @@ class MapSystemMixin:
                 self.apply_status(self.state.player, "reeling", 1, source="Stonehollow's unstable entry")
                 self.say("You keep the beam from killing anyone, but it takes a brutal shoulder and a shower of stone.")
         elif selection_key == "arcana":
-            self.player_action("Listen for the old Pact warding under the fresh collapse noise.")
+            self.player_action("Listen for the old Meridian Compact warding under the fresh collapse noise.")
             if self.skill_check(self.state.player, "Arcana", 13, context="to hear the warded side-run beneath the collapse noise"):
                 self.state.flags["stonehollow_ward_path_hint"] = True
                 self.say("Beneath the bad echoes, one old ward still answers in a steady pattern. There is a cleaner side-run somewhere below.")
@@ -2759,7 +2759,7 @@ class MapSystemMixin:
     def _stonehollow_warded_side_run(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         self.say(
-            "The side-run is narrower and older than the main dig, lined with Pact scratches that have survived better than the new timber."
+            "The side-run is narrower and older than the main dig, lined with Meridian Compact scratches that have survived better than the new timber."
         )
         dc = 13 if self.state.flags.get("stonehollow_ward_path_hint") else 14
         choice = self.scenario_choice(
@@ -2774,7 +2774,7 @@ class MapSystemMixin:
         skill = "Arcana" if choice == 1 else "History" if choice == 2 else "Religion"
         if self.skill_check(self.state.player, skill, dc, context="to read Stonehollow's warded side-run"):
             self.state.flags["stonehollow_ward_path_read"] = True
-            self.reward_party(xp=10, reason="reading Stonehollow's Pact warding")
+            self.reward_party(xp=10, reason="reading Stonehollow's Meridian Compact warding")
             self.say("The side-run resolves into a real path, and the old warding shows where the scholars would have tried to hide.")
         else:
             self.say("The side-run gives you enough path to keep moving, but the deeper pattern stays stubbornly incomplete.")
@@ -2806,13 +2806,13 @@ class MapSystemMixin:
         if not self.find_companion("Nim Ardentglass"):
             self.speaker(
                 "Nim Ardentglass",
-                "If you're the reason I'm not dying under my own survey notes, I should probably stop pretending I can solve Wave Echo by myself.",
+                "If you're the reason I'm not dying under my own survey notes, I should probably stop pretending I can solve Resonant Vaults by myself.",
             )
             recruit = self.scenario_choice(
                 "Nim gathers his satchel and looks between you and the ruined lane.",
                 [
                     self.quoted_option("RECRUIT", "Then walk with us and keep the maps honest."),
-                    self.quoted_option("SAFE", "Get back to Phandalin and recover. We can talk there."),
+                    self.quoted_option("SAFE", "Get back to Iron Hollow and recover. We can talk there."),
                 ],
                 allow_meta=False,
             )
@@ -2965,7 +2965,7 @@ class MapSystemMixin:
                 self.act2_shift_metric(
                     "act2_whisper_pressure",
                     -1,
-                    "reading the Pact warding correctly keeps one more part of the cave from teaching through panic",
+                    "reading the Meridian Compact warding correctly keeps one more part of the cave from teaching through panic",
                 )
         self.return_to_act2_hub("Stonehollow exhales stone dust behind you, and the rescued survey truth finally reaches the expedition table.")
 
@@ -3197,7 +3197,7 @@ class MapSystemMixin:
         self.say("The cistern should be a quiet basin where silt drops out before clean flow continues. Instead the surface looks filmed over with thinking darkness.")
         if self._glasswater_active_companion("Elira Dawnmantle") is not None and not delayed:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "If someone is still breathing in this room, that is the first clean task we have had since entering it.",
             )
         choice = self.scenario_choice(
@@ -3238,7 +3238,7 @@ class MapSystemMixin:
         self.say("The chapel is hardly larger than a pantry: six lamp niches, a worn basin, and a hammered plaque reminding crews that steady hands keep whole towns alive.")
         if self._glasswater_active_companion("Elira Dawnmantle") is not None:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "This is a shrine for people who kept strangers alive without ever meeting them. I would rather not fail them in their own room.",
             )
         choice = self.scenario_choice(
@@ -3266,7 +3266,7 @@ class MapSystemMixin:
             if self.skill_check(self.state.player, "Insight", 13, context="to understand the people who built Glasswater's chapel"):
                 self.state.flags["glasswater_maintenance_creed_read"] = True
                 self.reward_party(xp=10, reason="reading Glasswater's maintenance creed")
-                self.say("The old Pact crews did not pray to the machinery. They prayed to the duty of keeping strangers alive through work nobody would ever praise.")
+                self.say("The old Meridian Compact crews did not pray to the machinery. They prayed to the duty of keeping strangers alive through work nobody would ever praise.")
         else:
             self.player_action("Take the basin water and move. Reverence can wait until the route is safe.")
             if self.skill_check(self.state.player, "Survival", 13, context="to take the chapel basin as a practical ward"):
@@ -3630,7 +3630,7 @@ class MapSystemMixin:
                 self.apply_status(merik, "reeling", 1, source="the tuning line breaks under your first push")
 
         if self._glasswater_active_companion("Elira Dawnmantle") is not None:
-            self.speaker("Elira Dawnmantle", "You do not get to call sickness discipline because you wrote it down neatly.")
+            self.speaker("Elira Lanternward", "You do not get to call sickness discipline because you wrote it down neatly.")
         if self._glasswater_active_companion("Bryn Underbough") is not None:
             self.speaker("Bryn Underbough", "He talks like a clerk who found religion at the bottom of a lockbox.")
         if self._glasswater_active_companion("Tolan Ironshield") is not None:
@@ -3721,7 +3721,7 @@ class MapSystemMixin:
             self.grant_quest("sever_quiet_choir")
         if not self.state.flags.get("broken_prospect_seen"):
             self.say(
-                "Broken Prospect is a jagged approach above Wave Echo Cave: half collapsed survey cut, half old dwarfwork scar, "
+                "Broken Prospect is a jagged approach above Resonant Vaults: half collapsed survey cut, half old dwarfwork scar, "
                 "and now one more place where history is trying to decide which footsteps matter.",
                 typed=True,
             )
@@ -3741,7 +3741,7 @@ class MapSystemMixin:
         )
         if choice == 1:
             self.player_action("Call the old survey marks before the echoes lie about distance.")
-            if self.skill_check(self.state.player, "History", 14, context="to use the Pact survey marks correctly"):
+            if self.skill_check(self.state.player, "History", 14, context="to use the Meridian Compact survey marks correctly"):
                 self.state.flags["prospect_shelf_marks_read"] = True
                 self.reward_party(xp=10, reason="reading the Broken Prospect shelf marks")
                 self.say("The old marks stop being decoration and become a usable way to judge distance.")
@@ -3759,19 +3759,19 @@ class MapSystemMixin:
 
     def _broken_prospect_pact_markers(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
-        self.say("The Pact markers cut across stone, timber, and old claim stakes, half survey language and half warning prayer.")
+        self.say("The Meridian Compact markers cut across stone, timber, and old claim stakes, half survey language and half warning prayer.")
         dc = 13 if self.state.flags.get("prospect_shelf_marks_read") or self.state.flags.get("nim_countermeasure_notes") else 14
         choice = self.scenario_choice(
             "How do you make the markers useful?",
             [
                 self.skill_tag("HISTORY", self.action_option("Read the dwarfwork survey order and call the true span.")),
                 self.skill_tag("INVESTIGATION", self.action_option("Compare new claim scratches against the older route logic.")),
-                self.skill_tag("ARCANA", self.action_option("Find the parts of the marking that still answer old Pact law.")),
+                self.skill_tag("ARCANA", self.action_option("Find the parts of the marking that still answer old Meridian Compact law.")),
             ],
             allow_meta=False,
         )
         skill = "History" if choice == 1 else "Investigation" if choice == 2 else "Arcana"
-        if self.skill_check(self.state.player, skill, dc, context="to decode Broken Prospect's Pact markers"):
+        if self.skill_check(self.state.player, skill, dc, context="to decode Broken Prospect's Meridian Compact markers"):
             self.state.flags["prospect_markers_decoded"] = True
             self.reward_party(xp=10, reason="decoding the Broken Prospect markers")
             self.say("The threshold resolves into spans, turns, and a warning about the foreman's dead shift below.")
@@ -3820,7 +3820,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Broken Prospect Rival Shelf",
-                description="Delayed claimants and Choir scouts try to keep the cleaner Wave Echo approach from returning to your map.",
+                description="Delayed claimants and Choir scouts try to keep the cleaner Resonant Vaults approach from returning to your map.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=True,
@@ -3875,7 +3875,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Broken Prospect Sentinel Span",
-                description="Old Pact armor tests the party before the cave approach can become a true route.",
+                description="Old Meridian Compact armor tests the party before the cave approach can become a true route.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -3884,7 +3884,7 @@ class MapSystemMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("The sentinel span holds and Wave Echo's threshold throws the company back.")
+            self.handle_defeat("The sentinel span holds and the Resonant Vaults' threshold throws the company back.")
             return
         if outcome == "fled":
             self.return_to_act2_hub("You retreat from the sentinel span before the old armor can turn the ledge into a drop.")
@@ -3956,11 +3956,11 @@ class MapSystemMixin:
         )
         if choice == 1:
             self.player_action("Call the old survey marks before the echoes lie about distance.")
-            if self.skill_check(self.state.player, "History", 14, context="to use the Pact survey marks correctly"):
+            if self.skill_check(self.state.player, "History", 14, context="to use the Meridian Compact survey marks correctly"):
                 hero_bonus += 2
         elif choice == 2:
             self.player_action("Use the broken prospect ledge and hit the foreman from the blind side.")
-            if self.skill_check(self.state.player, "Stealth", 14, context="to slip into Wave Echo cleanly"):
+            if self.skill_check(self.state.player, "Stealth", 14, context="to slip into Resonant Vaults cleanly"):
                 hero_bonus += 2
                 self.apply_status(enemies[0], "surprised", 1, source="your ledge approach")
         else:
@@ -3971,7 +3971,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Broken Prospect",
-                description="The first Wave Echo guardians still answer old duties, even now that new masters are twisting them.",
+                description="The first Resonant Vaults guardians still answer old duties, even now that new masters are twisting them.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -3980,7 +3980,7 @@ class MapSystemMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("Wave Echo's threshold throws the company back into the dark above.")
+            self.handle_defeat("The Resonant Vaults' threshold throws the company back into the dark above.")
             return
         if outcome == "fled":
             self.return_to_act2_hub("You withdraw from the cave mouth before the threshold can swallow the approach.")
@@ -3995,7 +3995,7 @@ class MapSystemMixin:
             self.say(
                 "The route is cleaner now, but nobody in camp mistakes that clean line for a moral victory while the South Adit still holds prisoners."
             )
-        self.return_to_act2_hub("Broken Prospect finally resolves into a real route, and Wave Echo has one less way to lie about where it begins.")
+        self.return_to_act2_hub("Broken Prospect finally resolves into a real route, and Resonant Vaults has one less way to lie about where it begins.")
 
     def _south_adit_delayed(self) -> bool:
         assert self.state is not None
@@ -4078,7 +4078,7 @@ class MapSystemMixin:
         if not self.state.flags.get("south_adit_seen"):
             self.say(
                 "The southern workings smell like old iron, cold water, and fear kept quiet too long. Cells have been built into the support chambers. "
-                "The Quiet Choir has not just occupied Wave Echo. It has been sorting people here.",
+                "The Quiet Choir has not just occupied Resonant Vaults. It has been sorting people here.",
                 typed=True,
             )
             if self._south_adit_delayed():
@@ -4241,7 +4241,7 @@ class MapSystemMixin:
         )
         if elira_active:
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "Break the line if you have to. Just do not make the prisoners pay the price twice.",
             )
         choice = self.scenario_choice(
@@ -4260,7 +4260,7 @@ class MapSystemMixin:
             )
             if elira_active:
                 self.speaker(
-                    "Elira Dawnmantle",
+                    "Elira Lanternward",
                     "Then keep the break on the wardens, not the people behind them.",
                 )
         else:
@@ -4271,7 +4271,7 @@ class MapSystemMixin:
             )
             if elira_active:
                 self.speaker(
-                    "Elira Dawnmantle",
+                    "Elira Lanternward",
                     "Good. A clean escape is still a kind of justice down here.",
                 )
 
@@ -4425,7 +4425,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="South Adit Wardens",
-                description="The prison line beneath Wave Echo tries to bury witnesses before the truth can get out.",
+                description="The prison line beneath Resonant Vaults tries to bury witnesses before the truth can get out.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -4468,7 +4468,7 @@ class MapSystemMixin:
         self._south_adit_recruit_irielle(delayed=delayed)
         self.reward_party(xp=60, gold=18, reason="freeing the South Adit prisoners")
         self._south_adit_award_route_rewards()
-        self.return_to_act2_hub("The South Adit prison line breaks open behind you, and its survivors carry the first hard proof of the Choir back toward Phandalin.")
+        self.return_to_act2_hub("The South Adit prison line breaks open behind you, and its survivors carry the first hard proof of the Choir back toward Iron Hollow.")
 
     def _wave_echo_rail_junction(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
@@ -4490,7 +4490,7 @@ class MapSystemMixin:
         )
         if choice == 1:
             self.player_action("Follow the survey marks and keep the old mine from lying about its own shape.")
-            if self.skill_check(self.state.player, "Investigation", 14, context="to read Wave Echo's outer rail junction"):
+            if self.skill_check(self.state.player, "Investigation", 14, context="to read the Resonant Vaults' outer rail junction"):
                 self.state.flags["outer_survey_marks_read"] = True
                 self.say("The false marks fall away from the real route, at least for this first junction.")
         elif choice == 2:
@@ -4540,7 +4540,7 @@ class MapSystemMixin:
                 hero_bonus += 2
         outcome = self.run_encounter(
             Encounter(
-                title="Wave Echo Slime Sluice",
+                title="Resonant Vaults Slime Sluice",
                 description="Acidic runoff and cave predators try to turn the outer gallery into a dead end.",
                 enemies=enemies,
                 allow_flee=True,
@@ -4591,7 +4591,7 @@ class MapSystemMixin:
                 hero_bonus += 2
         outcome = self.run_encounter(
             Encounter(
-                title="Wave Echo Grimlock Side-Run",
+                title="Resonant Vaults Grimlock Side-Run",
                 description="Tunnel hunters try to make the outer galleries turn against the party's map sense.",
                 enemies=enemies,
                 allow_flee=True,
@@ -4624,7 +4624,7 @@ class MapSystemMixin:
         skill = "Athletics" if choice == 1 else "Investigation" if choice == 2 else "Survival"
         if self.skill_check(self.state.player, skill, dc, context="to reopen the collapsed crane route"):
             self.state.flags["outer_crane_stabilized"] = True
-            self.reward_party(xp=10, reason="reopening Wave Echo's collapsed crane route")
+            self.reward_party(xp=10, reason="reopening the Resonant Vaults' collapsed crane route")
             self.say("The crane drops with a sound like a verdict, and the direct haul line becomes ugly but usable.")
         else:
             self.say("The crane shifts badly. You get the route open, but every echo behind you sounds less forgiving.")
@@ -4664,7 +4664,7 @@ class MapSystemMixin:
                 self.apply_status(enemies[0], "reeling", 1, source="the loop's timing breaking")
             outcome = self.run_encounter(
                 Encounter(
-                    title="Wave Echo False Echo Loop",
+                    title="Resonant Vaults False Echo Loop",
                     description="The outer galleries answer high whisper pressure with starblighted shapes in the wrong echoes.",
                     enemies=enemies,
                     allow_flee=True,
@@ -4725,7 +4725,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Outer Gallery Pressure",
-                description="Wave Echo's outer defenses are now a mix of scavengers, predators, and bad old engineering.",
+                description="The Resonant Vaults' outer defenses are now a mix of scavengers, predators, and bad old engineering.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -4744,9 +4744,9 @@ class MapSystemMixin:
         self.act2_shift_metric(
             "act2_route_control",
             1,
-            "the company now owns a real line through Wave Echo's outer galleries",
+            "the company now owns a real line through the Resonant Vaults' outer galleries",
         )
-        self.return_to_act2_hub("Wave Echo's outer galleries settle behind you into a route the expedition can actually hold.")
+        self.return_to_act2_hub("The Resonant Vaults' outer galleries settle behind you into a route the expedition can actually hold.")
 
     def _black_lake_causeway_lip(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
@@ -4755,7 +4755,7 @@ class MapSystemMixin:
         if not self.state.flags.get("black_lake_seen"):
             self.say(
                 "The old black water cuts the cave in half beneath a narrow causeway of stone and broken dwarfwork. A drowned shrine leans off one side. "
-                "A cult barracks squats on the other. This is the last clean threshold before the Forge of Spells, and the Quiet Choir knows it.",
+                "A cult barracks squats on the other. This is the last clean threshold before the Meridian Forge, and the Quiet Choir knows it.",
                 typed=True,
             )
             self.state.flags["black_lake_seen"] = True
@@ -4774,13 +4774,13 @@ class MapSystemMixin:
             self.player_action("Mark the drowned shrine before the lake swallows its last clean prayer.")
             if self.skill_check(self.state.player, "Religion", 14, context="to hear what sanctity still survives over the black water"):
                 self.state.flags["black_lake_shrine_route_marked"] = True
-                self.add_clue("A thin thread of older sanctity still answers at Black Lake's drowned shrine, which means the crossing is not fully the Choir's yet.")
+                self.add_clue("A thin thread of older sanctity still answers at Blackglass's drowned shrine, which means the crossing is not fully the Choir's yet.")
                 self.reward_party(xp=10, reason="reading the drowned shrine before the crossing")
         elif choice == 2:
             self.player_action("Count the barracks watches and messenger lanes before you start crossing openly.")
             if self.skill_check(self.state.player, "Stealth", 14, context="to read the barracks watches without becoming part of the report"):
                 self.state.flags["black_lake_barracks_watch_read"] = True
-                self.reward_party(xp=10, reason="mapping the Black Lake barracks watches")
+                self.reward_party(xp=10, reason="mapping the Blackglass barracks watches")
         else:
             self.player_action("Test the anchor pull and learn where the causeway can be made to lurch.")
             if self.skill_check(self.state.player, "Athletics", 14, context="to feel where the old line will break before it throws you with it"):
@@ -4801,7 +4801,7 @@ class MapSystemMixin:
                 "One of the South Adit survivors halts at the crossing and names the barracks blind-side watch they were forced to count from below."
             )
             self.add_clue(
-                "A rescued South Adit witness identifies the Black Lake barracks blind-side watch and the messenger lane the Choir trusted most."
+                "A rescued South Adit witness identifies the Blackglass barracks blind-side watch and the messenger lane the Choir trusted most."
             )
             return
         if outcome != "few_saved":
@@ -4809,12 +4809,12 @@ class MapSystemMixin:
         self.state.flags["black_lake_south_adit_payoff_applied"] = True
         self.state.flags["black_lake_choir_reserve_intact"] = True
         self.say(
-            "Too few captives escaped the adit soon enough to foul the Choir's reserve traffic. The Black Lake crossing feels more organized because of it."
+            "Too few captives escaped the adit soon enough to foul the Choir's reserve traffic. The Blackglass crossing feels more organized because of it."
         )
         self.act2_shift_metric(
             "act2_whisper_pressure",
             1,
-            "the Choir's South Adit reserve line reaches Black Lake before the survivors can break its rhythm",
+            "the Choir's South Adit reserve line reaches Blackglass before the survivors can break its rhythm",
         )
 
     def _black_lake_apply_conyberry_payoff(self) -> None:
@@ -4825,10 +4825,10 @@ class MapSystemMixin:
             self.state.flags["black_lake_conyberry_lamp_guidance"] = True
             self.state.flags["black_lake_shrine_route_marked"] = True
             self.say(
-                "The lamp discipline you restored at Conyberry catches at the Black Lake shrine before the water can make it sound like only drowning prayers belong here."
+                "The lamp discipline you restored at Hushfen catches at the Blackglass shrine before the water can make it sound like only drowning prayers belong here."
             )
             self.add_clue(
-                "Conyberry's relit Chapel of Lamps gives the Black Lake shrine a clean line to answer before the Forge can drown it in Choir rhythm."
+                "Hushfen's relit Chapel of Lamps gives the Blackglass shrine a clean line to answer before the Meridian Forge can drown it in Choir rhythm."
             )
         if self.state.flags.get("conyberry_chapel_pressure_payoff_applied"):
             return
@@ -4837,7 +4837,7 @@ class MapSystemMixin:
         self.act2_shift_metric(
             "act2_whisper_pressure",
             -1,
-            "Conyberry's relit chapel gives the Black Lake crossing one disciplined prayer the Choir cannot turn into panic",
+            "Hushfen's relit chapel gives the Blackglass crossing one disciplined prayer the Choir cannot turn into panic",
         )
 
     def _black_lake_drowned_shrine(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
@@ -4873,7 +4873,7 @@ class MapSystemMixin:
         )
         if shrine_bonus:
             self.state.flags["black_lake_shrine_sanctity_named"] = True
-            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Black Lake shrine")
+            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Blackglass shrine")
             self.add_clue("The drowned shrine still answers an older sanctity, which means the Forge route has not been fully rewritten by the Quiet Choir.")
             self.reward_party(xp=15, reason="reclaiming the drowned shrine cleanly")
         else:
@@ -4928,7 +4928,7 @@ class MapSystemMixin:
         selection_key, _ = options[choice - 1]
         if selection_key == "stealth":
             self.player_action("Cut the messengers first and keep the barracks from warning the far side.")
-            if self.skill_check(self.state.player, "Stealth", 14, context="to kill the Black Lake message chain before it runs"):
+            if self.skill_check(self.state.player, "Stealth", 14, context="to kill the Blackglass message chain before it runs"):
                 hero_bonus += 2
                 self.apply_status(enemies[1], "surprised", 1, source="their messengers dropped first")
         elif selection_key == "investigation":
@@ -4936,7 +4936,7 @@ class MapSystemMixin:
             if self.skill_check(self.state.player, "Investigation", 14, context="to seize the barracks orders intact"):
                 hero_bonus += 1
                 self.state.flags["black_lake_barracks_orders_taken"] = True
-                self.add_clue("Black Lake barracks orders confirm the Quiet Choir keeps its last reserve line on the Forge side of the crossing.")
+                self.add_clue("Blackglass barracks orders confirm the Quiet Choir keeps its last reserve line on the Meridian Forge side of the crossing.")
         elif selection_key == "athletics":
             self.player_action("Turn the weapon racks and bunks into a collapsing choke point.")
             if self.skill_check(self.state.player, "Athletics", 14, context="to make the barracks collapse inward on its own defenders"):
@@ -4947,10 +4947,10 @@ class MapSystemMixin:
             hero_bonus += 1
             self.state.flags["black_lake_barracks_orders_taken"] = True
             self.apply_status(enemies[1], "surprised", 1, source="you took the live courier satchel first")
-            self.add_clue("The quiet-room courier habits still hold underground: the real Black Lake reserve orders were carried in the least impressive satchel in the room.")
+            self.add_clue("The quiet-room courier habits still hold underground: the real Blackglass reserve orders were carried in the least impressive satchel in the room.")
         outcome = self.run_encounter(
             Encounter(
-                title="Black Lake Barracks",
+                title="Blackglass Barracks",
                 description="The Quiet Choir's last organized staging room before the Forge has to be broken or stripped.",
                 enemies=enemies,
                 allow_flee=True,
@@ -4960,10 +4960,10 @@ class MapSystemMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("The barracks holds, and the far side of Black Lake stays reinforced.")
+            self.handle_defeat("The barracks holds, and the far side of Blackglass stays reinforced.")
             return
         if outcome == "fled":
-            self.return_to_act2_hub("You fall back from the Black Lake barracks before the whole crossing turns against you.")
+            self.return_to_act2_hub("You fall back from the Blackglass barracks before the whole crossing turns against you.")
             return
         self.complete_act2_map_room(dungeon, room.room_id)
 
@@ -4999,7 +4999,7 @@ class MapSystemMixin:
         self.complete_act2_map_room(dungeon, room.room_id)
         if clean_sabotage:
             self.apply_status(self.state.player, "emboldened", 1, source="learning exactly how the causeway will jump")
-            self.reward_party(xp=15, reason="sabotaging the Black Lake anchors cleanly")
+            self.reward_party(xp=15, reason="sabotaging the Blackglass anchors cleanly")
         else:
             self.act2_shift_metric(
                 "act2_route_control",
@@ -5017,7 +5017,7 @@ class MapSystemMixin:
         hero_bonus = self.apply_scene_companion_support("black_lake_causeway")
         if self.state.flags.get("black_lake_shrine_purified"):
             hero_bonus += 1
-            self.apply_status(self.state.player, "blessed", 1, source="the Black Lake shrine")
+            self.apply_status(self.state.player, "blessed", 1, source="the Blackglass shrine")
         if self.state.flags.get("black_lake_barracks_raided"):
             hero_bonus += 1
         if self.state.flags.get("black_lake_causeway_shaken"):
@@ -5046,10 +5046,10 @@ class MapSystemMixin:
             self.player_action("Drag the line forward before the undertow can close around it.")
             if self.skill_check(self.state.player, "Athletics", 14, context="to beat the waterline's undertow by force"):
                 hero_bonus += 1
-                self.apply_status(self.state.player, "emboldened", 2, source="forcing the Black Lake edge")
+                self.apply_status(self.state.player, "emboldened", 2, source="forcing the Blackglass edge")
         outcome = self.run_encounter(
             Encounter(
-                title="Black Lake Waterline",
+                title="Blackglass Waterline",
                 description="Blackwater predators and old guardians make the last open stretch feel narrower than it is.",
                 enemies=enemies,
                 allow_flee=True,
@@ -5082,7 +5082,7 @@ class MapSystemMixin:
         hero_bonus = self.apply_scene_companion_support("black_lake_causeway")
         if self.state.flags.get("black_lake_shrine_purified"):
             hero_bonus += 1
-            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Black Lake shrine")
+            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Blackglass shrine")
         if self.state.flags.get("black_lake_barracks_raided"):
             hero_bonus += 1
         if self.state.flags.get("black_lake_causeway_shaken"):
@@ -5114,12 +5114,12 @@ class MapSystemMixin:
                 self.apply_status(enemies[0], "surprised", 1, source="the far side losing its runners")
         else:
             self.player_action("Fight while the whole causeway trembles and make the landing answer your pace.")
-            if self.skill_check(self.state.player, "Athletics", 14, context="to turn the shaking causeway into your advantage"):
+            if self.skill_check(self.state.player, "Athletics", 14, context="to turn the shaking causeway into your edge"):
                 hero_bonus += 2
                 self.apply_status(self.state.player, "emboldened", 2, source="forcing the far landing")
         outcome = self.run_encounter(
             Encounter(
-                title="Black Lake Causeway",
+                title="Blackglass Causeway",
                 description="Constructs, corrupted miners, and old command echoes try to stop the final approach.",
                 enemies=enemies,
                 allow_flee=True,
@@ -5135,25 +5135,25 @@ class MapSystemMixin:
             self.return_to_act2_hub("You withdraw from the causeway before the line fully collapses around you.")
             return
         self.complete_act2_map_room(dungeon, room.room_id)
-        self.reward_party(xp=55, gold=15, reason="crossing the Black Lake causeway")
+        self.reward_party(xp=55, gold=15, reason="crossing the Blackglass causeway")
         self.act2_award_milestone_gear(
             "act2_black_lake_milestone_gear",
             self.act2_black_lake_milestone_item(),
-            source="the Black Lake reliquary",
+            source="the Blackglass reliquary",
         )
-        self.add_journal("You crossed the Black Lake causeway and opened the last clean approach to the Forge of Spells.")
-        self.return_to_act2_hub("The Black Lake causeway is finally yours, and the Forge lies open on the far side.")
+        self.add_journal("You crossed the Blackglass causeway and opened the last clean approach to the Meridian Forge.")
+        self.return_to_act2_hub("The Blackglass causeway is finally yours, and the Meridian Forge lies open on the far side.")
 
     def _forge_threshold(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         if not self.state.flags.get("forge_seen"):
             self.say(
-                "The Forge of Spells is no longer just a lost wonder. The Quiet Choir has turned it into an instrument. "
+                "The Meridian Forge is no longer just a lost wonder. The Quiet Choir has turned it into an instrument. "
                 "Shards hum inside old channels, the air sounds wrong when it moves, and the whole chamber feels like it is listening for the next hand bold enough to strike it.",
                 typed=True,
             )
             if self.state.flags.get("black_lake_shrine_purified"):
-                self.say("The answered sanctity from Black Lake keeps one line through the chamber sounding like craft instead of hunger.")
+                self.say("The answered sanctity from Blackglass keeps one line through the chamber sounding like craft instead of hunger.")
             if self.state.flags.get("black_lake_barracks_orders_taken"):
                 self.say("The stolen barracks orders mark which choir lanes were supposed to reinforce the forge and which ones were only meant to witness.")
             elif self.state.flags.get("black_lake_barracks_raided"):
@@ -5194,15 +5194,15 @@ class MapSystemMixin:
             if self.skill_check(self.state.player, "Investigation", dc, context="to read the forge's real support traffic"):
                 self.state.flags["forge_threshold_orders_read"] = True
                 self.add_clue("The Forge's real reinforcement traffic still runs through the choir pit, which means Caldra's dais is not the only thing holding her ritual up.")
-                self.add_journal("You used the Black Lake orders to read the Forge threshold and find the chamber's real support traffic.")
+                self.add_journal("You used the Blackglass orders to read the Forge threshold and find the chamber's real support traffic.")
                 self.reward_party(xp=10, reason="reading the forge support routes")
         elif choice == 2:
             dc = 13 if self.state.flags.get("black_lake_shrine_purified") else 14
             self.player_action("Carry the shrine's answered sanctity forward before the forge swallows the last of it.")
             if self.skill_check(self.state.player, "Religion", dc, context="to carry clean sanctity into the forge threshold"):
                 self.state.flags["forge_threshold_sanctified"] = True
-                self.apply_status(self.state.player, "blessed", 1, source="the Black Lake shrine carried into the Forge")
-                self.add_journal("You carried Black Lake's answered sanctity across the Forge threshold and kept one lane of the chamber honest.")
+                self.apply_status(self.state.player, "blessed", 1, source="the Blackglass shrine carried into the Forge")
+                self.add_journal("You carried Blackglass's answered sanctity across the Forge threshold and kept one lane of the chamber honest.")
                 self.reward_party(xp=10, reason="sanctifying the forge threshold")
         else:
             dc = 13 if self.state.flags.get("black_lake_causeway_shaken") or self.state.flags.get("black_lake_anchor_weak_point_found") else 14
@@ -5210,7 +5210,7 @@ class MapSystemMixin:
             if self.skill_check(self.state.player, "Arcana", dc, context="to read the shard surges before they settle"):
                 self.state.flags["forge_threshold_shard_timing"] = True
                 self.state.flags["forge_shard_route_exposed"] = True
-                self.add_clue("The force you fed into the Black Lake foundations has exposed a shard vent that Caldra was relying on the chamber to keep hidden.")
+                self.add_clue("The force you fed into the Blackglass foundations has exposed a shard vent that Caldra was relying on the chamber to keep hidden.")
                 self.add_journal("You timed the Forge's shard surges and exposed a side route the chamber was trying to keep buried.")
                 self.reward_party(xp=10, reason="timing the forge shard surges")
         self.complete_act2_map_room(dungeon, room.room_id)
@@ -5280,7 +5280,7 @@ class MapSystemMixin:
     def _forge_pact_anvil(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         self.say(
-            "An old Pact anvil sits inside the Forge's newer desecration like a discipline the chamber still cannot quite kill. Heat moves through it in patient lines instead of hungry bursts."
+            "An old Meridian Compact anvil sits inside the Meridian Forge's newer desecration like a discipline the chamber still cannot quite kill. Heat moves through it in patient lines instead of hungry bursts."
         )
         dc = 15
         if self.state.flags.get("agatha_truth_clear"):
@@ -5290,7 +5290,7 @@ class MapSystemMixin:
         if self.state.flags.get("black_lake_shrine_purified") or self.state.flags.get("forge_threshold_sanctified"):
             dc -= 1
         choice = self.scenario_choice(
-            "How do you work the Pact anvil?",
+            "How do you work the Compact anvil?",
             [
                 self.skill_tag("ARCANA", self.action_option("Break the forge-channel tempo before Caldra can finish tuning it.")),
                 self.skill_tag("INVESTIGATION", self.action_option("Read the old craft rhythm and find the one line the Choir still has to fake.")),
@@ -5307,15 +5307,15 @@ class MapSystemMixin:
             tuned = self.skill_check(self.state.player, "Investigation", dc, context="to read the Forge's surviving craft rhythm")
         else:
             self.player_action("Ask the older vow to remember what this chamber was built to serve.")
-            tuned = self.skill_check(self.state.player, "Religion", dc, context="to wake the older Pact discipline in the anvil")
+            tuned = self.skill_check(self.state.player, "Religion", dc, context="to wake the older Meridian Compact discipline in the anvil")
         self.complete_act2_map_room(dungeon, room.room_id)
         if tuned:
             self.state.flags["forge_anvil_tuned"] = True
             if self.state.flags.get("south_adit_counter_cadence_learned") and self.find_companion("Irielle Ashwake") is not None:
                 self.state.flags["irielle_counter_cadence"] = True
                 self.state.flags["counter_cadence_known"] = True
-            self.add_clue("The Pact anvil still carries a discipline that can crack the Choir's forge-tempo if you hit it cleanly.")
-            self.add_journal("You woke the Pact anvil's older discipline and proved the Forge still remembers craft beneath the Choir's ritual.")
+            self.add_clue("The Meridian Compact anvil still carries a discipline that can crack the Choir's forge-tempo if you hit it cleanly.")
+            self.add_journal("You woke the Meridian Compact anvil's older discipline and proved the Meridian Forge still remembers craft beneath the Choir's ritual.")
             self.reward_party(xp=15, reason="recovering the Forge's older rhythm")
         else:
             self.say("The anvil answers, but not cleanly enough to become certainty on its own.")
@@ -5400,19 +5400,19 @@ class MapSystemMixin:
         conyberry_sigil_copied = bool(self.state.flags.get("conyberry_sigil_copied"))
         if conyberry_sigil_copied:
             self.say(
-                "The copied Conyberry sigil makes one strand of the lens painfully legible: the Choir is still teaching old service-wards to obey without looking conquered."
+                "The copied Hushfen sigil makes one strand of the lens painfully legible: the Choir is still teaching old service-wards to obey without looking conquered."
             )
             if not self.state.flags.get("forge_conyberry_sigil_risk_applied"):
                 self.state.flags["forge_conyberry_sigil_risk_applied"] = True
                 if self.state.flags.get("agatha_warning_bound"):
                     self.state.flags["forge_conyberry_sigil_bound_safely"] = True
-                    self.say("Because Agatha's warning was bound before it left Conyberry, the copied mark stays a key instead of becoming an open wound.")
+                    self.say("Because the Pale Witness's warning was bound before it left Hushfen, the copied mark stays a key instead of becoming an open wound.")
                 else:
                     self.state.flags["forge_conyberry_sigil_moral_risk"] = True
                     self.act2_shift_metric(
                         "act2_whisper_pressure",
                         1,
-                        "using Conyberry's copied wound against the Forge gives the Choir one more live shape to answer through",
+                        "using Hushfen's copied wound against the Meridian Forge gives the Choir one more live shape to answer through",
                     )
         dc = 15
         if self.state.flags.get("black_lake_shrine_purified"):
@@ -5467,7 +5467,7 @@ class MapSystemMixin:
                 self.state.flags["forge_shard_line_broken"] = True
             if conyberry_sigil_copied:
                 self.state.flags["forge_lens_conyberry_sigil_used"] = True
-                self.add_journal("You used Conyberry's copied sigil to read one of the Forge lens's obedience seams before Caldra could hide it.")
+                self.add_journal("You used Hushfen's copied sigil to read one of the Meridian Forge lens's obedience seams before Caldra could hide it.")
             self.add_clue("The resonance lens only held because Caldra was braiding witness, ritual, and shard pressure into one engineered lie.")
             self.add_journal("You mapped the resonance lens from inside and learned exactly which lines were keeping Caldra's certainty standing.")
             self.reward_party(xp=15, reason="mapping the resonance lens before the final confrontation")
@@ -5492,7 +5492,7 @@ class MapSystemMixin:
         hero_bonus = self.apply_scene_companion_support("forge_of_spells")
         parley_dc = 15
         if self.state.flags.get("black_lake_shrine_purified") or self.state.flags.get("forge_threshold_sanctified"):
-            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Black Lake shrine")
+            self.apply_status(self.state.player, "blessed", 2, source="the reclaimed Blackglass shrine")
             hero_bonus += 1
             parley_dc -= 1
         if self.state.flags.get("black_lake_barracks_orders_taken") or self.state.flags.get("forge_lens_support_line_named"):
@@ -5555,13 +5555,13 @@ class MapSystemMixin:
         else:
             self.player_action("Hit the chamber hard and trust momentum before the whispers settle in.")
             hero_bonus += 2
-            self.apply_status(self.state.player, "emboldened", 2, source="storming the Forge of Spells")
+            self.apply_status(self.state.player, "emboldened", 2, source="storming the Meridian Forge")
             if self.state.flags.get("act2_sponsor") == "lionshield":
                 hero_bonus += 1
         outcome = self.run_encounter(
             Encounter(
                 title="Boss: Sister Caldra Voss",
-                description="The Quiet Choir's cult agent makes the final stand at the Forge of Spells.",
+                description="The Quiet Choir's cult agent makes the final stand at the Meridian Forge.",
                 enemies=enemies,
                 allow_flee=True,
                 allow_parley=True,
@@ -5580,12 +5580,12 @@ class MapSystemMixin:
         self.add_clue("Caldra's notes describe the Forge as only a lens. Whatever the Quiet Choir truly serves is deeper, older, and not confined to the mine.")
         if self.act2_metric_value("act2_whisper_pressure") >= 4:
             self.add_clue(
-                "Even broken, the Forge keeps trying to answer a call from farther down. The party is not leaving Wave Echo with clean silence."
+                "Even broken, the Forge keeps trying to answer a call from farther down. The party is not leaving Resonant Vaults with clean silence."
             )
-        self.add_journal("You broke Sister Caldra Voss and tore the Forge of Spells out of the Quiet Choir's grip.")
-        self.reward_party(xp=120, gold=40, reason="breaking the Quiet Choir's Wave Echo cell")
+        self.add_journal("You broke Sister Caldra Voss and tore the Meridian Forge out of the Quiet Choir's grip.")
+        self.reward_party(xp=120, gold=40, reason="breaking the Quiet Choir's Resonant Vaults cell")
         self.act2_record_epilogue_flags()
-        self.return_to_act2_hub("The Forge's wrong song breaks apart behind you, and Wave Echo finally sounds like a place instead of an instrument.")
+        self.return_to_act2_hub("The Forge's wrong song breaks apart behind you, and Resonant Vaults finally sounds like a place instead of an instrument.")
 
     def _old_owl_well_ring(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
@@ -5675,7 +5675,7 @@ class MapSystemMixin:
 
         outcome = self.run_encounter(
             Encounter(
-                title="Old Owl Well Dig Ring",
+                title="Blackglass Well Dig Ring",
                 description="Bone-haulers and animated sentries close around the well mouth.",
                 enemies=enemies,
                 allow_flee=True,
@@ -5685,7 +5685,7 @@ class MapSystemMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("The dead keep their watch at Old Owl Well.")
+            self.handle_defeat("The dead keep their watch at Blackglass Well.")
             return
         if outcome == "fled":
             self.return_to_phandalin("You fall back from the well before the site can swallow the whole party.")
@@ -5716,8 +5716,8 @@ class MapSystemMixin:
             )
             if success:
                 self.say("The prospector gasps out one useful truth: the gravecaller answers to Ashfall's coin and the manor's keys.")
-                self.add_clue("A rescued prospector says the gravecaller at Old Owl Well was being paid through Ashfall Watch for work tied to the manor hill.")
-                self.reward_party(xp=10, reason="saving the prospector at Old Owl Well")
+                self.add_clue("A rescued prospector says the gravecaller at Blackglass Well was being paid through Ashfall Watch for work tied to the manor hill.")
+                self.reward_party(xp=10, reason="saving the prospector at Blackglass Well")
             else:
                 self.say("You save the prospector's life, but not a clean version of what they saw.")
         elif choice == 2:
@@ -5758,8 +5758,8 @@ class MapSystemMixin:
             success = self.skill_check(self.state.player, "Investigation", 12, context="to preserve the gravecaller notes before they scatter")
             if success:
                 self.say("The page names Ashfall Watch as the collection point and mentions a soot-key transfer beneath the old manor hill.")
-                self.add_clue("The Old Owl Well notes point to Ashfall Watch as the collection point for salvage moved toward the manor hill.")
-                self.reward_party(xp=10, reason="securing the Old Owl Well route notes")
+                self.add_clue("The Blackglass Well notes point to Ashfall Watch as the collection point for salvage moved toward the manor hill.")
+                self.reward_party(xp=10, reason="securing the Blackglass Well route notes")
             else:
                 self.say("You save fragments, but the ugliest details go spinning away with the dust.")
         elif choice == 2:
@@ -5768,7 +5768,7 @@ class MapSystemMixin:
             if success:
                 self.say("The ash-ink still carries the smell of the signal basin at Ashfall, which ties the sites together even more cleanly.")
                 self.add_clue("The trench notes were written in the same treated ash used by Ashfall Watch's signaling crews.")
-                self.reward_party(xp=10, reason="decoding the tainted ledgers at Old Owl Well")
+                self.reward_party(xp=10, reason="decoding the tainted ledgers at Blackglass Well")
             else:
                 self.say("The ritual residue is obvious, but the deeper trail slips away from you.")
         elif choice == 3:
@@ -5834,14 +5834,14 @@ class MapSystemMixin:
 
     def is_tresendar_cellar_encounter(self, encounter) -> bool:
         return (
-            getattr(encounter, "title", "") == "Tresendar Cellars"
+            getattr(encounter, "title", "") == "Duskmere Cellars"
             and self.state is not None
             and self.state.current_scene == "tresendar_manor"
         )
 
     def is_tresendar_manor_encounter(self, encounter) -> bool:
         return (
-            getattr(encounter, "title", "") in {"Tresendar Cellars", "The Cistern Eye"}
+            getattr(encounter, "title", "") in {"Duskmere Cellars", "The Cistern Eye"}
             and self.state is not None
             and self.state.current_scene == "tresendar_manor"
         )
@@ -6115,12 +6115,12 @@ class MapSystemMixin:
             targets.append(self.rng.choice(conscious_enemies))
         if not targets:
             return
-        self.say("Tresendar's old bones start losing the argument with the fight. Stone breaks loose from the ceiling.")
+        self.say("Duskmere's old bones start losing the argument with the fight. Stone breaks loose from the ceiling.")
         for target in targets:
             self.resolve_tresendar_falling_stone(target)
 
     def resolve_tresendar_falling_stone(self, target) -> None:
-        if self.saving_throw(target, "DEX", 12, context="against Tresendar's falling stones"):
+        if self.saving_throw(target, "DEX", 12, context="against Duskmere's falling stones"):
             self.say(f"{target.name} twists clear before the ceiling finds them.")
             return
         actual = self.apply_damage(
@@ -6128,14 +6128,14 @@ class MapSystemMixin:
             self.roll_with_display_bonus(
                 "1d4",
                 style="damage",
-                context_label="Tresendar collapse",
+                context_label="Duskmere collapse",
                 outcome_kind="damage",
             ).total,
             damage_type="bludgeoning",
         )
         if target.is_conscious():
             status = self.rng.choice(("prone", "reeling"))
-            self.apply_status(target, status, 1, source="falling stone from Tresendar's collapse")
+            self.apply_status(target, status, 1, source="falling stone from Duskmere's collapse")
         self.say(f"{target.name} is clipped by falling stone for {self.style_damage(actual)} bludgeoning damage.")
         self.announce_downed_target(target)
 
@@ -6388,7 +6388,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Miniboss: Vaelith Marr",
-                description="The gravecaller of Old Owl Well fights from the lip of the buried dark.",
+                description="The gravecaller of Blackglass Well fights from the lip of the buried dark.",
                 enemies=boss_enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -6400,22 +6400,22 @@ class MapSystemMixin:
             self.handle_defeat("The well's corpse-lights burn on above the fallen party.")
             return
         if outcome == "fled":
-            self.return_to_phandalin("You break contact and retreat to Phandalin with the well still active behind you.")
+            self.return_to_phandalin("You break contact and retreat to Iron Hollow with the well still active behind you.")
             return
 
         self.act1_adjust_metric("act1_ashen_strength", -1)
         self.complete_map_room(dungeon, room.room_id)
-        self.add_clue("Old Owl Well is cleared, and its notes tie grave-salvage, Ashfall Watch, and the manor hill into one supply chain.")
-        self.add_journal("You silenced Old Owl Well and broke one of the Ashen Brand's outer operations.")
+        self.add_clue("Blackglass Well is cleared, and its notes tie grave-salvage, Ashfall Watch, and the manor hill into one supply chain.")
+        self.add_journal("You silenced Blackglass Well and broke one of the Ashen Brand's outer operations.")
         self.refresh_quest_statuses(announce=False)
         self.add_inventory_item("scroll_lesser_restoration", source="Vaelith's ritual satchel")
-        self.return_to_phandalin("Old Owl Well falls quiet behind you as the road back to Phandalin opens again.")
+        self.return_to_phandalin("Blackglass Well falls quiet behind you as the road back to Iron Hollow opens again.")
 
     def _wyvern_goat_path(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         if not self.state.flags.get("wyvern_tor_seen"):
             self.say(
-                "Wyvern Tor looms out of the hills in broken shelves of wind-cut stone. Goat paths, old watch cairns, and smoke-stained hollows twist around the ridge, "
+                "Red Mesa Hold looms out of the hills in broken shelves of wind-cut stone. Goat paths, old watch cairns, and smoke-stained hollows twist around the ridge, "
                 "and something large has been pacing the high ground long enough to turn the dust into habitual scars.",
                 typed=True,
             )
@@ -6436,7 +6436,7 @@ class MapSystemMixin:
         )
         if choice == 1:
             self.player_action("Use the goat path and the wind shadow to reach the upper shelf.")
-            success = self.skill_check(self.state.player, "Survival", 13, context="to take the hidden path up Wyvern Tor")
+            success = self.skill_check(self.state.player, "Survival", 13, context="to take the hidden path up Red Mesa Hold")
             if success:
                 self.apply_status(enemies[0], "surprised", 1, source="your high approach")
                 hero_bonus += 2
@@ -6466,7 +6466,7 @@ class MapSystemMixin:
 
         outcome = self.run_encounter(
             Encounter(
-                title="Wyvern Tor Shelf Fight",
+                title="Red Mesa Hold Shelf Fight",
                 description="Orc raiders and a hunting worg defend the tor's outer shelf.",
                 enemies=enemies,
                 allow_flee=True,
@@ -6476,7 +6476,7 @@ class MapSystemMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("Wyvern Tor keeps the high ground and the road below it.")
+            self.handle_defeat("Red Mesa Hold keeps the high ground and the road below it.")
             return
         if outcome == "fled":
             self.return_to_phandalin("You break away from the tor and retreat before the shelf turns into a killing bowl.")
@@ -6502,8 +6502,8 @@ class MapSystemMixin:
             success = self.skill_check(self.state.player, "Medicine", 12, context="to steady the captured drover before shock takes over")
             if success:
                 self.say("The drover coughs out one clean answer: a blood-chief named Brughor, one ogre, and enough ego to think the hill already belongs to him.")
-                self.add_clue("A captured drover confirms Brughor holds Wyvern Tor with an ogre and a small disciplined raiding party.")
-                self.reward_party(xp=10, reason="saving the captured drover at Wyvern Tor")
+                self.add_clue("A captured drover confirms Brughor holds Red Mesa Hold with an ogre and a small disciplined raiding party.")
+                self.reward_party(xp=10, reason="saving the captured drover at Red Mesa Hold")
             else:
                 self.say("The drover lives, but the useful details come back in broken pieces.")
         elif choice == 2:
@@ -6517,7 +6517,7 @@ class MapSystemMixin:
                 self.say("You get fear, blood, and smoke, but not the clean edge of an answer.")
         else:
             self.player_action("Cut them loose, arm them, and send them downslope before the chief arrives.")
-            self.say("The drover staggers away with a stolen knife and a promise to tell Phandalin exactly what waits on this hill.")
+            self.say("The drover staggers away with a stolen knife and a promise to tell Iron Hollow exactly what waits on this hill.")
 
         self.act1_adjust_metric("act1_survivors_saved", 1)
         self.act1_adjust_metric("act1_town_fear", -1)
@@ -6532,7 +6532,7 @@ class MapSystemMixin:
         )
         if followup == 1:
             self.player_action("Send them hard for town with the cleanest warning they can carry.")
-            self.say("The drover leaves fast, taking one true account of Wyvern Tor back toward people who still have time to listen.")
+            self.say("The drover leaves fast, taking one true account of Red Mesa Hold back toward people who still have time to listen.")
         elif followup == 2:
             self.player_action("Keep them hidden below the shelf to signal when Brughor commits his line.")
             self.state.flags["wyvern_spotter_signal"] = True
@@ -6570,7 +6570,7 @@ class MapSystemMixin:
             if success:
                 self.apply_status(self.state.player, "blessed", 2, source="the restored cairn shrine")
                 self.say("You set the cairn stones true again, and the hill stops feeling entirely like theirs.")
-                self.reward_party(xp=10, reason="restoring the shrine on Wyvern Tor")
+                self.reward_party(xp=10, reason="restoring the shrine on Red Mesa Hold")
             else:
                 self.say("You do what you can with the broken shrine, but the best of the omen slips through your fingers.")
         elif choice == 2:
@@ -6647,7 +6647,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Miniboss: Brughor Skullcleaver",
-                description="The blood-chief of Wyvern Tor makes his stand on the broken high shelf.",
+                description="The blood-chief of Red Mesa Hold makes his stand on the broken high shelf.",
                 enemies=boss_enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -6659,16 +6659,16 @@ class MapSystemMixin:
             self.handle_defeat("Brughor leaves the hill red and the road below it empty.")
             return
         if outcome == "fled":
-            self.return_to_phandalin("You pull clear of the upper shelf and retreat to Phandalin to regroup.")
+            self.return_to_phandalin("You pull clear of the upper shelf and retreat to Iron Hollow to regroup.")
             return
 
         self.act1_adjust_metric("act1_ashen_strength", -1)
         self.complete_map_room(dungeon, room.room_id)
-        self.add_clue("Wyvern Tor is cleared, and its raiders were coordinating with Ashfall Watch rather than acting alone.")
-        self.add_journal("You broke the raiders at Wyvern Tor and stripped another outer shield away from the Ashen Brand.")
+        self.add_clue("Red Mesa Hold is cleared, and its raiders were coordinating with Ashfall Watch rather than acting alone.")
+        self.add_journal("You broke the raiders at Red Mesa Hold and stripped another outer shield away from the Ashen Brand.")
         self.refresh_quest_statuses(announce=False)
         self.add_inventory_item("greater_healing_draught", source="Brughor's travel chest")
-        self.return_to_phandalin("Wyvern Tor falls behind you as the ridge wind finally goes clean.")
+        self.return_to_phandalin("Red Mesa Hold falls behind you as the ridge wind finally goes clean.")
 
     def _cinderfall_collapsed_gate(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
@@ -7008,7 +7008,7 @@ class MapSystemMixin:
             self.handle_defeat("Ashfall Watch remains in enemy hands.")
             return
         if outcome == "fled":
-            self.return_to_phandalin("You fall back to Phandalin to rethink the assault.")
+            self.return_to_phandalin("You fall back to Iron Hollow to rethink the assault.")
             return
 
         self.complete_map_room(dungeon, room.room_id)
@@ -7225,7 +7225,7 @@ class MapSystemMixin:
             )
         options.extend(
             [
-                ("intimidation", self.quoted_option("INTIMIDATION", "Surrender the yard in Phandalin's name.")),
+                ("intimidation", self.quoted_option("INTIMIDATION", "Surrender the yard in Iron Hollow's name.")),
                 ("persuasion", self.quoted_option("PERSUASION", "Your paymaster is already losing. Walk away with the people who still can.")),
                 ("strike", self.action_option("Strike before he can settle the shield line.")),
             ]
@@ -7240,15 +7240,15 @@ class MapSystemMixin:
             self.player_action("Use the stolen countersign and make Rukhar's own line doubt the next order.")
             boss_enemies[0].current_hp = max(1, boss_enemies[0].current_hp - 4)
             boss_bonus += 1
-            self.apply_status(boss_enemies[0], "reeling", 1, source="Stonehill's stolen countersign turning his line uncertain")
+            self.apply_status(boss_enemies[0], "reeling", 1, source="Ashlamp's stolen countersign turning his line uncertain")
             if len(boss_enemies) > 1:
                 wavering = boss_enemies.pop()
                 self.say(f"When you bark the stolen countersign, {wavering.name} checks Rukhar instead of the line. The hesitation is all the opening you need.")
             else:
                 self.say("You speak the countersign from Nera's packet and even Rukhar has to waste a heartbeat recalculating who betrayed whom.")
-            self.reward_party(xp=10, reason="spending Stonehill quiet-room intel at Ashfall")
+            self.reward_party(xp=10, reason="spending Ashlamp quiet-room intel at Ashfall")
         elif selection_key == "intimidation":
-            self.player_speaker("Surrender the yard in Phandalin's name.")
+            self.player_speaker("Surrender the yard in Iron Hollow's name.")
             success = self.skill_check(self.state.player, "Intimidation", 13, context="to crack Rukhar's command posture")
             if success:
                 boss_enemies[0].current_hp = max(1, boss_enemies[0].current_hp - 4)
@@ -7289,17 +7289,17 @@ class MapSystemMixin:
             self.handle_defeat("Rukhar drives the party from the tower in blood and smoke.")
             return
         if outcome == "fled":
-            self.return_to_phandalin("You escape the watchtower and retreat to Phandalin to regroup.")
+            self.return_to_phandalin("You escape the watchtower and retreat to Iron Hollow to regroup.")
             return
 
         if not self.state.flags.get("ashfall_blue_scarf_truth_found"):
             self._ashfall_record_blue_scarf_truth(fallback=True)
         self.complete_map_room(dungeon, room.room_id)
-        self.add_clue("Rukhar carried a soot-black key stamped with the Tresendar crest and orders to move captives beneath the manor hill.")
-        self.add_journal("Ashfall Watch is broken, but the Ashen Brand's cellar routes beneath Phandalin are still active.")
+        self.add_clue("Rukhar carried a soot-black key stamped with the Duskmere crest and orders to move captives beneath the manor hill.")
+        self.add_journal("Ashfall Watch is broken, but the Ashen Brand's cellar routes beneath Iron Hollow are still active.")
         self.refresh_quest_statuses(announce=False)
         self.say(
-            "Among Rukhar's orders you find a blackened key bearing the Tresendar crest, prisoner transfer notes, and references to a deeper reserve called Emberhall. "
+            "Among Rukhar's orders you find a blackened key bearing the Duskmere crest, prisoner transfer notes, and references to a deeper reserve called Emberhall. "
             "The field base is broken, but the gang's thinking parts are still below town."
         )
         self.return_to_phandalin("Ashfall Watch breaks under the assault, and the road home finally opens.")
@@ -7307,7 +7307,7 @@ class MapSystemMixin:
     def _tresendar_hidden_stair(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         self.say(
-            "The ruined manor crouches over Phandalin like a memory that never learned to stay buried. Beneath the broken shell, a hidden stair drops into wet stone, cistern corridors, and ash-marked cellars where the Ashen Brand keeps its quieter work.",
+            "The ruined manor crouches over Iron Hollow like a memory that never learned to stay buried. Beneath the broken shell, a hidden stair drops into wet stone, cistern corridors, and ash-marked cellars where the Ashen Brand keeps its quieter work.",
             typed=True,
         )
         choice = self.scenario_choice(
@@ -7374,7 +7374,7 @@ class MapSystemMixin:
             hero_bonus += 1
         outcome = self.run_encounter(
             Encounter(
-                title="Tresendar Cellars",
+                title="Duskmere Cellars",
                 description="Collectors, cutouts, and buried sentries hold the intake route beneath the manor.",
                 enemies=enemies,
                 allow_flee=True,
@@ -7385,7 +7385,7 @@ class MapSystemMixin:
             )
         )
         if outcome == "defeat":
-            self.handle_defeat("The buried manor swallows the party beneath Phandalin.")
+            self.handle_defeat("The buried manor swallows the party beneath Iron Hollow.")
             return
         if outcome == "fled":
             self.return_to_phandalin("You pull back from the manor tunnels before the whole cellar network can close around you.")
@@ -7449,7 +7449,7 @@ class MapSystemMixin:
             if success:
                 self.add_clue("Rukhar's ledger chain confirms Emberhall as Varyn's deeper reserve beneath town.")
                 self.reward_party(xp=10, reason="decoding the cage-store records")
-                self.say("The papers make it plain: Tresendar was only the intake route, not the final refuge.")
+                self.say("The papers make it plain: Duskmere was only the intake route, not the final refuge.")
             else:
                 self.say("You get enough to confirm the route, but not every name attached to it.")
         elif choice == 2:
@@ -7497,7 +7497,7 @@ class MapSystemMixin:
         if not self.state.flags.get("tresendar_nothic_trade_info_gained"):
             self.state.flags["deep_ledger_hint_count"] = int(self.state.flags.get("deep_ledger_hint_count", 0) or 0) + 1
         self.state.flags["tresendar_nothic_trade_info_gained"] = True
-        self.add_clue("The Cistern Eye names Emberhall as Varyn's deeper refuge and calls Tresendar only the Ashen Brand's intake throat.")
+        self.add_clue("The Cistern Eye names Emberhall as Varyn's deeper refuge and calls Duskmere only the Ashen Brand's intake throat.")
 
     def _record_tresendar_nothic_cinderfall_lore(self) -> None:
         assert self.state is not None
@@ -7521,10 +7521,10 @@ class MapSystemMixin:
             self.state.flags["deep_ledger_hint_count"] = int(self.state.flags.get("deep_ledger_hint_count", 0) or 0) + 1
         self.state.flags["tresendar_nothic_wave_echo_lore"] = True
         self.add_clue(
-            "The Cistern Eye says the Ashen Brand is a curtain over older Phandelver routes, keeping Wave Echo unreachable until someone else can claim the first clean map."
+            "The Cistern Eye says the Ashen Brand is a curtain over older Meridian routes, keeping Resonant Vaults unreachable until someone else can claim the first clean map."
         )
-        self.add_clue("The Cistern Eye whispers that the Forge of Spells can listen as well as make, and something below the mine has started answering.")
-        self.add_journal("The Cistern Eye forced a Wave Echo warning into the open: the Forge can listen, and something below it may answer.")
+        self.add_clue("The Cistern Eye whispers that the Meridian Forge can listen as well as make, and something below the mine has started answering.")
+        self.add_journal("The Cistern Eye forced a Resonant Vaults warning into the open: the Forge can listen, and something below it may answer.")
         self.say("For a heartbeat the cistern water becomes a mine-dark lake, and something under it seems to hear your breath.")
 
     def _tresendar_adjust_active_companions_for_bargain(self, delta: int, reason: str) -> None:
@@ -7751,7 +7751,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="The Cistern Eye",
-                description="A warped cellar horror rises from the dark water below Tresendar Manor.",
+                description="A warped cellar horror rises from the dark water below Duskmere Manor.",
                 enemies=second_enemies,
                 allow_flee=True,
                 allow_parley=False,
@@ -7768,11 +7768,11 @@ class MapSystemMixin:
             return
 
         self.complete_map_room(dungeon, room.room_id)
-        self.add_clue("Tresendar Manor was the Ashen Brand's intake route; Varyn's remaining core has withdrawn into Emberhall below.")
-        self.add_journal("You cleared the buried Tresendar route and confirmed Varyn has fallen back to Emberhall for the final stand.")
+        self.add_clue("Duskmere Manor was the Ashen Brand's intake route; Varyn's remaining core has withdrawn into Emberhall below.")
+        self.add_journal("You cleared the buried Duskmere route and confirmed Varyn has fallen back to Emberhall for the final stand.")
         if not self.state.flags.get("tresendar_records_secured"):
             self.add_inventory_item("scroll_arcane_refresh", source="a sealed coffer in the cistern alcove")
-        self.return_to_phandalin("The cistern goes still, and the buried route beneath Tresendar finally breaks open.")
+        self.return_to_phandalin("The cistern goes still, and the buried route beneath Duskmere finally breaks open.")
 
     def _emberhall_antechamber(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
@@ -7881,8 +7881,8 @@ class MapSystemMixin:
         if selection_key == "quiet_room":
             self.player_action("Match the quiet-room courier strip to these ledgers before the ink goes warm.")
             self.state.flags["emberhall_ledger_read"] = True
-            self.reward_party(xp=15, reason="matching Stonehill quiet-room intel to Emberhall's ledgers")
-            self.say("The Stonehill packet fits the Emberhall books like a stolen key. You have Varyn's fallback routes before anyone can burn the proof.")
+            self.reward_party(xp=15, reason="matching Ashlamp quiet-room intel to Emberhall's ledgers")
+            self.say("The Ashlamp packet fits the Emberhall books like a stolen key. You have Varyn's fallback routes before anyone can burn the proof.")
         elif selection_key == "medicine":
             self.player_speaker("The chained clerk is fading. Get them talking before the poison finishes the job.")
             success = self.skill_check(self.state.player, "Medicine", 13, context="to keep the poisoned clerk alive long enough for a final warning")
@@ -8031,7 +8031,7 @@ class MapSystemMixin:
         outcome = self.run_encounter(
             Encounter(
                 title="Boss: Varyn Sable",
-                description="The captain of the Ashen Brand makes the final stand beneath Phandalin.",
+                description="The captain of the Ashen Brand makes the final stand beneath Iron Hollow.",
                 enemies=boss_enemies,
                 allow_flee=True,
                 allow_parley=True,
@@ -8055,8 +8055,8 @@ class MapSystemMixin:
             self.state.flags["emberhall_impossible_exit_seen"] = True
         self.say(
             "Varyn falls, but not cleanly. Body, cloak, and blade hit the cellar stones while the route behind him folds the wrong way. "
-            "The remaining brigands scatter, the Ashen Brand breaks around that absence, and the pressure that has bent every road into Phandalin finally snaps. "
-            "Among the captain's ledgers are references to older powers stirring beneath the Sword Mountains, with whispers pointing toward deeper ruins, buried wealth, and unfinished business near Wave Echo Cave."
+            "The remaining brigands scatter, the Ashen Brand breaks around that absence, and the pressure that has bent every road into Iron Hollow finally snaps. "
+            "Among the captain's ledgers are references to older powers stirring beneath the Shatterbelt highlands, with whispers pointing toward deeper ruins, buried wealth, and unfinished business near Resonant Vaults."
         )
         if self.state.flags.get("emberhall_impossible_exit_seen"):
             self.say(
@@ -8064,13 +8064,13 @@ class MapSystemMixin:
             )
         victory_tier = self.act1_record_epilogue_flags()
         if victory_tier == "clean_victory":
-            self.say("Phandalin takes the news like a town finally allowed to breathe. The roads are scarred, but not broken, and the company leaves Act I with loyalty mostly intact.")
+            self.say("Iron Hollow takes the news like a town finally allowed to breathe. The roads are scarred, but not broken, and the company leaves Act I with loyalty mostly intact.")
         elif victory_tier == "costly_victory":
-            self.say("The win holds, but it costs blood, trust, and more sleepless eyes than anyone in town will admit out loud. Phandalin survives this act tired rather than whole.")
+            self.say("The win holds, but it costs blood, trust, and more sleepless eyes than anyone in town will admit out loud. Iron Hollow survives this act tired rather than whole.")
         else:
             self.say("Varyn's local command is broken, but too many threads were left burning behind him. The Ashen Brand is beaten without being cleanly erased, and the next descent will begin under pressure.")
-        self.add_journal("You broke the Ashen Brand and secured Phandalin through the end of Act 1.")
-        self.reward_party(xp=250, gold=80, reason="securing Phandalin at the end of Act I")
+        self.add_journal("You broke the Ashen Brand and secured Iron Hollow through the end of Act 1.")
+        self.reward_party(xp=250, gold=80, reason="securing Iron Hollow at the end of Act I")
         if 1 not in self.state.completed_acts:
             self.state.completed_acts.append(1)
         payload = self._map_state_payload()

@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from .data.quests import QuestLogEntry
+from .data.story.public_terms import class_label, race_label
 from .dice import ability_modifier
 
 
@@ -102,6 +103,18 @@ class Character:
     @property
     def proficiency_bonus(self) -> int:
         return 2 + max(0, (self.level - 1) // 4)
+
+    @property
+    def public_race(self) -> str:
+        return race_label(self.race)
+
+    @property
+    def public_class(self) -> str:
+        return class_label(self.class_name)
+
+    @property
+    def public_identity(self) -> str:
+        return f"{self.public_race} {self.public_class}"
 
     def ability_mod(self, ability: str) -> int:
         return ability_modifier(self.ability_scores[ability])

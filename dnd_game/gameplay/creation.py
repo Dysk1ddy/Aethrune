@@ -2,6 +2,15 @@ from __future__ import annotations
 
 from ..data.story.background_openings import BACKGROUND_STARTS, background_start_summary
 from ..data.story.lore import BACKGROUND_LORE, CLASS_LORE, RACE_LORE
+from ..data.story.public_terms import (
+    ability_label,
+    character_role_line,
+    class_label,
+    class_option_label,
+    race_label,
+    race_option_label,
+    skill_option_label,
+)
 from ..content import (
     BACKGROUNDS,
     CLASSES,
@@ -42,8 +51,8 @@ class CharacterCreationMixin:
 
     def create_custom_character(self) -> Character:
         name = self.ask_text("Name your adventurer")
-        race = self.choose_named_option("Choose a race", RACES)
-        class_name = self.choose_named_option("Choose a class", CLASSES)
+        race = self.choose_named_option("Choose a people", RACES)
+        class_name = self.choose_named_option("Choose a calling", CLASSES)
         background = self.choose_named_option("Choose a background", BACKGROUNDS)
         base_scores = self.choose_ability_scores()
         class_skills = self.choose_class_skills(race, class_name, background)
@@ -65,7 +74,7 @@ class CharacterCreationMixin:
     def choose_preset_character(self) -> Character:
         class_names = list(PRESET_CHARACTERS)
         while True:
-            choice = self.choose("Choose a preset class.", class_names, allow_meta=False)
+            choice = self.choose("Choose a preset calling.", [class_option_label(name) for name in class_names], allow_meta=False)
             selected_class = class_names[choice - 1]
             self.describe_preset_character(selected_class)
             if self.confirm("Lock that preset in?"):
@@ -73,19 +82,20 @@ class CharacterCreationMixin:
 
     def describe_preset_character(self, class_name: str) -> None:
         preset = PRESET_CHARACTERS[class_name]
+        race = str(preset["race"])
         self.say(
-            f"{class_name} preset selected: {preset['name']}, {preset['race']} {class_name} ({preset['background']})."
+            f"{class_label(class_name)} preset selected: {preset['name']}, {character_role_line(race, class_name)} ({preset['background']})."
         )
         self.say(str(preset["description"]))
         abilities = ", ".join(
-            f"{ability} {preset['base_ability_scores'][ability]}"
+            f"{ability_label(ability, include_code=True)} {preset['base_ability_scores'][ability]}"
             for ability in ABILITY_ORDER
         )
         self.say(f"Preset abilities: {abilities}")
-        self.say(f"Preset class skills: {', '.join(preset['class_skill_choices'])}")
+        self.say(f"Preset calling skills: {', '.join(skill_option_label(skill) for skill in preset['class_skill_choices'])}")
         expertise = list(preset.get("expertise_choices", []))
         if expertise:
-            self.say(f"Preset expertise: {', '.join(expertise)}")
+            self.say(f"Preset deep practice: {', '.join(skill_option_label(skill) for skill in expertise)}")
 
     def begin_adventure(self, character: Character) -> None:
         self.state = GameState(
@@ -113,14 +123,19 @@ class CharacterCreationMixin:
         self.state.player.inventory.clear()
         self.ensure_state_integrity()
         start_note = BACKGROUND_STARTS.get(character.background, {}).get("arrival_note", "")
-        self.add_journal(start_note or f"Your {character.background.lower()} path pulls you toward Neverwinter and the road to Phandalin.")
-        self.add_journal("Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.")
+        self.add_journal(start_note or f"Your {character.background.lower()} path pulls you toward Greywake and the Emberway road to Iron Hollow.")
+        self.add_journal("Word reaches you that Mira Thann is quietly gathering capable hands in Greywake against Ashen Brand pressure around Iron Hollow.")
 
     def choose_named_option(self, title: str, options: dict[str, dict[str, object]]) -> str:
         names = list(options)
         while True:
             if options is RACES or options is CLASSES or options is BACKGROUNDS:
-                labels = list(names)
+                if options is RACES:
+                    labels = [race_option_label(name) for name in names]
+                elif options is CLASSES:
+                    labels = [class_option_label(name) for name in names]
+                else:
+                    labels = list(names)
             else:
                 labels = [f"{name}: {options[name]['description']}" for name in names]
             choice = self.choose(title, labels, allow_meta=False)
@@ -130,29 +145,29 @@ class CharacterCreationMixin:
                 return selected
 
     def describe_selection(self, name: str, details: dict[str, object], *, category: str) -> None:
-        if category == "Choose a race":
+        if category in {"Choose a race", "Choose a people"}:
             bonuses = format_racial_bonuses(name)
-            skills = ", ".join(details["skills"]) if details["skills"] else "No racial skill proficiencies"
-            features = ", ".join(details["features"]) if details["features"] else "No special racial features"
-            self.say(f"{name} selected. Bonuses: {bonuses}. {details['description']}")
-            self.say(f"Racial skills: {skills}. Features: {features}.")
+            skills = ", ".join(skill_option_label(skill) for skill in details["skills"]) if details["skills"] else "No automatic people skills"
+            features = ", ".join(self.format_feature_name(feature) for feature in details["features"]) if details["features"] else "No special people traits"
+            self.say(f"{race_label(name)} selected. Bonuses: {bonuses}. {details['description']}")
+            self.say(f"People skills: {skills}. Traits: {features}.")
             if name in RACE_LORE:
                 self.say(RACE_LORE[name]["text"])
             return
-        if category == "Choose a class":
+        if category in {"Choose a class", "Choose a calling"}:
             hit_die = details["hit_die"]
-            saves = ", ".join(details["saving_throws"])
-            self.say(f"{name} selected. {details['description']}")
-            self.say(f"Hit die: d{hit_die}. Saving throw proficiencies: {saves}.")
+            saves = ", ".join(ability_label(save, include_code=True) for save in details["saving_throws"])
+            self.say(f"{class_label(name)} selected. {details['description']}")
+            self.say(f"Hit die: d{hit_die}. Resist proficiencies: {saves}.")
             if name in CLASS_LORE:
                 self.say(CLASS_LORE[name]["text"])
             return
         if category == "Choose a background":
-            skills = ", ".join(details["skills"])
+            skills = ", ".join(skill_option_label(skill) for skill in details["skills"])
             proficiencies = ", ".join(details.get("proficiencies", [])) or "No extra proficiencies"
             notes = " | ".join(details["notes"])
             self.say(f"{name} selected. {details['description']}")
-            self.say(f"Background skills: {skills}. Extra proficiencies: {proficiencies}.")
+            self.say(f"Background skills: {skills}. Extra training: {proficiencies}.")
             self.say(f"Background perks: {notes}")
             if name in BACKGROUND_LORE:
                 self.say(BACKGROUND_LORE[name]["text"])
@@ -164,7 +179,7 @@ class CharacterCreationMixin:
             "Choose how to assign your ability scores.",
             [
                 "Standard array (15, 14, 13, 12, 10, 8)",
-                "Point buy (27 points, scores from 8 to 15 before racial bonuses)",
+                "Point buy (27 points, scores from 8 to 15 before people bonuses)",
             ],
             allow_meta=False,
         )
@@ -173,7 +188,7 @@ class CharacterCreationMixin:
             scores: dict[str, int] = {}
             for ability in ABILITY_ORDER:
                 index = self.choose(
-                    f"Assign a value to {ability}. Remaining scores: {', '.join(str(value) for value in remaining)}",
+                    f"Assign a value to {ability_label(ability, include_code=True)}. Remaining scores: {', '.join(str(value) for value in remaining)}",
                     [str(value) for value in remaining],
                     allow_meta=False,
                 )
@@ -191,8 +206,8 @@ class CharacterCreationMixin:
         chosen: list[str] = []
         for _ in range(CLASSES[class_name]["skill_picks"]):
             choice = self.choose(
-                f"Pick a {class_name} skill proficiency.",
-                [skill for skill in pool if skill not in chosen],
+                f"Pick a {class_label(class_name)} skill.",
+                [skill_option_label(skill) for skill in pool if skill not in chosen],
                 allow_meta=False,
             )
             options = [skill for skill in pool if skill not in chosen]
@@ -205,8 +220,8 @@ class CharacterCreationMixin:
         chosen: list[str] = []
         for _ in range(2):
             choice = self.choose(
-                "Choose a skill for rogue Expertise.",
-                [skill for skill in pool if skill not in chosen],
+                "Choose a skill for Rogue deep practice.",
+                [skill_option_label(skill) for skill in pool if skill not in chosen],
                 allow_meta=False,
             )
             options = [skill for skill in pool if skill not in chosen]
@@ -216,16 +231,16 @@ class CharacterCreationMixin:
     def preview_character(self, character: Character) -> None:
         self.banner("Character Summary")
         self.say(
-            f"{character.name}, {character.race} {character.class_name} ({character.background})\n"
-            f"HP {character.current_hp}/{character.max_hp}, AC {character.armor_class}, weapon: {character.weapon.name}"
+            f"{character.name}, {character.public_identity} ({character.background})\n"
+            f"HP {character.current_hp}/{character.max_hp}, Guard {character.armor_class}, weapon: {character.weapon.name}"
         )
-        abilities = ", ".join(f"{ability} {character.ability_scores[ability]}" for ability in ABILITY_ORDER)
+        abilities = ", ".join(f"{ability_label(ability, include_code=True)} {character.ability_scores[ability]}" for ability in ABILITY_ORDER)
         self.say(f"Abilities: {abilities}")
-        self.say(f"Skills: {', '.join(character.skill_proficiencies)}")
+        self.say(f"Skills: {', '.join(skill_option_label(skill) for skill in character.skill_proficiencies)}")
         if character.skill_expertise:
-            self.say(f"Expertise: {', '.join(character.skill_expertise)}")
+            self.say(f"Deep practice: {', '.join(skill_option_label(skill) for skill in character.skill_expertise)}")
         if character.bonus_proficiencies:
-            self.say(f"Background proficiencies: {', '.join(character.bonus_proficiencies)}")
+            self.say(f"Background training: {', '.join(character.bonus_proficiencies)}")
         self.say(
             f"Features: {', '.join(self.format_feature_name(feature) for feature in character.features) if character.features else 'None'}"
         )

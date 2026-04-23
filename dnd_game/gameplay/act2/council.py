@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 
 class StoryAct2CouncilMixin:
@@ -11,7 +11,7 @@ class StoryAct2CouncilMixin:
         self.act2_initialize_blackwake_callbacks()
         self.state.current_scene = "act2_claims_council"
         self.add_journal(
-            "Act 2 begins with a claims war around Wave Echo Cave, a town trying to stay intact, and a cult using the mine's old song as a listening tool."
+            "Act 2 begins with a claims war around the Resonant Vaults, a town trying to stay intact, and a cult using the mine's old song as a listening tool."
         )
 
     def scene_act1_complete(self) -> None:
@@ -19,7 +19,7 @@ class StoryAct2CouncilMixin:
         while True:
             self.banner("Act I Complete")
             self.say(
-                "Phandalin survives Act I, but the victory only tears the lid off a deeper problem. Act 2 now tracks town stability, route control, sponsor politics, "
+                "Iron Hollow survives Act I, but the victory only tears the lid off a deeper problem. Act 2 now tracks town stability, route control, sponsor politics, "
                 "companion side decisions, and how much of the Quiet Choir's whisper-pressure you let leak into the region.",
                 typed=True,
             )
@@ -43,23 +43,23 @@ class StoryAct2CouncilMixin:
 
     def scene_act2_claims_council(self) -> None:
         assert self.state is not None
-        self.banner("Stonehill Claims Council")
+        self.banner("Iron Hollow Claims Council")
         self.say(
-            "A night after Varyn falls, Stonehill Inn turns into a claims chamber. Mud-stained maps cover tables meant for ale, miners and merchants try to sound rational "
-            "about a mine they have not yet entered, and every survivor from Act 1 understands that what comes next will decide whether Phandalin grows, hardens, or tears itself apart.",
+            "A night after Varyn falls, Ashlamp Inn turns into a claims chamber. Mud-stained maps cover tables meant for ale, miners and merchants try to sound rational "
+            "about a mine they have not yet entered, and every survivor from Act 1 understands that what comes next will decide whether Iron Hollow grows, hardens, or tears itself apart.",
             typed=True,
         )
         self.show_act2_campaign_status(banner=False)
         self.speaker(
-            "Halia Thornton",
+            "Halia Vey",
             "Routes decide ownership. Ownership decides which story gets believed.",
         )
         self.speaker(
-            "Linene Graywind",
+            "Linene Ironward",
             "Routes decide whether people come home at all. Start there."
         )
         self.speaker(
-            "Elira Dawnmantle",
+            "Elira Lanternward",
             "If the dead are already trying to warn us, greed is not the only thing bidding on this cave."
         )
         if self.act2_company_has("Bryn Underbough"):
@@ -70,18 +70,18 @@ class StoryAct2CouncilMixin:
         self.run_dialogue_input("act2_claims_council_opening", max_entries=2)
         if self.state.flags.get("quest_reward_jerek_road_knot"):
             self.speaker(
-                "Linene Graywind",
+                "Linene Ironward",
                 "Jerek's been showing people that blue road-knot. Folk remember who brought one hard truth home instead of letting the road swallow it. Use that while this room is still listening.",
             )
         if self.state.flags.get("stonehill_quiet_room_intel_decoded"):
             self.speaker(
-                "Halia Thornton",
+                "Halia Vey",
                 "Nera's courier packet was real enough to matter. If clerkwork and message chains were shaping Ashfall and Emberhall, assume the mine's routes are being edited the same way.",
             )
         if self.state.flags.get("act2_neverwinter_witness_pressure_active"):
             self.speaker(
-                "Linene Graywind",
-                "Neverwinter sent a witness packet from Oren Vale's house. Sabra's manifests, Vessa's buyer phrase, and Garren's roadwarden line all agree: any claim built on copied authority gets read twice.",
+                "Linene Ironward",
+                "Greywake sent a witness packet from Oren Vale's house. Sabra's manifests, Vessa's buyer phrase, and Garren's roadwarden line all agree: any claim built on copied authority gets read twice.",
             )
         if not self.has_quest("recover_pact_waymap"):
             self.grant_quest("recover_pact_waymap")
@@ -123,7 +123,7 @@ class StoryAct2CouncilMixin:
             self.act2_shift_metric(
                 "act2_town_stability",
                 1,
-                "Linene's quartermaster logic gives Phandalin something firmer than rumors to stand on",
+                "Linene's quartermaster logic gives Iron Hollow something firmer than rumors to stand on",
             )
             self.act2_shift_metric(
                 "act2_route_control",
@@ -160,7 +160,7 @@ class StoryAct2CouncilMixin:
             "Before the first teams leave, what do you insist on reading clearly?",
             [
                 self.quoted_option("INSIGHT", "Tell me whose argument is really serving the cave instead of the town."),
-                self.quoted_option("INVESTIGATION", "Lay out every surviving route fragment. I want the old Pact logic, not the rumors."),
+                self.quoted_option("INVESTIGATION", "Lay out every surviving route fragment. I want the old Meridian Compact logic, not the rumors."),
                 self.quoted_option("PERSUASION", "If you all want this town to survive the mine, stop speaking like rivals for one night."),
             ],
             allow_meta=False,
@@ -173,12 +173,12 @@ class StoryAct2CouncilMixin:
                 )
                 self.reward_party(xp=20, reason="reading the claims room cleanly")
         elif read_choice == 2:
-            self.player_speaker("Lay out every surviving route fragment. I want the old Pact logic, not the rumors.")
-            if self.skill_check(self.state.player, "Investigation", 13, context="to reconstruct the surviving Pact route logic"):
+            self.player_speaker("Lay out every surviving route fragment. I want the old Meridian Compact logic, not the rumors.")
+            if self.skill_check(self.state.player, "Investigation", 13, context="to reconstruct the surviving Meridian Compact route logic"):
                 self.add_clue(
-                    "Old Pact roads converged through Conyberry, Stonehollow, and a southern service adit linked to Wave Echo Cave."
+                    "Old Meridian Compact roads converged through Hushfen, Stonehollow, and a southern service adit linked to the Resonant Vaults."
                 )
-                self.reward_party(xp=25, reason="reassembling the Pact route fragments")
+                self.reward_party(xp=25, reason="reassembling the Meridian Compact route fragments")
                 self.act2_shift_metric(
                     "act2_route_control",
                     1,
@@ -200,7 +200,7 @@ class StoryAct2CouncilMixin:
         assert self.state is not None
         self.banner("Act II Expedition Hub")
         self.say(
-            "Phandalin is still your base, but it now feels like a frontier port built around a wound in the world. Every trip changes the town's nerve, the race for Wave Echo, "
+            "Iron Hollow is still your base, but it now feels like a frontier port built around a wound in the world. Every trip changes the town's nerve, the race for Resonant Vaults, "
             "and how much of the Choir's wrong music gets out into open air.",
             typed=True,
         )
@@ -212,14 +212,14 @@ class StoryAct2CouncilMixin:
         while True:
             options: list[tuple[str, str]] = []
             if not self.state.flags.get("agatha_truth_secured"):
-                label = "Follow Elira's Conyberry lead and seek Agatha's truth."
+                label = "Follow Elira's Hushfen lead and seek the Pale Witness's truth."
                 if self.state.flags.get("phandalin_sabotage_resolved"):
-                    label = "Recover Conyberry late and see what delaying Agatha's warning cost."
+                    label = "Recover Hushfen late and see what delaying the Pale Witness's warning cost."
                 options.append(("agatha", self.action_option(label)))
             if not self.state.flags.get("woodland_survey_cleared"):
-                label = "Break the survey sabotage line in Neverwinter Wood."
+                label = "Break the sabotage line at Greywake Survey Camp."
                 if self.state.flags.get("phandalin_sabotage_resolved"):
-                    label = "Recover the Neverwinter Wood line late after the saboteurs already bit into town."
+                    label = "Recover the Greywake survey line late after the saboteurs already bit into town."
                 options.append(("wood", self.action_option(label)))
             if not self.state.flags.get("stonehollow_dig_cleared"):
                 label = "Enter Stonehollow Dig and recover the missing survey team."
@@ -259,11 +259,11 @@ class StoryAct2CouncilMixin:
                 and self.state.flags.get("south_adit_cleared")
                 and not self.state.flags.get("wave_echo_outer_cleared")
             ):
-                options.append(("outer", self.action_option("Advance through Wave Echo's outer galleries.")))
+                options.append(("outer", self.action_option("Advance through Resonant Vaults' outer galleries.")))
             if self.state.flags.get("wave_echo_outer_cleared") and not self.state.flags.get("black_lake_crossed"):
-                options.append(("causeway", self.action_option("Cross the Black Lake causeway.")))
+                options.append(("causeway", self.action_option("Cross the Blackglass causeway.")))
             if self.state.flags.get("black_lake_crossed") and not self.state.flags.get("caldra_defeated"):
-                options.append(("forge", self.action_option("Confront the Quiet Choir at the Forge of Spells.")))
+                options.append(("forge", self.action_option("Confront the Quiet Choir at the Meridian Forge.")))
             if self.state.flags.get("caldra_defeated"):
                 options.append(("complete", self.action_option("Close out Act II and record what happened beneath the cave.")))
             backtrack_node = self.peek_act2_overworld_backtrack_node()
@@ -275,7 +275,7 @@ class StoryAct2CouncilMixin:
                     ("turn_in", self.action_option("Report completed quests to their original givers.")),
                     ("camp", self.action_option("Return to camp and manage the wider company.")),
                     ("sidetrack", self.action_option("Follow a companion's Act 2 thread.")),
-                    ("inn", self.action_option("Rest at Stonehill Inn (10 gp per active party member).")),
+                    ("inn", self.action_option("Rest at Ashlamp Inn (10 marks per active party member).")),
                     ("rest", self.action_option("Take a short rest.")),
                     ("party", self.action_option("Review the current party.")),
                 ]
@@ -347,7 +347,7 @@ class StoryAct2CouncilMixin:
                 self.run_act2_companion_sidetrack()
                 continue
             if selection_key == "inn":
-                self.paid_inn_long_rest("Stonehill Inn")
+                self.paid_inn_long_rest("Ashlamp Inn")
                 continue
             if selection_key == "rest":
                 self.short_rest()
@@ -357,74 +357,74 @@ class StoryAct2CouncilMixin:
     def act2_turn_in_dialogue(self, quest_id: str) -> None:
         if quest_id == "recover_pact_waymap":
             self.speaker(
-                "Halia Thornton",
+                "Halia Vey",
                 "Now that is a route worth arguing over. Good. A claim with a real map behind it survives longer than a claim with only shouting.",
             )
         elif quest_id == "seek_agathas_truth":
             self.speaker(
-                "Elira Dawnmantle",
-                "Then Conyberry's dead were not left speaking into the dark. Tell me the warning cleanly, and I will make sure it is carried gently.",
+                "Elira Lanternward",
+                "Then Hushfen's dead were not left speaking into the dark. Tell me the warning cleanly, and I will make sure it is carried gently.",
             )
             if self.state is not None and self.state.flags.get("agatha_claim_cover_suspected"):
                 sponsor = str(self.state.flags.get("act2_sponsor", "council"))
                 if sponsor == "exchange":
                     self.speaker(
-                        "Halia Thornton",
+                        "Halia Vey",
                         "Claim marks on dead ground are not piety. They are bookkeeping with incense on it. Give me the hand that wrote them and I can make half this room stop smiling.",
                     )
                     if not self.state.flags.get("agatha_claim_cover_council_reaction_recorded"):
                         self.act2_shift_metric(
                             "act2_route_control",
                             1,
-                            "Halia turns Conyberry's hidden claim marks into leverage against rival route papers",
+                            "Halia turns Hushfen's hidden claim marks into leverage against rival route papers",
                         )
                 elif sponsor == "lionshield":
                     self.speaker(
-                        "Linene Graywind",
+                        "Linene Ironward",
                         "If someone used graves as cover for route claims, I want names on my desk before another crew leaves with a false map and a brave speech.",
                     )
                     if not self.state.flags.get("agatha_claim_cover_council_reaction_recorded"):
                         self.act2_shift_metric(
                             "act2_town_stability",
                             1,
-                            "Linene uses Conyberry's claim-cover proof to slow reckless crews before bad papers become dead miners",
+                            "Linene uses Hushfen's claim-cover proof to slow reckless crews before bad papers become dead miners",
                         )
                 else:
                     self.speaker(
                         "Town Council",
-                        "Then the Conyberry warning is not only spiritual. It is evidence. The next claim read in this room gets read against the dead as well as the ledgers.",
+                        "Then the Hushfen warning is not only spiritual. It is evidence. The next claim read in this room gets read against the dead as well as the ledgers.",
                     )
                     if not self.state.flags.get("agatha_claim_cover_council_reaction_recorded"):
                         self.act2_shift_metric(
                             "act2_whisper_pressure",
                             -1,
-                            "naming Conyberry's claim-cover trick keeps the Choir from hiding practical corruption inside sacred dread",
+                            "naming Hushfen's claim-cover trick keeps the Choir from hiding practical corruption inside sacred dread",
                         )
                 self.state.flags["agatha_claim_cover_council_reaction_recorded"] = True
         elif quest_id == "rescue_stonehollow_scholars":
             self.speaker(
-                "Linene Graywind",
+                "Linene Ironward",
                 "Names first. Then injuries. Then what they brought back. I can replace tools, but I will not file people under losses before I have to.",
             )
         elif quest_id == "cut_woodland_saboteurs":
             self.speaker(
-                "Daran Edermath",
+                "Daran Orchard",
                 "A broken sabotage line means scouts can breathe again. Not relax. Never relax. But breathe, and sometimes that is the difference.",
             )
         elif quest_id == "hold_the_claims_meet":
             self.speaker(
-                "Linene Graywind",
+                "Linene Ironward",
                 "The meeting held because someone kept the room pointed at tomorrow instead of old grudges. I will take that kind of order wherever I can get it.",
             )
         elif quest_id == "free_wave_echo_captives":
             self.speaker(
-                "Elira Dawnmantle",
+                "Elira Lanternward",
                 "Give me every name you can remember. The rescued deserve more than being counted as proof that we did the correct thing.",
             )
         elif quest_id == "sever_quiet_choir":
             self.speaker(
                 "Town Council",
-                "Then Wave Echo was never only a claim dispute. Put the truth on the table, all of it, and let the town decide with open eyes.",
+                "Then Resonant Vaults was never only a claim dispute. Put the truth on the table, all of it, and let the town decide with open eyes.",
             )
 
     def run_act2_council_turnins(self) -> None:
@@ -514,14 +514,14 @@ class StoryAct2CouncilMixin:
                     )
         elif companion.companion_id == "elira_dawnmantle":
             self.say(
-                "Elira has rebuilt a miners' lantern with shrine silver, Tymoran script, and wick ash from the vigil after Ashfall Watch. "
-                "She can carry it into the field as a ward, or leave it in Phandalin so the town itself feels steadier."
+                "Elira has rebuilt a miners' lantern with shrine silver, Lantern-faith script, and wick ash from the vigil after Ashfall Watch. "
+                "She can carry it into the field as a ward, or leave it in Iron Hollow so the town itself feels steadier."
             )
             sidetrack = self.scenario_choice(
                 "Where should Elira place the lantern's weight?",
                 [
                     self.quoted_option("RELIGION", "Carry it with us. We will need a cleaner light below."),
-                    self.quoted_option("PERSUASION", "Leave it in town. Phandalin needs to feel held together when we are away."),
+                    self.quoted_option("PERSUASION", "Leave it in town. Iron Hollow needs to feel held together when we are away."),
                 ],
                 allow_meta=False,
             )
@@ -534,7 +534,7 @@ class StoryAct2CouncilMixin:
                     "Elira turns a camp relic into a working ward against the Quiet Choir's cadence",
                 )
             else:
-                self.player_speaker("Leave it in town. Phandalin needs to feel held together when we are away.")
+                self.player_speaker("Leave it in town. Iron Hollow needs to feel held together when we are away.")
                 self.state.flags["elira_town_lantern"] = True
                 self.act2_shift_metric(
                     "act2_town_stability",
@@ -543,8 +543,8 @@ class StoryAct2CouncilMixin:
                 )
         elif companion.companion_id == "kaelis_starling":
             self.say(
-                "Kaelis walks you through old ranger cuts on the edge of Neverwinter Wood. One hidden trail could make the expedition faster. "
-                "Burning it would deny the same advantage to everyone else."
+                "Kaelis walks you through old ranger cuts around Greywake Survey Camp. One hidden trail could make the expedition faster. "
+                "Burning it would deny the same edge to everyone else."
             )
             sidetrack = self.scenario_choice(
                 "What do you ask Kaelis to do with the hidden trail?",
@@ -640,7 +640,7 @@ class StoryAct2CouncilMixin:
                 )
         elif companion.companion_id == "nim_ardentglass":
             self.say(
-                "Nim finally shows you the worst of his mentor's missing theorem: one set of notes might let you answer the Forge with a counter-pattern, "
+                "Nim finally shows you the worst of his mentor's missing theorem: one set of notes might let you answer the Meridian Forge with a counter-pattern, "
                 "but only if he preserves pages he is no longer sure are safe to carry."
             )
             sidetrack = self.scenario_choice(
@@ -708,3 +708,5 @@ class StoryAct2CouncilMixin:
             self.say(f"{companion.name} lets more of their Act 2 burden show than usual.")
         self.adjust_companion_disposition(companion, 1, f"you invested in {companion.name}'s Act 2 thread")
         self.state.flags[flag] = True
+
+

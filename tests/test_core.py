@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import io
 import json
@@ -771,7 +771,7 @@ class CoreTests(unittest.TestCase):
     def test_magic_bar_summary_uses_blue_blocks_and_numbers(self) -> None:
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(900640))
         rendered = game.format_magic_bar(7, 12)
-        self.assertEqual(strip_ansi(rendered), "MP [███████     ]  7/12")
+        self.assertEqual(strip_ansi(rendered), "Channel [███████     ]  7/12")
         self.assertIn(colorize("███████", "blue"), rendered)
 
     def test_health_bar_thresholds_match_requested_breakpoints(self) -> None:
@@ -945,7 +945,7 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90073601))
 
         self.assertEqual(game.quoted_option("KING", "The King tells the truth."), '"The King tells the truth."')
-        self.assertEqual(game.skill_tag("BACKTRACK", game.action_option("Backtrack to High Road")), "[BACKTRACK] *Backtrack to High Road")
+        self.assertEqual(game.skill_tag("BACKTRACK", game.action_option("Backtrack to Emberway")), "[BACKTRACK] *Backtrack to Emberway")
         self.assertEqual(
             game.skill_tag("BACKTRACK WEST", game.action_option("Backtrack to Charred Tollhouse")),
             "[BACKTRACK WEST] *Backtrack to Charred Tollhouse",
@@ -1574,7 +1574,7 @@ class CoreTests(unittest.TestCase):
         game.speaker("Mira Thann", "The road south is failing.")
         game.speaker("Mira Thann", "We need it secured.")
         rendered = self.plain_output(log)
-        self.assertEqual(rendered.count("Mira Thann is a sharp-eyed Neverwinter officer"), 1)
+        self.assertEqual(rendered.count("Mira Thann is a sharp-eyed Greywake officer"), 1)
 
     def test_run_encounter_introduces_unique_enemy_before_fight(self) -> None:
         player = build_character(
@@ -1653,11 +1653,11 @@ class CoreTests(unittest.TestCase):
         self.assertIn("WAYSIDE", rendered_map)
         self.assertIn("GREYWAKE", rendered_map)
         self.assertIn("BREAKOUT", rendered_map)
-        self.assertIn("NEVERWINTER", rendered_map)
-        self.assertIn("HIGH ROAD", rendered_map)
-        self.assertIn("(  PHANDALIN  )", rendered_map)
+        self.assertIn("BRIEFING", rendered_map)
+        self.assertIn("EMBERWAY", rendered_map)
+        self.assertIn("( IRON HOLLOW )", rendered_map)
 
-    def test_act1_overworld_map_places_blackwake_as_right_branch_from_neverwinter(self) -> None:
+    def test_act1_overworld_map_places_blackwake_as_right_branch_from_greywake_briefing(self) -> None:
         rendered_map = build_overworld_panel_text(
             ACT1_HYBRID_MAP,
             DraftMapState(
@@ -1674,18 +1674,18 @@ class CoreTests(unittest.TestCase):
                     return row_index, column
             raise AssertionError(f"{token} was not rendered in the overworld map")
 
-        neverwinter_row, neverwinter_column = token_position("NEVERWINTER")
+        briefing_row, briefing_column = token_position("BRIEFING")
         blackwake_row, blackwake_column = token_position("BLACKWAKE")
         road_choice_row, road_choice_column = token_position("ROAD CHOICE")
-        high_road_row, high_road_column = token_position("HIGH ROAD")
-        phandalin_row, phandalin_column = token_position("PHANDALIN")
+        emberway_row, emberway_column = token_position("EMBERWAY")
+        iron_hollow_row, iron_hollow_column = token_position("IRON HOLLOW")
 
-        self.assertGreater(blackwake_column, neverwinter_column)
-        self.assertGreater(road_choice_column, high_road_column)
-        self.assertGreater(blackwake_row, neverwinter_row)
-        self.assertLess(blackwake_row, high_road_row)
-        self.assertAlmostEqual(high_road_column, neverwinter_column, delta=6)
-        self.assertAlmostEqual(phandalin_column, high_road_column, delta=4)
+        self.assertGreater(blackwake_column, briefing_column)
+        self.assertGreater(road_choice_column, emberway_column)
+        self.assertGreater(blackwake_row, briefing_row)
+        self.assertLess(blackwake_row, emberway_row)
+        self.assertAlmostEqual(emberway_column, briefing_column, delta=6)
+        self.assertAlmostEqual(iron_hollow_column, emberway_column, delta=4)
 
     def test_act1_overworld_map_uses_fixed_grid_alignment(self) -> None:
         rendered_map = build_overworld_panel_text(
@@ -1726,9 +1726,9 @@ class CoreTests(unittest.TestCase):
         wayside_row, _, _, wayside_center = token_span("WAYSIDE")
         greywake_row, _, _, greywake_center = token_span("GREYWAKE")
         breakout_row, _, _, breakout_center = token_span("BREAKOUT")
-        neverwinter_row, neverwinter_left, neverwinter_right, neverwinter_center = token_span("NEVERWINTER")
-        high_road_row, _, _, high_road_center = token_span("HIGH ROAD")
-        phandalin_row, _, _, phandalin_center = token_span("PHANDALIN")
+        briefing_row, briefing_left, briefing_right, briefing_center = token_span("BRIEFING")
+        emberway_row, _, _, emberway_center = token_span("EMBERWAY")
+        iron_hollow_row, _, _, iron_hollow_center = token_span("IRON HOLLOW")
         blackwake_row, _, _, blackwake_center = token_span("BLACKWAKE")
         road_choice_row, _, _, road_choice_center = token_span("ROAD CHOICE")
 
@@ -1736,21 +1736,21 @@ class CoreTests(unittest.TestCase):
         for line in map_lines:
             for match in re.finditer(r"[\[(][^\])]+[\])]", line):
                 token_widths.append(len(match.group(0)))
-        self.assertEqual(set(token_widths), {neverwinter_right - neverwinter_left + 1})
+        self.assertEqual(set(token_widths), {briefing_right - briefing_left + 1})
 
         self.assertEqual(wayside_center, greywake_center)
         self.assertEqual(greywake_center, breakout_center)
-        self.assertEqual(breakout_center, neverwinter_center)
+        self.assertEqual(breakout_center, briefing_center)
         self.assertLess(wayside_row, greywake_row)
         self.assertLess(greywake_row, breakout_row)
-        self.assertLess(breakout_row, neverwinter_row)
-        self.assertEqual(neverwinter_center, high_road_center)
-        self.assertEqual(high_road_center, phandalin_center)
-        self.assertGreater(blackwake_center, neverwinter_center)
+        self.assertLess(breakout_row, briefing_row)
+        self.assertEqual(briefing_center, emberway_center)
+        self.assertEqual(emberway_center, iron_hollow_center)
+        self.assertGreater(blackwake_center, briefing_center)
         self.assertEqual(blackwake_center, road_choice_center)
-        for row in map_lines[neverwinter_row + 1 : high_road_row]:
-            self.assertIn(row[neverwinter_center], {"|", "+"})
-        self.assertIn("-", map_lines[high_road_row][high_road_center + 1 : road_choice_center])
+        for row in map_lines[briefing_row + 1 : emberway_row]:
+            self.assertIn(row[briefing_center], {"|", "+"})
+        self.assertIn("-", map_lines[emberway_row][emberway_center + 1 : road_choice_center])
 
     @unittest.skipUnless(RICH_AVAILABLE, "Rich rendering is optional")
     def test_rich_act1_overworld_map_preserves_fixed_grid_alignment(self) -> None:
@@ -1786,22 +1786,22 @@ class CoreTests(unittest.TestCase):
         wayside_row, wayside_center = token_center("WAYSIDE")
         greywake_row, greywake_center = token_center("GREYWAKE")
         breakout_row, breakout_center = token_center("BREAKOUT")
-        neverwinter_row, neverwinter_center = token_center("NEVERWINTER")
-        high_road_row, high_road_center = token_center("HIGH ROAD")
-        phandalin_row, phandalin_center = token_center("PHANDALIN")
+        briefing_row, briefing_center = token_center("BRIEFING")
+        emberway_row, emberway_center = token_center("EMBERWAY")
+        iron_hollow_row, iron_hollow_center = token_center("IRON HOLLOW")
         _, blackwake_center = token_center("BLACKWAKE")
 
         self.assertEqual(wayside_center, greywake_center)
         self.assertEqual(greywake_center, breakout_center)
-        self.assertEqual(breakout_center, neverwinter_center)
-        self.assertEqual(neverwinter_center, high_road_center)
-        self.assertEqual(high_road_center, phandalin_center)
+        self.assertEqual(breakout_center, briefing_center)
+        self.assertEqual(briefing_center, emberway_center)
+        self.assertEqual(emberway_center, iron_hollow_center)
         self.assertLess(wayside_row, greywake_row)
         self.assertLess(greywake_row, breakout_row)
-        self.assertLess(breakout_row, neverwinter_row)
-        self.assertLess(neverwinter_row, high_road_row)
-        self.assertLess(high_road_row, phandalin_row)
-        self.assertGreater(blackwake_center, neverwinter_center)
+        self.assertLess(breakout_row, briefing_row)
+        self.assertLess(briefing_row, emberway_row)
+        self.assertLess(emberway_row, iron_hollow_row)
+        self.assertGreater(blackwake_center, briefing_center)
 
     def test_act1_overworld_panel_groups_route_key_and_travel_top_right(self) -> None:
         rendered_map = build_overworld_panel_text(
@@ -1820,13 +1820,13 @@ class CoreTests(unittest.TestCase):
                     return row_index, column
             raise AssertionError(f"{token} was not rendered in the overworld panel")
 
-        neverwinter_row, neverwinter_column = token_position("NEVERWINTER")
+        briefing_row, briefing_column = token_position("BRIEFING")
         route_key_row, route_key_column = token_position("Route Key")
         travel_row, travel_column = token_position("Travel")
         empty_travel_row, empty_travel_column = token_position("- No unlocked travel from here")
 
-        self.assertLessEqual(route_key_row, neverwinter_row + 1)
-        self.assertGreater(route_key_column, neverwinter_column)
+        self.assertLessEqual(route_key_row, briefing_row + 1)
+        self.assertGreater(route_key_column, briefing_column)
         self.assertGreater(travel_row, route_key_row)
         self.assertAlmostEqual(travel_column, route_key_column, delta=2)
         self.assertGreater(empty_travel_row, travel_row)
@@ -2064,7 +2064,7 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Oren Vale", rendered)
         self.assertIn("Vessa Marr", rendered)
         self.assertIn("Garren Flint", rendered)
-        self.assertIn("Neverwinter political pressure", " ".join(game.state.journal))
+        self.assertIn("Greywake political pressure", " ".join(game.state.journal))
 
     def blackwake_navigation_game(
         self,
@@ -2782,7 +2782,7 @@ class CoreTests(unittest.TestCase):
         game.scenario_choice = capture_choice  # type: ignore[method-assign]
         with self.assertRaises(self._SceneExit):
             game.scene_phandalin_hub()
-        self.assertIn("*Hunt the raiders at Wyvern Tor (recommended level 3)", captured)
+        self.assertIn("*Hunt the raiders at Red Mesa Hold (recommended level 3)", captured)
 
     def test_confirm_wyvern_tor_departure_can_cancel_underleveled_trip(self) -> None:
         player = build_character(
@@ -3117,8 +3117,8 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["tresendar_nothic_wave_echo_lore"])
         self.assertTrue(game.state.flags["tresendar_nothic_bargain_whispered_through"])
         self.assertEqual(game.state.flags["deep_ledger_hint_count"], 3)
-        self.assertTrue(any("keeping Wave Echo unreachable" in clue for clue in game.state.clues))
-        self.assertTrue(any("Forge of Spells can listen" in clue for clue in game.state.clues))
+        self.assertTrue(any("keeping Resonant Vaults unreachable" in clue for clue in game.state.clues))
+        self.assertTrue(any("Meridian Forge can listen" in clue for clue in game.state.clues))
         self.assertEqual(player.story_skill_bonuses, {"Insight": -1, "Persuasion": -1})
         self.assertEqual(player.conditions["reeling"], 2)
         self.assertEqual(player.conditions["frightened"], 2)
@@ -3277,7 +3277,7 @@ class CoreTests(unittest.TestCase):
         guard = create_enemy("bandit", name="Ashen Brand Collector")
         enemies = [guard]
         initiative = [player, guard]
-        encounter = Encounter(title="Tresendar Cellars", description="", enemies=enemies)
+        encounter = Encounter(title="Duskmere Cellars", description="", enemies=enemies)
 
         game.on_encounter_round_start(encounter, [player], enemies, initiative, 3)
 
@@ -3310,7 +3310,7 @@ class CoreTests(unittest.TestCase):
         guard = create_enemy("bandit", name="Ashen Brand Collector")
         enemies = [guard]
         initiative = [player, guard]
-        encounter = Encounter(title="Tresendar Cellars", description="", enemies=enemies)
+        encounter = Encounter(title="Duskmere Cellars", description="", enemies=enemies)
         game.saving_throw = lambda actor, ability, dc, context, against_poison=False: False  # type: ignore[method-assign]
         player_hp = player.current_hp
         guard_hp = guard.current_hp
@@ -3465,9 +3465,9 @@ class CoreTests(unittest.TestCase):
         assert act2_game.state is not None
         act2_game.state.inventory["sigil_anchor_ring_rare"] = 1
         act2_game.scene_forge_of_spells()
-        self.assertEqual(encounters[3].title, "Black Lake Waterline")
+        self.assertEqual(encounters[3].title, "Blackglass Waterline")
         self.assertEqual(len(encounters[3].enemies), 3)
-        self.assertEqual(encounters[4].title, "Black Lake Causeway")
+        self.assertEqual(encounters[4].title, "Blackglass Causeway")
         self.assertEqual(len(encounters[4].enemies), 3)
         self.assertEqual(encounters[5].title, "Forge Choir Pit")
         self.assertEqual(len(encounters[5].enemies), 3)
@@ -3597,7 +3597,7 @@ class CoreTests(unittest.TestCase):
         option_labels = [label for _, _, label in game.act1_room_navigation_options(dungeon)]
         self.assertIn("[MOVE EAST] *Advance to Salt Cart Hollow", option_labels)
         self.assertIn("[MOVE SOUTH] *Advance to Supply Trench", option_labels)
-        self.assertIn("*Withdraw to Phandalin", option_labels)
+        self.assertIn("*Withdraw to Iron Hollow", option_labels)
 
     def test_blackwake_room_navigation_uses_vertical_split_labels_at_tollhouse(self) -> None:
         player = build_character(
@@ -3631,7 +3631,7 @@ class CoreTests(unittest.TestCase):
         self.assertIn("EAST-NORTH -> Flooded Approach", rendered)
         self.assertIn("EAST-SOUTH -> Hanging Path", rendered)
 
-    def test_blackwake_entrance_offers_overworld_backtrack_to_neverwinter(self) -> None:
+    def test_blackwake_entrance_offers_overworld_backtrack_to_greywake(self) -> None:
         player = build_character(
             name="Vale",
             race="Human",
@@ -3654,8 +3654,8 @@ class CoreTests(unittest.TestCase):
 
         options = game.act1_room_navigation_options(dungeon)
         option_labels = [label for _, _, label in options]
-        self.assertIn(("overworld_backtrack", "neverwinter_briefing", "[BACKTRACK] *Backtrack to Neverwinter Briefing"), options)
-        self.assertIn("[BACKTRACK] *Backtrack to Neverwinter Briefing", option_labels)
+        self.assertIn(("overworld_backtrack", "neverwinter_briefing", "[BACKTRACK] *Backtrack to Greywake Briefing"), options)
+        self.assertIn("[BACKTRACK] *Backtrack to Greywake Briefing", option_labels)
         self.assertIn("*Withdraw to the Blackwake road decision", option_labels)
 
     @unittest.skipUnless(RICH_AVAILABLE, "Rich rendering is optional")
@@ -3867,7 +3867,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertEqual(game.state.current_scene, "old_owl_well")
         self.assertIn("Overworld Route Map", rendered)
-        self.assertIn("Old Owl Well", rendered)
+        self.assertIn("Blackglass Well", rendered)
 
     def test_travel_to_act1_dungeon_node_refreshes_dungeon_music(self) -> None:
         player = build_character(
@@ -3913,7 +3913,7 @@ class CoreTests(unittest.TestCase):
         )
         game.ensure_state_integrity()
         game.travel_to_act1_node("old_owl_well")
-        game.return_to_phandalin("You withdraw from Old Owl Well and ride back to Phandalin to regroup.")
+        game.return_to_phandalin("You withdraw from Blackglass Well and ride back to Iron Hollow to regroup.")
 
         candidate = game.peek_act1_overworld_backtrack_node()
         assert candidate is not None
@@ -3922,11 +3922,11 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.current_scene, "old_owl_well")
         self.assertEqual(game._map_state_payload()["node_history"], ["neverwinter_briefing", "high_road_ambush", "phandalin_hub"])
         rendered = self.plain_output(log)
-        self.assertIn("You leave Phandalin by the same track you used before", rendered)
+        self.assertIn("You leave Iron Hollow by the same track you used before", rendered)
         self.assertIn("Tessa's runners argue supplies", rendered)
         self.assertIn("Overworld Route Map", rendered)
 
-    def test_act1_overworld_backtrack_can_return_to_neverwinter(self) -> None:
+    def test_act1_overworld_backtrack_can_return_to_greywake(self) -> None:
         player = build_character(
             name="Vale",
             race="Human",
@@ -3953,11 +3953,11 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game._map_state_payload()["current_node_id"], "neverwinter_briefing")
         self.assertEqual(game._map_state_payload()["node_history"], [])
         rendered = self.plain_output(log)
-        self.assertIn("backtrack north toward Neverwinter", rendered)
+        self.assertIn("backtrack north toward Greywake", rendered)
         self.assertIn("Mira is waiting in the background", rendered)
         self.assertIn("Overworld Route Map", rendered)
 
-    def test_act1_overworld_backtrack_from_phandalin_returns_to_high_road_then_neverwinter(self) -> None:
+    def test_act1_overworld_backtrack_from_iron_hollow_returns_to_emberway_then_greywake(self) -> None:
         player = build_character(
             name="Vale",
             race="Human",
@@ -3985,10 +3985,10 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.current_scene, "neverwinter_briefing")
         self.assertEqual(game._map_state_payload()["node_history"], [])
         rendered = self.plain_output(log)
-        self.assertIn("backtrack north along the High Road", rendered)
-        self.assertIn("backtrack north toward Neverwinter", rendered)
+        self.assertIn("backtrack north along the Emberway", rendered)
+        self.assertIn("backtrack north toward Greywake", rendered)
 
-    def test_phandalin_backtrack_skips_resolved_high_road_side_branches(self) -> None:
+    def test_iron_hollow_backtrack_skips_resolved_emberway_side_branches(self) -> None:
         player = build_character(
             name="Vale",
             race="Human",
@@ -4012,7 +4012,7 @@ class CoreTests(unittest.TestCase):
         assert candidate is not None
         self.assertEqual(candidate.node_id, "high_road_ambush")
 
-    def test_liars_circle_return_to_phandalin_keeps_high_road_as_backtrack(self) -> None:
+    def test_liars_circle_return_to_iron_hollow_keeps_emberway_as_backtrack(self) -> None:
         player = build_character(
             name="Vale",
             race="Human",
@@ -4039,7 +4039,7 @@ class CoreTests(unittest.TestCase):
         assert candidate is not None
         self.assertEqual(candidate.node_id, "high_road_ambush")
 
-    def test_cleared_high_road_scene_can_backtrack_to_neverwinter(self) -> None:
+    def test_cleared_emberway_scene_can_backtrack_to_greywake(self) -> None:
         player = build_character(
             name="Vale",
             race="Human",
@@ -4062,8 +4062,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.current_scene, "neverwinter_briefing")
         self.assertEqual(game._map_state_payload()["node_history"], [])
         rendered = self.plain_output(log)
-        self.assertIn("Where do you go from the High Road?", rendered)
-        self.assertIn("[BACKTRACK] *Backtrack to Neverwinter Briefing", rendered)
+        self.assertIn("Where do you go from the Emberway?", rendered)
+        self.assertIn("[BACKTRACK] *Backtrack to Greywake Briefing", rendered)
 
     def test_act1_overworld_travel_renders_map_before_next_scene_and_prompt(self) -> None:
         player = build_character(
@@ -4266,7 +4266,7 @@ class CoreTests(unittest.TestCase):
         )
         game.ensure_state_integrity()
         game.travel_to_act2_node("stonehollow_dig")
-        game.return_to_act2_hub("You withdraw from Stonehollow Dig and return to Phandalin's expedition table.")
+        game.return_to_act2_hub("You withdraw from Stonehollow Dig and return to Iron Hollow's expedition table.")
 
         candidate = game.peek_act2_overworld_backtrack_node()
         assert candidate is not None
@@ -4275,7 +4275,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.current_scene, "stonehollow_dig")
         self.assertEqual(game._act2_map_state_payload()["node_history"], ["act2_expedition_hub"])
         rendered = self.plain_output(log)
-        self.assertIn("backtracking toward Stonehollow Dig", rendered)
+        self.assertIn("backtracking toward Stonehollow", rendered)
+        self.assertIn("Dig before the council", rendered)
         self.assertIn("Halia, Linene, Elira, and Daran", rendered)
         self.assertIn("Overworld Route Map", rendered)
 
@@ -4393,7 +4394,7 @@ class CoreTests(unittest.TestCase):
 
         game.choose = fake_choose  # type: ignore[method-assign]
         game.open_map_menu()
-        self.assertEqual(captured["options"], ["Travel Ledger", "Overworld", "Old Owl Well Dig Ring", "Back"])
+        self.assertEqual(captured["options"], ["Travel Ledger", "Overworld", "Blackglass Well Dig Ring", "Back"])
 
     def test_act2_map_menu_offers_read_only_route_map(self) -> None:
         player = build_character(
@@ -4770,13 +4771,13 @@ class CoreTests(unittest.TestCase):
                 return self.option_index_containing(options, "chapel line first")
             if prompt == "How do you answer the Chapel of Lamps?":
                 return self.option_index_containing(options, "Relight the chapel")
-            if prompt == "Which second part of the circuit do you answer before Agatha speaks?":
+            if prompt == "Which second part of the circuit do you answer before the Pale Witness speaks?":
                 return self.option_index_containing(options, "Grave Ring")
             if prompt == "How do you read the Grave Ring?":
                 return self.option_index_containing(options, "Name the dead aloud")
-            if prompt == "How do you approach the banshee's truth?":
+            if prompt == "How do you approach the Pale Witness's truth?":
                 return self.option_index_containing(options, "We are not here to plunder your dead")
-            if prompt == "How do you carry Agatha's warning out of Conyberry?":
+            if prompt == "How do you carry the Pale Witness's warning out of Hushfen?":
                 return self.option_index_containing(options, "Share it publicly")
             raise AssertionError(f"Unexpected prompt: {prompt!r}")
 
@@ -4834,13 +4835,13 @@ class CoreTests(unittest.TestCase):
                 return self.option_index_containing(options, "tampered line first")
             if prompt == "What do you do with the defiled sigil?":
                 return self.option_index_containing(options, "Copy the pattern before breaking it")
-            if prompt == "Which second part of the circuit do you answer before Agatha speaks?":
+            if prompt == "Which second part of the circuit do you answer before the Pale Witness speaks?":
                 return self.option_index_containing(options, "Grave Ring")
             if prompt == "How do you read the Grave Ring?":
                 return self.option_index_containing(options, "claimant marks")
-            if prompt == "How do you approach the banshee's truth?":
+            if prompt == "How do you approach the Pale Witness's truth?":
                 return self.option_index_containing(options, "describe the change exactly")
-            if prompt == "How do you carry Agatha's warning out of Conyberry?":
+            if prompt == "How do you carry the Pale Witness's warning out of Hushfen?":
                 return self.option_index_containing(options, "Restrict it to trusted hands")
             raise AssertionError(f"Unexpected prompt: {prompt!r}")
 
@@ -4902,13 +4903,13 @@ class CoreTests(unittest.TestCase):
                 return self.option_index_containing(options, "tampered line first")
             if prompt == "What do you do with the defiled sigil?":
                 return self.option_index_containing(options, "Break the sigil")
-            if prompt == "Which second part of the circuit do you answer before Agatha speaks?":
+            if prompt == "Which second part of the circuit do you answer before the Pale Witness speaks?":
                 return self.option_index_containing(options, "Chapel of Lamps")
             if prompt == "How do you answer the Chapel of Lamps?":
                 return self.option_index_containing(options, "Relight the chapel")
-            if prompt == "How do you approach the banshee's truth?":
+            if prompt == "How do you approach the Pale Witness's truth?":
                 return self.option_index_containing(options, "what vow was broken")
-            if prompt == "How do you carry Agatha's warning out of Conyberry?":
+            if prompt == "How do you carry the Pale Witness's warning out of Hushfen?":
                 return self.option_index_containing(options, "Bind the warning")
             raise AssertionError(f"Unexpected prompt: {prompt!r}")
 
@@ -4930,9 +4931,9 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.flags["act2_whisper_pressure"], 2)
         self.assertEqual(game.state.xp, 45)
         self.assertIn("They touched the circuit before you did. That is why I sound smaller than the truth.", rendered)
-        self.assertIn("Agatha still answers, but the warning reaches you through bruised magic", rendered)
+        self.assertIn("The Pale Witness still answers, but the warning reaches you through bruised magic", rendered)
         self.assertIn(
-            "Even damaged, Agatha confirms the southern adit matters and the Forge is being tuned into something that listens back.",
+            "Even damaged, the Pale Witness confirms the southern adit matters and the Meridian Forge is being tuned into something that listens back.",
             game.state.clues,
         )
 
@@ -4974,7 +4975,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["conyberry_chapel_sabotage_payoff"])
         self.assertTrue(game.state.flags["conyberry_chapel_pressure_payoff_applied"])
         self.assertEqual(game.state.flags["act2_whisper_pressure"], 1)
-        self.assertIn("Pilgrims from Conyberry arrive with lamp discipline", rendered)
+        self.assertIn("Pilgrims from Hushfen arrive with lamp discipline", rendered)
         self.assertEqual([encounter.title for encounter in captured], ["Midpoint: Sabotage Night"])
 
     def test_conyberry_relit_chapel_guides_black_lake_if_sabotage_payoff_was_unused(self) -> None:
@@ -5014,7 +5015,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["black_lake_conyberry_pressure_payoff"])
         self.assertTrue(game.state.flags["black_lake_shrine_route_marked"])
         self.assertEqual(game.state.flags["act2_whisper_pressure"], 2)
-        self.assertIn("lamp discipline you restored at Conyberry", rendered)
+        self.assertIn("lamp discipline you restored at Hushfen", rendered)
 
     def test_conyberry_copied_sigil_maps_forge_lens_with_moral_risk_if_unbound(self) -> None:
         player = build_character(
@@ -5059,7 +5060,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["forge_lens_conyberry_sigil_used"])
         self.assertTrue(game.state.flags["forge_conyberry_sigil_moral_risk"])
         self.assertEqual(game.state.flags["act2_whisper_pressure"], 3)
-        self.assertIn("copied Conyberry sigil", rendered)
+        self.assertIn("copied Hushfen sigil", rendered)
 
     def test_agatha_claim_cover_changes_sponsor_turnin_reaction(self) -> None:
         player = build_character(
@@ -5300,7 +5301,7 @@ class CoreTests(unittest.TestCase):
             game.state.flags["act2_map_state"]["cleared_rooms"],
             ["rail_junction", "slime_sluice", "false_echo_loop", "deep_haul_gate"],
         )
-        self.assertEqual([encounter.title for encounter in encounters], ["Wave Echo Slime Sluice", "Outer Gallery Pressure"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Resonant Vaults Slime Sluice", "Outer Gallery Pressure"])
 
     def test_black_lake_causeway_uses_playable_act2_room_map(self) -> None:
         player = build_character(
@@ -5358,7 +5359,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.inventory.get("fireward_elixir"), 1)
         self.assertEqual(
             [encounter.title for encounter in encounters],
-            ["Black Lake Barracks", "Black Lake Waterline", "Black Lake Causeway"],
+            ["Blackglass Barracks", "Blackglass Waterline", "Blackglass Causeway"],
         )
 
     def test_forge_of_spells_uses_playable_act2_room_map_and_black_lake_changes_route(self) -> None:
@@ -5439,7 +5440,7 @@ class CoreTests(unittest.TestCase):
             game.state.clues,
         )
         self.assertIn(
-            "You used the Black Lake orders to read the Forge threshold and find the chamber's real support traffic.",
+            "You used the Blackglass orders to read the Forge threshold and find the chamber's real support traffic.",
             game.state.journal,
         )
         self.assertIn(
@@ -5493,8 +5494,8 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Late-route commitment: Broken Prospect first; South Adit only yielded partial rescues.", rendered)
         self.assertIn("Rescue summary: Stonehollow scholars escaped with usable survey testimony; South Adit only yielded partial rescues; Irielle Ashwake is traveling with the active party.", rendered)
-        self.assertIn("Route intelligence: Nim's Stonehollow countermeasure notes survived; the outer galleries now hold as a real expedition line; the Black Lake crossing is being prepared from multiple angles.", rendered)
-        self.assertIn("Choir intelligence: captives have named the Quiet Choir's prison cadence; barracks orders confirm the Forge-side reserve plan.", rendered)
+        self.assertIn("Route intelligence: Nim's Stonehollow countermeasure notes survived; the outer galleries now hold as a real expedition line; the Blackglass crossing is being prepared from multiple angles.", rendered)
+        self.assertIn("Choir intelligence: captives have named the Quiet Choir's prison cadence; barracks orders confirm the Meridian Forge reserve plan.", rendered)
         self.assertIn("Campaign Snapshot:", rendered)
 
     def test_act2_start_records_escaped_sereth_callback(self) -> None:
@@ -5552,8 +5553,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.flags["act2_route_control"], 3)
         self.assertTrue(game.state.flags["act2_neverwinter_witness_pressure_active"])
         self.assertTrue(game.state.flags["act2_neverwinter_witness_callback_recorded"])
-        self.assertIn("Neverwinter politics: Oren, Sabra, Vessa, and Garren", rendered)
-        self.assertIn("Neverwinter callback: Oren, Sabra, Vessa, and Garren kept pressure", rendered)
+        self.assertIn("Greywake politics: Oren, Sabra, Vessa, and Garren", rendered)
+        self.assertIn("Greywake callback: Oren, Sabra, Vessa, and Garren kept pressure", rendered)
 
     def test_act2_scaffold_complete_mentions_forge_subroutes_in_handoff(self) -> None:
         player = build_character(
@@ -5595,13 +5596,15 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(state.flags["act3_forge_lens_state"], "mapped")
         self.assertTrue(state.flags["act3_lens_understood"])
         self.assertNotIn("act3_lens_blinded", state.flags)
-        self.assertIn("hazardous cargo corridors that must stay locked down.", rendered)
-        self.assertIn("Inside the Forge, you silenced the choir pit and recovered the Pact anvil's rhythm", rendered)
-        self.assertIn("one live subroute stayed dangerous to the end.", rendered)
+        self.assertIn("hazardous cargo corridors", rendered)
+        self.assertIn("Inside the Meridian Forge, you silenced the choir pit", rendered)
+        self.assertIn("recovered the Meridian Compact", rendered)
+        self.assertIn("anvil's rhythm", rendered)
+        self.assertIn("one live subroute stayed dangerous", rendered)
         self.assertIn("mapped the resonance lens from inside before the chamber broke.", rendered)
-        self.assertIn("Act 3 inherits a Forge where you already silenced the choir pit", rendered)
+        self.assertIn("Act 3 inherits a Meridian Forge", rendered)
         self.assertIn("one forge line still escaped a clean ruin.", rendered)
-        self.assertIn("reliable read on how Caldra held witness, ritual", rendered)
+        self.assertIn("reliable read on how Caldra held witness", rendered)
 
     def test_act2_record_epilogue_flags_marks_carried_signal_and_blind_lens(self) -> None:
         player = build_character(
@@ -6677,8 +6680,8 @@ class CoreTests(unittest.TestCase):
         game.run_edermath_old_cache_scene()
 
         rendered = self.plain_output(log)
-        self.assertIn("After Wyvern Tor, I believe you can follow ugly ground", rendered)
-        self.assertIn("After Wyvern Tor, I hoped you knew patience as well as pressure", rendered)
+        self.assertIn("After Red Mesa Hold, I believe you can follow ugly ground", rendered)
+        self.assertIn("After Red Mesa Hold, I hoped you knew patience as well as pressure", rendered)
         self.assertTrue(game.state.flags["edermath_old_cache_recovered"])
 
     def test_edermath_old_cache_failed_stealth_runs_watcher_encounter(self) -> None:
@@ -6699,7 +6702,7 @@ class CoreTests(unittest.TestCase):
         game.run_edermath_old_cache_scene()
 
         self.assertEqual(len(encounters), 1)
-        self.assertEqual(encounters[0].title, "Edermath Orchard Watchers")
+        self.assertEqual(encounters[0].title, "Orchard Wall Watchers")
         self.assertFalse(encounters[0].allow_post_combat_random_encounter)
         self.assertEqual([enemy.archetype for enemy in encounters[0].enemies], ["brand_saboteur", "bandit_archer"])
         self.assertEqual(game.state.inventory["edermath_cache_compass"], 1)
@@ -6772,14 +6775,14 @@ class CoreTests(unittest.TestCase):
         game.grant_quest("restore_barthen_supplies")
         game.refresh_quest_statuses(announce=False)
 
-        self.assertFalse(game.turn_in_quest("restore_barthen_supplies", giver="Linene Graywind"))
+        self.assertFalse(game.turn_in_quest("restore_barthen_supplies", giver="Linene Ironward"))
         self.assertEqual(game.state.quests["restore_barthen_supplies"].status, "ready_to_turn_in")
         self.assertEqual(game.state.gold, 0)
         self.assertEqual(game.state.xp, 0)
         self.assertNotIn("bread_round", game.state.inventory)
         self.assertNotIn("barthen_resupply_token", game.state.inventory)
         self.assertNotIn("quest_reward_barthen_resupply_credit", game.state.flags)
-        self.assertTrue(any("has to be turned in to Barthen" in line for line in output))
+        self.assertTrue(any("has to be turned in to Hadrik" in line for line in output))
 
     def test_act2_turnins_are_selected_by_original_giver(self) -> None:
         player = build_character(
@@ -7157,7 +7160,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["blackwake_neverwinter_rumor"])
         self.assertTrue(any("forged river-cut inspections" in clue for clue in game.state.clues))
         rendered = self.plain_output(log)
-        self.assertIn("[BACKTRACK] *Circle back long enough to gather one more rumor in Neverwinter.", rendered)
+        self.assertIn("[BACKTRACK] *Circle back long enough to gather one more rumor in Greywake.", rendered)
         self.assertIn("good-looking papers and bad patience", rendered)
 
     def test_road_ambush_approach_can_backtrack_to_neverwinter(self) -> None:
@@ -7179,7 +7182,7 @@ class CoreTests(unittest.TestCase):
         self.assertFalse(game.state.flags.get("road_approach_chosen", False))
         self.assertEqual(encounters, [])
         rendered = self.plain_output(log)
-        self.assertIn("Backtrack toward Neverwinter and reconsider the river smoke", rendered)
+        self.assertIn("Backtrack toward Greywake and reconsider the river smoke", rendered)
         self.assertIn("Mira is waiting", rendered)
 
     def test_road_ambush_flow_recruits_tolan(self) -> None:
@@ -7199,7 +7202,7 @@ class CoreTests(unittest.TestCase):
         game.scene_road_ambush()
         self.assertEqual(game.state.current_scene, "phandalin_hub")
         self.assertTrue(any(companion.name == "Tolan Ironshield" for companion in game.state.companions))
-        self.assertEqual([encounter.title for encounter in encounters], ["Roadside Ambush: First Wave", "High Road Second Wave"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Roadside Ambush: First Wave", "Emberway Second Wave"])
         rendered = self.plain_output(log)
         self.assertIn("Tolan Ironshield: \"Good. Give me a minute to cinch the shield", rendered)
 
@@ -7220,7 +7223,7 @@ class CoreTests(unittest.TestCase):
         game.run_encounter = lambda encounter: encounters.append(encounter) or "victory"
 
         def choose_side_branch(prompt: str, options: list[str], **kwargs) -> int:
-            if prompt == "Where do you go from the High Road?":
+            if prompt == "Where do you go from the Emberway?":
                 captured_options.extend(strip_ansi(option) for option in options)
                 return self.option_index_containing(options, "overgrown statue trail")
             return 1
@@ -7229,14 +7232,14 @@ class CoreTests(unittest.TestCase):
 
         game.scene_road_ambush()
 
-        self.assertEqual([encounter.title for encounter in encounters], ["Roadside Ambush: First Wave", "High Road Second Wave"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Roadside Ambush: First Wave", "Emberway Second Wave"])
         self.assertTrue(game.state.flags["road_ambush_cleared"])
         self.assertTrue(game.state.flags["liars_circle_branch_available"])
         self.assertTrue(game.state.flags["high_road_tollstones_branch_available"])
         self.assertTrue(game.state.flags["high_road_false_checkpoint_available"])
         self.assertEqual(game.state.current_scene, "high_road_liars_circle")
         rendered_options = "\n".join(captured_options)
-        self.assertIn("*Follow the High Road to Phandalin.", rendered_options)
+        self.assertIn("*Follow the Emberway to Iron Hollow.", rendered_options)
         self.assertIn("*Follow the overgrown statue trail into the wilderness.", rendered_options)
         self.assertIn("*Investigate the broken roadwarden milemarker.", rendered_options)
         self.assertIn("*Challenge the false roadwarden checkpoint.", rendered_options)
@@ -7513,7 +7516,7 @@ class CoreTests(unittest.TestCase):
         )
 
         def choose_checkpoint(prompt: str, options: list[str], **kwargs) -> int:
-            if prompt == "Where do you go from the High Road?":
+            if prompt == "Where do you go from the Emberway?":
                 return self.option_index_containing(options, "false roadwarden checkpoint")
             raise AssertionError(prompt)
 
@@ -7652,8 +7655,11 @@ class CoreTests(unittest.TestCase):
         self.assertIsNotNone(game.state)
         self.assertEqual(game.state.player.class_name, "Fighter")
         self.assertEqual(game.state.player.name, PRESET_CHARACTERS["Fighter"]["name"])
+        self.assertEqual(game.state.player.race, "Orc")
         rendered = self.plain_output(log)
         self.assertIn("3. Fighter", rendered)
+        self.assertIn("Riven Ashguard, Orc Fighter", rendered)
+        self.assertNotIn("Half-Orc Fighter", rendered)
         self.assertNotIn(f"3. Fighter: {PRESET_CHARACTERS['Fighter']['description']}", rendered)
         self.assertIn(PRESET_CHARACTERS["Fighter"]["name"], rendered)
         self.assertIn("Preset abilities:", rendered)
@@ -7695,22 +7701,22 @@ class CoreTests(unittest.TestCase):
         game.run_encounter = lambda encounter: "victory"
         game.scene_background_prologue()
         rendered = self.plain_output(log)
-        self.assertIn("Acolyte Prologue: Hall of Justice Hospice", rendered)
+        self.assertIn("Acolyte Prologue: Lantern Hall Hospice", rendered)
         self.assertIn("Starting point:", rendered)
         self.assertIn("poisoned teamster", rendered)
 
     def test_lore_codex_can_browse_world_entry(self) -> None:
-        answers = iter(["1", "4", "2", "10", "2"])
+        answers = iter(["1", "4", "2", "10", "1"])
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(440))
         game.show_lore_notes()
         rendered = self.plain_output(log)
         self.assertIn("=== Lore Codex ===", rendered)
-        self.assertIn("=== World & Locations: Neverwinter ===", rendered)
-        self.assertIn("Jewel of the North", rendered)
+        self.assertIn("=== World & Locations: Greywake ===", rendered)
+        self.assertIn("Greywake is the campaign's opening city", rendered)
 
     def test_lore_codex_skills_section_has_visible_exit(self) -> None:
-        answers = iter(["6", "1", "10", "2"])
+        answers = iter(["6", "1", "10", "1"])
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(442))
         game.show_lore_notes()
@@ -7719,18 +7725,18 @@ class CoreTests(unittest.TestCase):
         self.assertIn("1. Return to lore categories", rendered)
 
     def test_lore_codex_class_entry_includes_gameplay_manual(self) -> None:
-        answers = iter(["2", "2", "2", "10", "2"])
+        answers = iter(["2", "2", "2", "10", "1"])
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(443))
         game.show_lore_notes()
         rendered = self.plain_output(log).replace("\n", " ")
-        self.assertIn("Main stats: Strength, Constitution", rendered)
+        self.assertIn("Main stats: Strength, Endurance (Constitution)", rendered)
         self.assertIn("Hit die: d12", rendered)
         self.assertIn("Starting abilities:", rendered)
         self.assertIn("Level 2:", rendered)
 
     def test_lore_codex_includes_appendix_reference_entries(self) -> None:
-        answers = iter(["8", "2", "2", "10", "2"])
+        answers = iter(["8", "2", "2", "10", "1"])
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=log.append, rng=random.Random(445))
         game.show_lore_notes()
@@ -7739,16 +7745,16 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Contents:", rendered)
         self.assertIn("- Unconscious", rendered)
         self.assertGreaterEqual(len(APPENDIX_LORE), 30)
-        self.assertIn("Appendix B: Forgotten Realms Deities", APPENDIX_LORE)
-        self.assertIn("Appendix D: Demiplanes", APPENDIX_LORE)
+        self.assertIn("Appendix B: Lantern Faith", APPENDIX_LORE)
+        self.assertIn("Appendix D: Meridian Depths", APPENDIX_LORE)
 
     def test_lore_codex_includes_item_manual_entries(self) -> None:
         game = TextDnDGame(input_fn=lambda _: "10", output_fn=lambda _: None, rng=random.Random(444))
         entries = game.item_manual_entries()
         self.assertIn("Weapons", entries)
-        self.assertIn("Consumables and Potions", entries)
-        self.assertIn("Scrolls", entries)
-        self.assertIn("one-use", entries["Consumables and Potions"]["text"])
+        self.assertIn("Consumables and Draughts", entries)
+        self.assertIn("Scripts", entries)
+        self.assertIn("one-use", entries["Consumables and Draughts"]["text"])
 
     def test_class_choice_displays_expanded_lore(self) -> None:
         answers = iter(["2", "1"])
@@ -7757,7 +7763,7 @@ class CoreTests(unittest.TestCase):
         selected = game.choose_named_option("Choose a class", CLASSES)
         self.assertEqual(selected, "Bard")
         rendered = self.plain_output(log).replace("\n", " ")
-        self.assertIn("song of creation", rendered)
+        self.assertIn("patterns: songs, signals, ledgers", rendered)
         self.assertIn("read a room", rendered)
 
     def test_class_identity_option_appears_in_briefing(self) -> None:
@@ -7785,7 +7791,7 @@ class CoreTests(unittest.TestCase):
         game.scene_neverwinter_briefing()
         rendered = self.plain_output(log)
         self.assertIn("better story and a sharper tongue", rendered)
-        self.assertIn("Reward gained for Bard identity choice: 20 XP, 6 gp.", rendered)
+        self.assertIn("Reward gained for Bard identity choice: 20 XP, 6 marks.", rendered)
 
     def test_neverwinter_briefing_routes_response_menu_through_keyboard_choice_menu(self) -> None:
         player = build_character(
@@ -7815,7 +7821,7 @@ class CoreTests(unittest.TestCase):
         game.run_keyboard_choice_menu = fake_run
         game.scene_neverwinter_briefing()
         self.assertEqual(seen["prompt"], "Choose your response to Mira.")
-        self.assertIn("*Take the writ and head for the High Road.", seen["options"])
+        self.assertIn("*Take the writ and head for the Emberway.", seen["options"])
         self.assertEqual(game.state.current_scene, "road_ambush")
 
     def test_race_identity_option_appears_on_phandalin_arrival(self) -> None:
@@ -7873,7 +7879,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("  1. Soldier", rendered)
         self.assertNotIn("1. Soldier: A veteran of militia drills", rendered)
-        self.assertIn("Extra proficiencies: Land Vehicles, Gaming", rendered)
+        self.assertIn("Extra training: Land Vehicles, Gaming Set", rendered)
 
     def test_build_character_includes_background_bonus_proficiencies(self) -> None:
         character = build_character(
@@ -8060,7 +8066,7 @@ class CoreTests(unittest.TestCase):
         game.run_camp_banter(banter)
         rendered = self.plain_output(log)
         self.assertIn("The Wounded Line", rendered)
-        self.assertIn("Names sorted into outcomes. Tymora hates a loaded die.", rendered)
+        self.assertIn("Names sorted into outcomes. The Lantern hates a loaded die.", rendered)
         self.assertTrue(game.state.flags["camp_banter_elira_tolan_greywake_seen"])
         self.assertTrue(game.state.flags["camp_greywake_testimony_threaded"])
         self.assertTrue(game.state.flags["camp_greywake_manifest_read_as_schedule"])
@@ -8363,7 +8369,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(captures[0]["enemy_count"], 2)
         self.assertEqual(captures[0]["parley_dc"], 12)
         self.assertGreaterEqual(captures[0]["temp_hp"], 6)
-        self.assertEqual(captures[1]["title"], "High Road Second Wave")
+        self.assertEqual(captures[1]["title"], "Emberway Second Wave")
 
     def test_road_ambush_scales_for_two_member_party(self) -> None:
         player = build_character(
@@ -8388,7 +8394,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(captures[0]["title"], "Roadside Ambush: First Wave")
         self.assertEqual(captures[0]["enemy_count"], 2)
         self.assertEqual(captures[0]["parley_dc"], 12)
-        self.assertEqual(captures[1]["title"], "High Road Second Wave")
+        self.assertEqual(captures[1]["title"], "Emberway Second Wave")
 
     def test_road_ambush_intimidation_works_for_solo_party(self) -> None:
         player = build_character(
@@ -8604,10 +8610,10 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(15))
         game.state = GameState(player=player, inventory={"potion_healing": 1}, current_scene="road_ambush")
         options = game.get_player_combat_options(player, SimpleNamespace(allow_parley=True, allow_flee=True))
-        self.assertIn("Attack with Divine Smite (4 MP, on hit)", options)
+        self.assertIn("Strike with Oathflare Strike (4 reserve, on hit)", options)
         self.assertIn("[PERSUASION / INTIMIDATION] Attempt Parley", options)
         self.assertIn("[STEALTH] Try to Flee", options)
-        self.assertIn("Drink a Healing Potion", options)
+        self.assertIn("Drink a Red Recovery Draught", options)
         self.assertFalse(options[0].startswith("["))
 
     def test_second_wind_is_a_bonus_action_and_still_allows_attack(self) -> None:
@@ -8690,8 +8696,8 @@ class CoreTests(unittest.TestCase):
             turn_state=TurnState(bonus_action_spell_cast=True),
             heroes=[player],
         )
-        self.assertIn("Cast Sacred Flame (1 MP)", options)
-        self.assertNotIn("Cast Cure Wounds (3 MP)", options)
+        self.assertIn("Channel Lantern Flare (1 reserve)", options)
+        self.assertNotIn("Channel Field Mend (3 reserve)", options)
 
     def test_healing_word_cost_matches_cure_wounds_and_stays_bonus_action(self) -> None:
         player = build_character(
@@ -8711,10 +8717,10 @@ class CoreTests(unittest.TestCase):
             heroes=[player],
         )
         self.assertEqual(magic_point_cost("healing_word"), magic_point_cost("cure_wounds"))
-        self.assertIn("Cast Cure Wounds (3 MP)", options)
-        self.assertIn("Cast Healing Word (3 MP, Bonus Action)", options)
-        self.assertEqual(game.combat_option_group("Cast Cure Wounds (3 MP)"), "Action")
-        self.assertEqual(game.combat_option_group("Cast Healing Word (3 MP, Bonus Action)"), "Bonus Action")
+        self.assertIn("Channel Field Mend (3 reserve)", options)
+        self.assertIn("Channel Pulse Restore (3 reserve, Bonus Action)", options)
+        self.assertEqual(game.combat_option_group("Channel Field Mend (3 reserve)"), "Action")
+        self.assertEqual(game.combat_option_group("Channel Pulse Restore (3 reserve, Bonus Action)"), "Bonus Action")
 
     def test_healing_word_is_bonus_action_and_still_allows_action_cantrip(self) -> None:
         player = build_character(
@@ -8777,7 +8783,7 @@ class CoreTests(unittest.TestCase):
             turn_state=TurnState(attack_action_taken=True),
             heroes=[player],
         )
-        self.assertIn("Make Off-Hand Attack", options)
+        self.assertIn("Make Off-Hand Strike", options)
 
     def test_level_two_rogue_gets_cunning_action_option(self) -> None:
         player = build_character(
@@ -8798,7 +8804,7 @@ class CoreTests(unittest.TestCase):
             turn_state=TurnState(),
             heroes=[player],
         )
-        self.assertIn("Use Cunning Action", options)
+        self.assertIn("Use Veil Step", options)
 
     def test_level_two_monk_gets_ki_bonus_action_options(self) -> None:
         player = build_character(
@@ -8818,9 +8824,9 @@ class CoreTests(unittest.TestCase):
             turn_state=TurnState(attack_action_taken=True),
             heroes=[player],
         )
-        self.assertIn("Use Flurry of Blows", options)
-        self.assertIn("Use Patient Defense", options)
-        self.assertIn("Use Step of the Wind", options)
+        self.assertIn("Use Twinflow Strikes", options)
+        self.assertIn("Use Still Guard", options)
+        self.assertIn("Use Wind Step", options)
 
     def test_help_downed_ally_can_restore_them_to_one_hp(self) -> None:
         player = build_character(
@@ -8987,7 +8993,7 @@ class CoreTests(unittest.TestCase):
         game.state = GameState(player=player, current_scene="phandalin_hub", gold=25)
 
         with self.assertRaises(gameplay_base.ResumeLoadedGame):
-            game.choose("Where do you go next?", ["Stay in Phandalin", "Ride out"])
+            game.choose("Where do you go next?", ["Stay in Iron Hollow", "Ride out"])
 
         self.assertEqual(game.state.current_act, 2)
         self.assertEqual(game.state.current_scene, "act2_claims_council")
@@ -9089,10 +9095,10 @@ class CoreTests(unittest.TestCase):
         lines = strip_ansi(rendered).splitlines()
         self.assertEqual(len(lines), 2)
         self.assertIn("Nyra: HP", lines[0])
-        self.assertIn("AC", lines[0])
+        self.assertIn("Guard", lines[0])
         self.assertNotIn("MP", lines[0])
-        self.assertTrue(lines[1].startswith(" " * len("Nyra: ") + "MP ["))
-        self.assertIn("MP [███████     ]  7/12", strip_ansi(rendered))
+        self.assertTrue(lines[1].startswith(" " * len("Nyra: ") + "Channel ["))
+        self.assertIn("Channel [███████     ]  7/12", strip_ansi(rendered))
         self.assertIn(colorize("███████", "blue"), rendered)
 
     def test_warlock_short_rest_restores_pact_slots(self) -> None:
@@ -9160,16 +9166,16 @@ class CoreTests(unittest.TestCase):
             short_rests_remaining=0,
         )
         supply_points = game.current_supply_points()
-        self.assertTrue(game.paid_inn_long_rest("Stonehill Inn"))
+        self.assertTrue(game.paid_inn_long_rest("Ashlamp Inn"))
         self.assertEqual(game.state.gold, 0)
         self.assertEqual(game.current_supply_points(), supply_points)
         self.assertEqual(player.current_hp, player.max_hp)
         self.assertEqual(companion.current_hp, companion.max_hp)
         self.assertEqual(game.state.short_rests_remaining, 2)
         rendered = self.plain_output(log)
-        self.assertIn("will cost 20 gp total", rendered)
+        self.assertIn("will cost 20 marks total", rendered)
         self.assertIn("Will long rest: Velkor, Kaelis Starling.", rendered)
-        self.assertIn("Spend 20 gp at Stonehill Inn and long rest this company?", rendered)
+        self.assertIn("Spend 20 marks at Ashlamp Inn and long rest this company?", rendered)
 
     def test_paid_inn_long_rest_can_be_declined_after_cost_confirmation(self) -> None:
         player = build_character(
@@ -9193,7 +9199,7 @@ class CoreTests(unittest.TestCase):
             gold=20,
             short_rests_remaining=0,
         )
-        self.assertFalse(game.paid_inn_long_rest("Stonehill Inn"))
+        self.assertFalse(game.paid_inn_long_rest("Ashlamp Inn"))
         self.assertEqual(game.state.gold, 20)
         self.assertEqual(player.current_hp, 2)
         self.assertTrue(companion.dead)
@@ -9201,7 +9207,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Will long rest: Velkor.", rendered)
         self.assertIn("Will not be restored by resting: Tolan Ironshield (dead).", rendered)
-        self.assertIn("You keep your gold and do not rent beds.", rendered)
+        self.assertIn("You keep your marks and do not rent beds.", rendered)
 
     def test_paid_inn_long_rest_requires_enough_gold(self) -> None:
         player = build_character(
@@ -9216,11 +9222,11 @@ class CoreTests(unittest.TestCase):
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(173))
         game.state = GameState(player=player, current_scene="phandalin_hub", gold=4, short_rests_remaining=0)
-        self.assertFalse(game.paid_inn_long_rest("Stonehill Inn"))
+        self.assertFalse(game.paid_inn_long_rest("Ashlamp Inn"))
         self.assertEqual(game.state.gold, 4)
         self.assertEqual(player.current_hp, 2)
         self.assertEqual(game.state.short_rests_remaining, 0)
-        self.assertIn("costs 10 gp", self.plain_output(log))
+        self.assertIn("costs 10 marks", self.plain_output(log))
 
     def test_short_rest_heals_half_maximum_hp_rounded_up(self) -> None:
         player = build_character(
@@ -9274,7 +9280,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.use_item_from_inventory())
         self.assertEqual(player.resources["mp"], 4)
         self.assertNotIn("resonance_tonic", game.state.inventory)
-        self.assertIn("restores 4 MP", self.plain_output(log))
+        self.assertIn("restores 4 channel reserve", self.plain_output(log))
 
     def test_long_rest_restores_spell_slots_for_player_and_companion(self) -> None:
         player = build_character(
@@ -9381,7 +9387,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(expressions, [])
         self.assertEqual(target.current_hp, target.max_hp)
         self.assertEqual(current_magic_points(wizard), 4)
-        self.assertIn("needs 5 MP to cast Magic Missile", self.plain_output(log))
+        self.assertIn("needs 5 channel reserve to use Arc Pulse", self.plain_output(log))
 
     def test_camp_menu_shows_revivify_option_for_dead_companion(self) -> None:
         player = build_character(
@@ -9408,7 +9414,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Rest and recovery", rendered)
         self.assertIn("Take a short rest", rendered)
-        self.assertIn("Use Scroll of Revivify on a dead ally", rendered)
+        self.assertIn("Use Revival Script on a dead ally", rendered)
 
     def test_camp_menu_shows_compact_act2_digest(self) -> None:
         player = build_character(
@@ -9484,7 +9490,7 @@ class CoreTests(unittest.TestCase):
 
     def test_scroll_of_revivify_exists_with_uncommon_pricing(self) -> None:
         item = ITEMS["scroll_revivify"]
-        self.assertEqual(item.name, "Scroll of Revivify")
+        self.assertEqual(item.name, "Revival Script")
         self.assertEqual(item.rarity, "uncommon")
         self.assertEqual(item.value, 200)
         self.assertTrue(item.revive_dead)
@@ -9598,11 +9604,11 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Character Sheet: Kaelis Starling", rendered)
         self.assertIn("Ability Scores:", rendered)
-        self.assertIn("Ability Scores:\n- STR", rendered)
+        self.assertIn("Ability Scores:\n- Strength (STR)", rendered)
         self.assertIn("\n\nCombat:", rendered)
         self.assertIn("Combat:\n- Weapon", rendered)
-        self.assertIn("\n\nSaving Throws:", rendered)
-        self.assertIn("Saving Throws:\n- STR", rendered)
+        self.assertIn("\n\nResist Checks:", rendered)
+        self.assertIn("Resist Checks:\n- Strength (STR)", rendered)
         self.assertIn("\n\nSkills:", rendered)
         self.assertIn("Skills:\n- Acrobatics", rendered)
         self.assertIn("Equipment:", rendered)
@@ -9626,9 +9632,9 @@ class CoreTests(unittest.TestCase):
         renderable = game.build_character_sheet_rich_renderable(companion)
         lines = render_rich_lines(renderable, width=game.character_sheet_render_width())
 
-        top_titles = next(line for line in lines if "Ability Scores" in line and "Saving Throws" in line)
+        top_titles = next(line for line in lines if "Ability Scores" in line and "Resist Checks" in line)
         bottom_titles = next(line for line in lines if "Combat" in line and "Skills" in line)
-        saving_throws_start = top_titles.index("Saving Throws")
+        saving_throws_start = top_titles.index("Resist Checks")
         skills_start = bottom_titles.index("Skills")
 
         self.assertLess(saving_throws_start - top_titles.index("Ability Scores"), 52)
@@ -9648,7 +9654,7 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=lambda _: None, rng=random.Random(19))
         game.state = GameState(player=player, current_scene="phandalin_hub", gold=0, inventory={"bread_round": 1})
         player.equipment_slots = {slot: None for slot in ["head", "ring_1", "ring_2", "neck", "chest", "gloves", "boots", "main_hand", "off_hand", "cape"]}
-        game.sell_items(merchant_id="linene_graywind", merchant_name="Linene Graywind")
+        game.sell_items(merchant_id="linene_graywind", merchant_name="Linene Ironward")
         self.assertEqual(game.state.gold, 1)
         self.assertNotIn("bread_round", game.state.inventory)
 
@@ -9681,7 +9687,7 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: next(answers), output_fn=lambda _: None, rng=random.Random(21))
         game.state = GameState(player=player, current_scene="phandalin_hub", gold=0, inventory={"bread_round": 1})
         player.equipment_slots = {slot: None for slot in ["head", "ring_1", "ring_2", "neck", "chest", "gloves", "boots", "main_hand", "off_hand", "cape"]}
-        game.sell_items(merchant_id="linene_graywind", merchant_name="Linene Graywind")
+        game.sell_items(merchant_id="linene_graywind", merchant_name="Linene Ironward")
         self.assertEqual(game.state.gold, 0)
         self.assertEqual(game.state.inventory["bread_round"], 1)
 
@@ -9714,12 +9720,12 @@ class CoreTests(unittest.TestCase):
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: "9", output_fn=log.append, rng=random.Random(221))
         game.state = GameState(player=player, current_scene="phandalin_hub", inventory={"bread_round": 1})
-        game.manage_inventory(merchant_id="barthen_provisions", merchant_name="Barthen")
+        game.manage_inventory(merchant_id="barthen_provisions", merchant_name="Hadrik")
         rendered = self.plain_output(log)
-        self.assertIn("[TRADE] Browse Barthen's wares", rendered)
-        self.assertIn("[TRADE] Buy items from Barthen", rendered)
-        self.assertIn("[TRADE] Sell items to Barthen", rendered)
-        self.assertIn("Trade terms with Barthen", rendered)
+        self.assertIn("[TRADE] Browse Hadrik's wares", rendered)
+        self.assertIn("[TRADE] Buy items from Hadrik", rendered)
+        self.assertIn("[TRADE] Sell items to Hadrik", rendered)
+        self.assertIn("Trade terms with Hadrik", rendered)
 
     def test_inventory_filter_view_can_focus_on_consumables(self) -> None:
         player = build_character(
@@ -9739,8 +9745,8 @@ class CoreTests(unittest.TestCase):
         )
         game.show_inventory(filter_key="consumables")
         rendered = self.plain_output(log)
-        self.assertIn("View: Consumables", rendered)
-        self.assertIn("Potion of Healing", rendered)
+        self.assertIn("View: Draughts", rendered)
+        self.assertIn("Red Recovery Draught", rendered)
         self.assertNotIn("Bread Round", rendered)
         self.assertNotIn("Longsword", rendered)
 
@@ -9762,7 +9768,7 @@ class CoreTests(unittest.TestCase):
         )
         game.show_inventory()
         rendered = self.plain_output(log)
-        self.assertIn("On hand: Potion of Healing x2, Roadworn Longsword x1", rendered)
+        self.assertIn("On hand: Red Recovery Draught x2, Roadworn Longsword x1", rendered)
         if RICH_AVAILABLE:
             self.assertIn("Shared Inventory", rendered)
             self.assertIn("Qty", rendered)
@@ -9784,9 +9790,9 @@ class CoreTests(unittest.TestCase):
         stock = game.get_merchant_stock("barthen_provisions")
         stock.clear()
         stock["bread_round"] = 3
-        game.show_merchant_stock("barthen_provisions", "Barthen")
+        game.show_merchant_stock("barthen_provisions", "Hadrik")
         rendered = self.plain_output(log)
-        self.assertIn("Trade terms with Barthen", rendered)
+        self.assertIn("Trade terms with Hadrik", rendered)
         self.assertIn("Bread Round", rendered)
         if RICH_AVAILABLE:
             self.assertIn("Trade Desk", rendered)
@@ -9824,7 +9830,7 @@ class CoreTests(unittest.TestCase):
         stock = game.get_merchant_stock("barthen_provisions")
         stock.clear()
         stock["bread_round"] = 5
-        game.buy_items("barthen_provisions", "Barthen")
+        game.buy_items("barthen_provisions", "Hadrik")
         self.assertEqual(game.state.inventory["bread_round"], 3)
         self.assertEqual(game.state.gold, 0)
         self.assertEqual(stock["bread_round"], 2)
@@ -9849,7 +9855,7 @@ class CoreTests(unittest.TestCase):
         player.equipment_slots = {slot: None for slot in ["head", "ring_1", "ring_2", "neck", "chest", "gloves", "boots", "main_hand", "off_hand", "cape"]}
         stock = game.get_merchant_stock("barthen_provisions")
         stock.clear()
-        game.sell_items(merchant_id="barthen_provisions", merchant_name="Barthen")
+        game.sell_items(merchant_id="barthen_provisions", merchant_name="Hadrik")
         self.assertEqual(game.state.gold, 2)
         self.assertEqual(game.state.inventory["bread_round"], 1)
         self.assertEqual(stock["bread_round"], 2)
@@ -9942,18 +9948,18 @@ class CoreTests(unittest.TestCase):
         game.visit_steward()
         rendered = self.plain_output(log)
         self.assertLess(
-            rendered.index("Tessa Harrow is Phandalin's exhausted steward"),
+            rendered.index("Tessa Harrow is Iron Hollow's exhausted steward"),
             rendered.index("Tessa stands over a desk buried in route maps"),
         )
         self.assertLess(
-            rendered.index("Tessa Harrow is Phandalin's exhausted steward"),
+            rendered.index("Tessa Harrow is Iron Hollow's exhausted steward"),
             rendered.index("Choose what you say to Tessa."),
         )
         self.assertLess(
             rendered.index("Break that watchtower and you won't just win a fight"),
-            rendered.index('"I\'ll break their grip on Phandalin."'),
+            rendered.index('"I\'ll break their grip on Iron Hollow."'),
         )
-        self.assertEqual(rendered.count('"I\'ll break their grip on Phandalin."'), 1)
+        self.assertEqual(rendered.count('"I\'ll break their grip on Iron Hollow."'), 1)
         self.assertEqual(rendered.count('1. "Where is the Ashen Brand hurting you the most?"'), 1)
 
     def test_steward_accepts_blackwake_report_once(self) -> None:
@@ -9984,7 +9990,7 @@ class CoreTests(unittest.TestCase):
         game.visit_steward()
         rendered = self.plain_output(log)
         self.assertIn("*Share what happened at Blackwake Crossing.", rendered)
-        self.assertIn("False seals this close to Neverwinter", rendered)
+        self.assertIn("False seals this close to Greywake", rendered)
         self.assertIn("Sereth Vane is still breathing", rendered)
         self.assertTrue(game.state.flags["steward_blackwake_asked"])
         self.assertEqual(game.state.gold, 8)
@@ -10044,12 +10050,12 @@ class CoreTests(unittest.TestCase):
 
         rendered = "\n".join(captured)
         self.assertNotIn("Report to Steward Tessa Harrow", rendered)
-        self.assertNotIn("Stop by the shrine of Tymora", rendered)
-        self.assertNotIn("Walk the old walls of Edermath Orchard", rendered)
-        self.assertNotIn("Step into the Miner's Exchange", rendered)
-        self.assertIn("Visit the Stonehill Inn", rendered)
-        self.assertIn("Browse Barthen's Provisions", rendered)
-        self.assertIn("Lionshield trading post", rendered)
+        self.assertNotIn("Stop by the Lantern shrine", rendered)
+        self.assertNotIn("Walk the old walls of Orchard Wall", rendered)
+        self.assertNotIn("Step into the Delvers' Exchange", rendered)
+        self.assertIn("Visit the Ashlamp Inn", rendered)
+        self.assertIn("Browse Hadrik's Provisions", rendered)
+        self.assertIn("Ironbound trading post", rendered)
 
     def test_stonehill_menu_hides_exhausted_npc_branches(self) -> None:
         player = build_character(
@@ -10110,7 +10116,7 @@ class CoreTests(unittest.TestCase):
             game.visit_stonehill_inn()
 
         rendered = "\n".join(captured)
-        self.assertNotIn("Mara Stonehill", rendered)
+        self.assertNotIn("Mara Ashlamp", rendered)
         self.assertNotIn("Jerek Harl", rendered)
         self.assertNotIn("Sella Quill", rendered)
         self.assertNotIn("Old Tam Veller", rendered)
@@ -10211,7 +10217,7 @@ class CoreTests(unittest.TestCase):
                 "stonehill_talk_mara",
                 {"stonehill_mara_met": True, "marked_keg_resolved": True, "stonehill_mara_order_asked": True},
                 {"marked_keg_investigation": completed("marked_keg_investigation")},
-                "Choose what you say to Mara Stonehill.",
+                "Choose what you say to Mara Ashlamp.",
                 "Leave Mara to the floor",
             ),
             (
@@ -10396,7 +10402,7 @@ class CoreTests(unittest.TestCase):
         game.skill_check = lambda actor, skill, dc, context: True  # type: ignore[method-assign]
 
         def fake_scenario_choice(prompt: str, options: list[str], **kwargs) -> int:
-            if prompt == "Choose what you say to Mara Stonehill.":
+            if prompt == "Choose what you say to Mara Ashlamp.":
                 if game.quest_is_completed("marked_keg_investigation"):
                     return self.option_index_containing(options, "Leave Mara to the floor")
                 if game.quest_is_ready("marked_keg_investigation"):
@@ -10419,7 +10425,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.xp, 70)
         rendered = self.plain_output(log)
         self.assertIn("fresh chalk no cellar hand will claim", rendered)
-        self.assertIn("Additional quest reward: Innkeeper Credit Token x1.", rendered)
+        self.assertIn("Additional quest reward: Ashlamp Credit Token x1.", rendered)
 
     def test_stonehill_marked_keg_blessing_path_skips_skill_check(self) -> None:
         player = build_character(
@@ -10828,7 +10834,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("blue road-knot", rendered)
         self.assertIn("courier packet", rendered)
-        self.assertIn("Neverwinter sent a witness packet", rendered)
+        self.assertIn("Greywake sent a witness packet", rendered)
 
     def test_stonehollow_harl_road_knot_option_marks_supports_without_skill_check(self) -> None:
         player = build_character(
@@ -11051,7 +11057,7 @@ class CoreTests(unittest.TestCase):
         )
         game.scene_neverwinter_briefing()
         rendered = self.plain_output(log)
-        self.assertEqual(rendered.count('1. "How is Neverwinter holding together these days?"'), 1)
+        self.assertEqual(rendered.count('1. "How is Greywake holding together these days?"'), 1)
 
     def test_show_party_displays_xp_to_next_level(self) -> None:
         player = build_character(
@@ -11449,8 +11455,8 @@ class CoreTests(unittest.TestCase):
         game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
 
         def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
-            if any("You know Elira Dawnmantle" in option for option in options):
-                return self.option_index_containing(options, "You know Elira Dawnmantle")
+            if any("You know Elira Lanternward" in option for option in options):
+                return self.option_index_containing(options, "You know Elira Lanternward")
             return self.option_index_containing(options, "Take the writ")
 
         game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
@@ -11488,8 +11494,8 @@ class CoreTests(unittest.TestCase):
         game.handle_neverwinter_departure_fork = lambda: setattr(game.state, "current_scene", "road_ambush")
 
         def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
-            if any("You know Elira Dawnmantle" in option for option in options):
-                return self.option_index_containing(options, "You know Elira Dawnmantle")
+            if any("You know Elira Lanternward" in option for option in options):
+                return self.option_index_containing(options, "You know Elira Lanternward")
             return self.option_index_containing(options, "Take the writ")
 
         game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
@@ -11529,9 +11535,9 @@ class CoreTests(unittest.TestCase):
         )
 
         def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
-            if any("Phandalin is worse" in option for option in options):
-                return self.option_index_containing(options, "Phandalin is worse")
-            return self.option_index_containing(options, "Return to Phandalin")
+            if any("Iron Hollow is worse" in option for option in options):
+                return self.option_index_containing(options, "Iron Hollow is worse")
+            return self.option_index_containing(options, "Return to Iron Hollow")
 
         game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
 
@@ -11573,7 +11579,7 @@ class CoreTests(unittest.TestCase):
         def choose_mira_option(prompt: str, options: list[str], **kwargs) -> int:
             if any("Varyn is beaten" in option for option in options):
                 return self.option_index_containing(options, "Varyn is beaten")
-            return self.option_index_containing(options, "Return to Phandalin")
+            return self.option_index_containing(options, "Return to Iron Hollow")
 
         game.scenario_choice = choose_mira_option  # type: ignore[method-assign]
 
@@ -11584,7 +11590,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["mira_q_act1_after_report"])
         self.assertIn("Beaten, yes. Finished, I am less sure.", rendered)
         self.assertIn("Routes that fold wrong", rendered)
-        self.assertIn("Phandalin will spend months learning what the word cost", rendered)
+        self.assertIn("Iron Hollow will spend months learning what the word cost", rendered)
         self.assertIn("the exit that should not have worked", rendered)
 
     def test_phandalin_shrine_recruits_elira_after_failed_early_attempts(self) -> None:
@@ -11709,7 +11715,7 @@ class CoreTests(unittest.TestCase):
 
         self.assertTrue(game.state.flags["neverwinter_woodline_path"])
         self.assertTrue(game.state.flags["road_ambush_scouted"])
-        self.assertEqual([encounter.title for encounter in encounters], ["High Road Milehouse Intercept"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Emberway Milehouse Intercept"])
         self.assertEqual(len(encounters[0].enemies), 2)
 
     def test_neverwinter_signal_cairn_sets_second_wave_edge(self) -> None:
@@ -11735,7 +11741,7 @@ class CoreTests(unittest.TestCase):
 
         self.assertTrue(game.state.flags["road_reinforcement_signal_cut"])
         self.assertTrue(game.state.flags["road_second_wave_trail_read"])
-        self.assertEqual([encounter.title for encounter in encounters], ["Neverwinter Wood Signal Cairn"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Greywake Wood Signal Cairn"])
         self.assertEqual(len(encounters[0].enemies), 2)
 
     def test_phandalin_shrine_defers_when_elira_joined_in_neverwinter(self) -> None:
@@ -11834,7 +11840,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log).lower()
         self.assertIn("console commands", rendered)
         self.assertIn("give <item id> [quantity]", rendered)
-        self.assertIn("give gold [quantity]", rendered)
+        self.assertIn("give marks [quantity]", rendered)
         self.assertIn("clearconditions", rendered)
         self.assertIn("unlockmap", rendered)
         self.assertIn("unlockallmaps", rendered)
@@ -12084,7 +12090,7 @@ class CoreTests(unittest.TestCase):
         game.execute_console_command("spawn goblin_skirmisher 2")
 
         self.assertEqual(len(captured), 1)
-        self.assertEqual(captured[0].title, "Console Spawn: Goblin Skirmisher x2")
+        self.assertEqual(captured[0].title, "Console Spawn: Scrapling Raider x2")
         self.assertEqual([enemy.archetype for enemy in captured[0].enemies], ["goblin", "goblin"])
         self.assertFalse(captured[0].allow_post_combat_random_encounter)
 
@@ -12116,10 +12122,10 @@ class CoreTests(unittest.TestCase):
         game.execute_console_command(f"identify {item_id}")
 
         rendered = self.plain_output(log)
-        self.assertIn("Identify: Potion of Healing", rendered)
+        self.assertIn("Identify: Red Recovery Draught", rendered)
         self.assertIn(f"ID: {item_id}", rendered)
         self.assertIn("Legacy ID: potion_healing", rendered)
-        self.assertIn("Rules: heals 2d4+2", rendered)
+        self.assertIn("Rules: restores 2d4+2", rendered)
 
     def test_choose_hides_compact_hud_for_active_game_prompts_by_default(self) -> None:
         player = build_character(
@@ -12142,7 +12148,7 @@ class CoreTests(unittest.TestCase):
         choice = game.choose("Choose one.", ["First", "Second"])
         self.assertEqual(choice, 2)
         rendered = self.plain_output(log)
-        self.assertNotIn("[Act I] Phandalin | Objective: Stop the Watchtower Raids", rendered)
+        self.assertNotIn("[Act I] Iron Hollow | Objective: Stop the Watchtower Raids", rendered)
         self.assertIn("Choose one.", rendered)
 
     def test_compact_hud_party_summary_includes_blue_mp_bars_for_spellcasters(self) -> None:
@@ -12167,7 +12173,7 @@ class CoreTests(unittest.TestCase):
         game.state = GameState(player=player, companions=[cleric], current_scene="phandalin_hub")
         rendered = game.hud_party_summary()
         self.assertIn("Ash", strip_ansi(rendered))
-        self.assertIn("MP [███   ]  6/13", strip_ansi(rendered))
+        self.assertIn("Channel [███   ]  6/13", strip_ansi(rendered))
         self.assertIn(colorize("███", "blue"), rendered)
 
     def test_map_command_opens_map_menu_and_can_show_travel_ledger(self) -> None:
@@ -12285,7 +12291,7 @@ class CoreTests(unittest.TestCase):
             heroes=[player],
         )
         selected = game.choose_grouped_combat_option("Your turn.", options, actor=player, heroes=[player], enemies=[enemy])
-        self.assertEqual(selected, f"Attack with {player.weapon.name}")
+        self.assertEqual(selected, f"Strike with {player.weapon.name}")
         rendered = self.plain_output(log)
         self.assertIn("Action:", rendered)
         self.assertIn("Bonus Action:", rendered)
@@ -12329,7 +12335,7 @@ class CoreTests(unittest.TestCase):
         game.rich_panel_row_renderable = fake_panel_row
         game.emit_rich = fake_emit
         selected = game.choose_grouped_combat_option("Your turn.", options, actor=player, heroes=[player], enemies=[enemy])
-        self.assertEqual(selected, f"Attack with {player.weapon.name}")
+        self.assertEqual(selected, f"Strike with {player.weapon.name}")
         self.assertEqual(captured["battlefield_panel_count"], 2)
         self.assertEqual(captured["battlefield_ratios"], [1, 1])
         self.assertEqual(captured["battlefield_padding"], (0, 1))
@@ -12587,7 +12593,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Current Head: Roadworn Iron Cap", rendered)
         self.assertIn("Roadworn Traveler's Hood", rendered)
-        self.assertIn("AC -1", rendered)
+        self.assertIn("Guard -1", rendered)
         self.assertIn("Perception +1", rendered)
 
     def test_map_command_opens_map_menu_each_time_it_is_requested(self) -> None:
@@ -12829,12 +12835,12 @@ class CoreTests(unittest.TestCase):
         game.render_title_screen(
             "Roads That Remember",
             "Acts I-II: Frontier Roads and Echoing Depths",
-            "A choice-driven D&D-inspired text adventure.",
+            "An original choice-driven fantasy text adventure.",
             ["Start a new game", "Save Files", "Read the lore notes", "Settings", "Quit"],
             {
-                "Start a new game": "Build a new character and ride south toward Phandalin.",
+                "Start a new game": "Build a new character and ride the Emberway toward Iron Hollow.",
                 "Save Files": "Browse save files, load a run, or delete old journals.",
-                "Read the lore notes": "Browse Forgotten Realms context, rules guidance, and item basics.",
+                "Read the lore notes": "Browse Aethrune context, mechanics guidance, and item basics.",
                 "Settings": "Adjust audio, animations, typed narration, and presentation pacing.",
                 "Quit": "Leave the frontier for now.",
             },
@@ -12860,12 +12866,12 @@ class CoreTests(unittest.TestCase):
         choice = game.choose_title_menu(
             "Roads That Remember",
             "Acts I-II: Frontier Roads and Echoing Depths",
-            "A choice-driven D&D-inspired text adventure.",
+            "An original choice-driven fantasy text adventure.",
             ["Start a new game", "Save Files", "Read the lore notes", "Settings", "Quit"],
             option_details={
-                "Start a new game": "Build a new character and ride south toward Phandalin.",
+                "Start a new game": "Build a new character and ride the Emberway toward Iron Hollow.",
                 "Save Files": "Browse save files, load a run, or delete old journals.",
-                "Read the lore notes": "Browse Forgotten Realms context, rules guidance, and item basics.",
+                "Read the lore notes": "Browse Aethrune context, mechanics guidance, and item basics.",
                 "Settings": "Adjust audio, animations, typed narration, and presentation pacing.",
                 "Quit": "Leave the frontier for now.",
             },
@@ -13043,8 +13049,8 @@ class CoreTests(unittest.TestCase):
         log: list[str] = []
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(430))
         game.state = GameState(player=player, current_scene="phandalin_hub")
-        game.player_choice_output(game.action_option("Take the writ and head for the High Road."))
-        self.assertEqual(log[-2], "*Take the writ and head for the High Road.")
+        game.player_choice_output(game.action_option("Take the writ and head for the Emberway."))
+        self.assertEqual(log[-2], "*Take the writ and head for the Emberway.")
         self.assertEqual(log[-1], "")
 
     def test_companion_combat_openers_apply_shadow_volley_and_hold_the_line(self) -> None:
@@ -13189,3 +13195,4 @@ class CoreTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

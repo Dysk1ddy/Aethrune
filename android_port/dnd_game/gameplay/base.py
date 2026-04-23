@@ -111,10 +111,10 @@ class GameBase:
     def run(self) -> None:
         try:
             while True:
-                self.banner("Sword Coast: Acts I-II")
+                self.banner("Roads That Remember: Acts I-II")
                 self.say(
-                    "A choice-driven D&D-inspired text adventure spanning the road from "
-                    "Neverwinter to Phandalin and the dangers beneath Wave Echo Cave. "
+                    "An original choice-driven fantasy text adventure across the "
+                    "Emberway, Iron Hollow, and the Resonant Vaults. "
                     "Acts I and II are playable now, with later acts scaffolded for expansion."
                 )
                 choice = self.choose(
@@ -845,60 +845,60 @@ class GameBase:
         return feature.replace("_", " ").title()
 
     def lore_menu_label(self, name: str, entry: dict[str, str]) -> str:
+        display_name = entry.get("label", name).strip() or name
         menu = entry.get("menu", "").strip()
-        return f"{name}: {menu}" if menu else name
+        return f"{display_name}: {menu}" if menu else display_name
 
     def item_manual_entries(self) -> dict[str, dict[str, str]]:
         return {
             "Weapons": {
-                "menu": "Held in hand and used for attack rolls and weapon damage.",
+                "menu": "Held in hand and used for strike checks and weapon damage.",
                 "text": (
-                    "Weapons are used for melee or ranged attacks and follow the core 5e idea that you wield them in "
-                    "one or two hands depending on the weapon. In this game, weapons set your main attack profile, "
-                    "including damage dice, attack stat, and any magical hit or damage bonuses.\n\n"
+                    "Weapons are used for melee or ranged strikes and define how a character turns training into "
+                    "damage. In this game, weapons set your main attack profile, including damage dice, attack stat, "
+                    "hand use, reach, and any relic bonuses.\n\n"
                     "Light one-handed weapons can support off-hand fighting, while two-handed weapons lock out the "
-                    "off-hand slot. Ranged weapons and finesse weapons still follow their normal identity: bows shoot "
-                    "from range, and finesse weapons can reward Dexterity-focused builds."
+                    "off-hand slot. Ranged weapons and finesse weapons keep their familiar roles: bows pressure from "
+                    "range, and finesse weapons reward Agility-focused builds."
                 ),
             },
             "Armor and Shields": {
-                "menu": "Armor sets base AC, while shields protect the off hand.",
+                "menu": "Armor sets base Guard, while shields protect the off hand.",
                 "text": (
-                    "Armor works like the official 5e categories: it defines your base Armor Class and may limit how "
-                    "much Dexterity helps. Shields are handled separately in the off-hand slot and improve survivability "
-                    "when your other hand is free.\n\n"
-                    "Heavy or two-handed weapon setups can conflict with shields, so the game checks those hand-use rules "
-                    "when gear is equipped. Magical armor and shields can also add resistances or extra defensive traits."
+                    "Armor defines your base Guard and may limit how much Agility helps. Shields are handled separately "
+                    "in the off-hand slot and improve survivability when your other hand is free.\n\n"
+                    "Heavy or two-handed weapon setups can conflict with shields, so the game checks hand-use rules "
+                    "when gear is equipped. Relic armor and shields can also add resistances or extra defensive traits."
                 ),
             },
             "Worn Equipment": {
                 "menu": "Head, neck, rings, gloves, boots, chest, and cape pieces add passive bonuses.",
                 "text": (
-                    "Worn gear follows the same general logic as official D&D magic items: boots go on the feet, gloves "
-                    "on the hands, rings on the fingers, a cloak or cape on the shoulders, and similar items only work "
-                    "when worn in the right place. This game simplifies that into clear slots for head, neck, chest, "
+                    "Worn gear follows clear body slots: boots go on the feet, gloves on the hands, rings on the "
+                    "fingers, a cloak or cape on the shoulders, and similar pieces only work when worn in the right "
+                    "place. This game simplifies that into clear slots for head, neck, chest, "
                     "gloves, boots, cape, and two ring slots.\n\n"
-                    "Most of these pieces grant passive bonuses such as Armor Class, skill bonuses, saving throw boosts, "
+                    "Most of these pieces grant passive bonuses such as Guard, skill bonuses, resist boosts, "
                     "initiative bonuses, resistances, or other always-on utility effects."
                 ),
             },
-            "Consumables and Potions": {
+            "Consumables and Draughts": {
                 "menu": "Single-use items that heal, restore, protect, or clear conditions.",
                 "text": (
-                    "Consumables are one-use resources modeled after the official idea of potions, elixirs, and other "
-                    "adventuring aids. In this game they usually restore hit points, temporary hit points, spell slots, "
-                    "or remove harmful conditions.\n\n"
-                    "Most are best saved for emergencies because they are consumed immediately on use. Healing potions "
-                    "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is faster "
-                    "than administering one to someone else."
+                    "Consumables are one-use resources such as draughts, field tonics, and travel aids. In this game "
+                    "they usually restore hit points, temporary hit points, channel reserves, or remove harmful "
+                    "conditions.\n\n"
+                    "Most are best saved for emergencies because they are consumed immediately on use. Healing draughts "
+                    "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is "
+                    "faster than administering one to someone else."
                 ),
             },
-            "Scrolls": {
-                "menu": "Single-use magical effects that release a spell-like burst or support effect.",
+            "Scripts": {
+                "menu": "Single-use channeling patterns that release a focused effect.",
                 "text": (
-                    "Scrolls are disposable magical items inspired by official D&D spell scrolls. Instead of teaching a "
-                    "full spell list system, this game uses named scrolls as focused one-use effects such as healing, "
-                    "resource restoration, protection, or camp-only resurrection.\n\n"
+                    "Scripts are disposable channeling patterns. Instead of teaching a full channel pool, this game "
+                    "uses named scripts as focused one-use effects such as healing, resource restoration, protection, "
+                    "or camp-only revival.\n\n"
                     "They are consumed when activated and are best treated like strategic emergency tools rather than "
                     "ordinary gear."
                 ),
@@ -906,9 +906,9 @@ class GameBase:
             "Supplies and Trade Goods": {
                 "menu": "Food, camp staples, and practical inventory items that support travel and resting.",
                 "text": (
-                    "Not every important item is combat gear. Supplies represent the broader 5e adventuring idea of rations, "
-                    "packs, and practical travel resources. In this game they matter for carrying weight, supply value, and "
-                    "long-rest readiness.\n\n"
+                    "Not every important item is combat gear. Supplies represent food, packs, repair bits, fuel, "
+                    "and practical travel resources. In this game they matter for carrying weight, supply value, and "
+                    "camp readiness.\n\n"
                     "Trade goods and mundane items may also matter for merchants, quest rewards, and inventory economy even "
                     "when they do not give direct combat bonuses."
                 ),
@@ -956,7 +956,8 @@ class GameBase:
             self.say("Please enter a listed number.")
 
     def show_lore_entry(self, section_title: str, entry_name: str, entry: dict[str, str]) -> bool:
-        self.banner(f"{section_title}: {entry_name}")
+        display_name = entry.get("label", entry_name).strip() or entry_name
+        self.banner(f"{section_title}: {display_name}")
         self.say(entry["text"])
         manual_text = manual_text_for_entry(section_title, entry_name)
         if manual_text:
@@ -976,9 +977,9 @@ class GameBase:
             self.banner("Lore Codex")
             self.say(LORE_INTRO)
             self.say(
-                "Mechanically, the game still follows core 2014 D&D 5e structure for ability checks, "
-                "proficiency, initiative, attack rolls, saving throws, spell save DCs, conditions, "
-                "weapon damage, healing, potions, and death saves, while compressing positioning and "
+                "Under the hood, the game still uses an SRD-derived d20 chassis for ability checks, "
+                "proficiency, initiative, strike checks, resist checks, channel difficulty, conditions, "
+                "weapon damage, healing, draughts, and death saves, while compressing positioning and "
                 "encounter flow to fit a text adventure."
             )
             self.say(
