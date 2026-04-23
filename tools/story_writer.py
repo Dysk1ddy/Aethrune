@@ -23,7 +23,7 @@ from dnd_game.ai.story_writer import (
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Draft or revise Roads That Remember story text with the OpenAI API.",
+        description="Draft or revise Aethrune story text with the OpenAI API.",
     )
     parser.add_argument("--brief", required=True, help="What you want the model to write or revise.")
     parser.add_argument(

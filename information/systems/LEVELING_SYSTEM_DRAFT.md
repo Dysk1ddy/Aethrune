@@ -2,7 +2,7 @@
 
 Last updated: 2026-04-23
 
-This file replaces the older level-1-to-8 draft that leaned on external progression summaries. Keep this as a compact implementation note for Roads That Remember.
+This file replaces the older level-1-to-8 draft that leaned on external progression summaries. Keep this as a compact implementation note for Aethrune.
 
 ## Live State
 

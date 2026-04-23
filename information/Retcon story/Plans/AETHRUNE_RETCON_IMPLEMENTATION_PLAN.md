@@ -9,8 +9,8 @@ It consolidates the new material under `information/Retcon story/` and the local
 Primary retcon inputs scanned:
 
 - `information/Retcon story/World/aethrune_world_v1.md`
-- `information/Retcon story/Lore/roads_that_remember_v1.md`
-- `information/Retcon story/Lore/roads_that_remember_v2_world.md`
+- `information/Retcon story/Lore/aethrune_v1.md`
+- `information/Retcon story/Lore/aethrune_v2_world.md`
 - `information/Retcon story/World/act1_map_system_remap_aethrune.md`
 - `information/Retcon story/World/act2_map_system_remap_aethrune.md`
 - `information/Retcon story/Races/races.md`
@@ -262,7 +262,7 @@ Files:
 Goal:
 
 - stop presenting the project as D&D / Forgotten Realms
-- present it as Roads That Remember set in Aethrune
+- present it as Aethrune
 - mention SRD only as licensed mechanics attribution if still needed
 
 Do not:

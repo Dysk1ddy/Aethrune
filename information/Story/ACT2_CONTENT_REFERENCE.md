@@ -25,7 +25,7 @@ The tone and structure now target the original Aethrune frame: Iron Hollow polit
 ## Story Spine
 
 - Varyn Sable's ledgers do more than point to the Resonant Vaults. They reveal that the Ashen Brand were functioning as a buffer force, keeping prospectors, merchants, town leaders, and rival diggers away from older Meridian routes until somebody better prepared could claim them.
-- The act's public conflict is a frontier claims war. Its private conflict is stranger: the Quiet Choir has found an obelisk shard below the mine and realized the Forge of Spells can be used not just to enchant, but to listen.
+- The act's public conflict is a frontier claims war. Its private conflict is stranger: the Quiet Choir has found an obelisk shard below the Vaults and realized the Meridian Forge can be used not just to repair, but to listen.
 - In this version of Act 2, Caldra Voss is not trying to merely seize a treasure site. She is trying to tune the Vaults into a resonant instrument capable of hearing something farther down and farther away than any ordinary ruin should answer.
 - The act should therefore feel layered:
   - first as a political fight over who gets to name the future of Iron Hollow
@@ -39,13 +39,13 @@ Act 2 should not start from a blank emotional or strategic slate. Several Act 1 
 
 | Act 1 carryover | Typical source | Act 2 consequence |
 | --- | --- | --- |
-| `act1_victory_tier`, `act2_starting_pressure` | Act 1 ending state after Varyn falls | changes how strained Phandalin feels at the start of the expedition and how much immediate pressure the claims war opens under |
+| `act1_victory_tier`, `act2_starting_pressure` | Act 1 ending state after Varyn falls | changes how strained Iron Hollow feels at the start of the expedition and how much immediate pressure the claims war opens under |
 | `steward_vow_made`, `phandalin_council_seen` | choosing to speak for the town and help shape its defenses | raises starting `Town Stability`; the town enters the claims war with more nerve |
 | `elira_helped` and whether Elira joined | shrine aid and recruitment | lowers starting `Whisper Pressure`; Agatha and Black Lake scenes become more grounded in mercy instead of panic |
 | `miners_exchange_dispute_resolved`, `miners_exchange_ledgers_checked` | Act 1 Miner's Exchange path | raises starting `Route Control`; Halia is easier to justify as a sponsor, but the player also sees her more clearly |
 | `act2_edermath_cache_routework` | recovering Daran Edermath's old adventurer's cache at the orchard | raises starting `Route Control`; Act 2 status text can cite the quiet orchard-to-highland control line |
-| `early_companion_recruited` | Kaelis or Rhogar in Neverwinter | Kaelis improves route logic; Rhogar improves civic steadiness |
-| `neverwinter_contract_house_political_callback` | spending contract-house intel in Blackwake or Mira's Neverwinter follow-up report | raises starting `Route Control`; Oren, Sabra, Vessa, and Garren create city-side witness pressure against copied road authority |
+| `early_companion_recruited` | Kaelis or Rhogar in Greywake | Kaelis improves route logic; Rhogar improves civic steadiness |
+| `neverwinter_contract_house_political_callback` | spending contract-house intel in Blackwake or Mira's Greywake follow-up report | raises starting `Route Control`; Oren, Sabra, Vessa, and Garren create city-side witness pressure against copied road authority |
 | `bryn_ledger_sold` vs `bryn_ledger_burned` | `Loose Ends` personal quest | selling the ledger pushes more pressure and distrust into the expedition opening; burning it makes the town start cleaner but poorer |
 | `elira_mercy_blessing` vs `elira_hard_verdict` | `Faith Under Ash` personal quest | shapes whether frontier justice enters Act 2 as hopeful mercy or hard deterrence |
 | Recruiting Bryn, Tolan, or Elira | Act 1 town companion work | each companion now supplies Act 2 sidetrack decisions that change later story pressure instead of only flavor text |
@@ -53,7 +53,7 @@ Act 2 should not start from a blank emotional or strategic slate. Several Act 1 
 ## Consequence Systems
 
 - `Town Stability`
-  - Represents whether Phandalin still acts like a community under stress or a marketplace under siege.
+  - Represents whether Iron Hollow still acts like a community under stress or a marketplace under siege.
   - Low values mean panic, fractured aftermath, and a weaker Act 3 handoff.
   - High values mean survivor trust, better morale, and a stronger social base for later acts.
 - `Route Control`
@@ -217,7 +217,7 @@ These items have been added to the catalog source so future encounter, quest, an
 | `scroll_forge_shelter` | Scroll of Forge Shelter | scroll | protective forge buff before key combats | annex vaults and late quest rewards |
 | `delver_lantern_hood_*` | Delver Lantern Hood | equipment | perception / investigation head slot for expedition play | survey caches and side chambers |
 | `echostep_boots_*` | Echostep Boots | equipment | balance and initiative gear for cave movement | stealth-oriented act rewards |
-| `forgehand_gauntlets_*` | Forgehand Gauntlets | equipment | strength-bracing gloves for frontliners | smithies and Wave Echo tool vaults |
+| `forgehand_gauntlets_*` | Forgehand Gauntlets | equipment | strength-bracing gloves for frontliners | smithies and Resonant Vault tool caches |
 | `sigil_anchor_ring_*` | Sigil Anchor Ring | equipment | anti-whisper ring for Arcana users and mind-defense builds | cult reliquaries and deep vaults |
 | `choirward_amulet_*` | Choirward Amulet | equipment | wisdom-heavy warding neck slot item | shrine caches and rescued prisoners |
 
@@ -295,9 +295,9 @@ These enemies should carry the act's thematic load: cave pressure, expedition ri
 | `seek_agathas_truth` | Ask the Banshee What Was Buried | Elira Dawnmantle | shrine / Conyberry route | offered after the player follows chapel or spiritual clues | `55 XP`, `scroll_quell_the_deep x1` |
 | `rescue_stonehollow_scholars` | Bring Back the Survey Team | Linene Graywind | Stonehollow Dig | offered if the player asks about missing hired specialists | `60 XP`, `22 gp`, `miners_ration_tin x2` |
 | `cut_woodland_saboteurs` | Break the Woodland Saboteurs | Daran Edermath | orchard / woodland route | offered if the player pushes the road-and-ranger angle | `60 XP`, `25 gp`, `delvers_amber x1` |
-| `hold_the_claims_meet` | Hold the Claims Meeting Together | Linene Graywind | Phandalin | triggers automatically once any two early leads are cleared | `50 XP`, `18 gp`, sponsor reputation flag |
+| `hold_the_claims_meet` | Hold the Claims Meeting Together | Linene Graywind | Iron Hollow | triggers automatically once any two early leads are cleared | `50 XP`, `18 gp`, sponsor reputation flag |
 | `free_wave_echo_captives` | Free the South Adit Prisoners | Elira Dawnmantle | South Adit | offered when the resonance cells are discovered | `70 XP`, `30 gp`, `scroll_echo_step x1` |
-| `sever_quiet_choir` | Sever the Quiet Choir | town council | Wave Echo Cave | becomes active once Caldra and the cult cell are positively identified | `100 XP`, `40 gp`, `forge_blessing_elixir x1` |
+| `sever_quiet_choir` | Sever the Quiet Choir | town council | Resonant Vaults | becomes active once Caldra and the cult cell are positively identified | `100 XP`, `40 gp`, `forge_blessing_elixir x1` |
 
 ### Quest state logic
 

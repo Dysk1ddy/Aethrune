@@ -1,1 +1,1 @@
-"""Roads That Remember text-adventure package."""
+"""Aethrune text-adventure package."""

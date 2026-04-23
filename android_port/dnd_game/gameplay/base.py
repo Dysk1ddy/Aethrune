@@ -111,7 +111,7 @@ class GameBase:
     def run(self) -> None:
         try:
             while True:
-                self.banner("Roads That Remember: Acts I-II")
+                self.banner("Aethrune: Acts I-II")
                 self.say(
                     "An original choice-driven fantasy text adventure across the "
                     "Emberway, Iron Hollow, and the Resonant Vaults. "

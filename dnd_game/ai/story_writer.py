@@ -172,7 +172,7 @@ def build_story_writer_instructions(request: StoryWriterRequest) -> str:
             f"Unsupported mode `{request.mode}`. Choose one of: {', '.join(STORY_WRITER_MODES)}."
         )
     base_instructions = [
-        "You are a narrative co-writer for Roads That Remember, a Python text adventure.",
+        "You are a narrative co-writer for Aethrune, a Python text adventure.",
         "Preserve established canon, quest outcomes, route logic, relationship beats, and named-character motivations.",
         "Do not invent new flags, mechanics, quests, locations, or rewards unless the brief explicitly asks for proposals.",
         "Write grounded fantasy prose with clear subtext and distinct voices.",
@@ -200,7 +200,7 @@ def build_story_writer_input(
     root: Path,
 ) -> str:
     lines = [
-        "Project: Roads That Remember",
+        "Project: Aethrune",
         f"Mode: {request.mode}",
         f"Model target: {request.model}",
     ]

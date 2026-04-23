@@ -12835,7 +12835,7 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(4031))
         game.detected_terminal_width = lambda: 72
         game.render_title_screen(
-            "Roads That Remember",
+            "Aethrune",
             "Acts I-II: Frontier Roads and Echoing Depths",
             "An original choice-driven fantasy text adventure.",
             ["Start a new game", "Save Files", "Read the lore notes", "Settings", "Quit"],
@@ -12866,7 +12866,7 @@ class CoreTests(unittest.TestCase):
         game.read_resize_aware_input = fake_read
 
         choice = game.choose_title_menu(
-            "Roads That Remember",
+            "Aethrune",
             "Acts I-II: Frontier Roads and Echoing Depths",
             "An original choice-driven fantasy text adventure.",
             ["Start a new game", "Save Files", "Read the lore notes", "Settings", "Quit"],
@@ -12881,7 +12881,7 @@ class CoreTests(unittest.TestCase):
 
         self.assertEqual(choice, 1)
         self.assertEqual(captured["prompt"], "> ")
-        self.assertIn("Roads That Remember", self.plain_output(log))
+        self.assertIn("Aethrune", self.plain_output(log))
 
     def test_load_command_can_replace_active_game_mid_prompt(self) -> None:
         save_dir = Path.cwd() / "tests_output" / "midgame_load"

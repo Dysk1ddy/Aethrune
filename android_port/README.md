@@ -1,6 +1,6 @@
-# Roads That Remember Android Port
+# Aethrune Android Port
 
-This folder contains an Android-friendly wrapper for the Roads That Remember Python text adventure.
+This folder contains an Android-friendly wrapper for the Aethrune Python text adventure.
 
 The desktop game is being retconned into the original Aethrune setting. This Android port mirrors the desktop implementation and should be updated after each stable desktop retcon pass rather than treated as separate canon.
 

@@ -1,6 +1,6 @@
-# Roads That Remember
+# Aethrune
 
-Roads That Remember is a Python text adventure set in **Aethrune**, a dark frontier world shaped by roads, records, buried infrastructure, and systems that still function after their creators are gone.
+Aethrune is a Python text adventure set in a dark frontier world shaped by roads, records, buried infrastructure, and systems that still function after their creators are gone.
 
 The project is currently in an Aethrune retcon pass. The implementation still preserves existing save-sensitive scene IDs and quest IDs internally, but the public story direction is now original: Greywake, the Emberway, Iron Hollow, the Shatterbelt Frontier, the Vein of Glass, the Meridian Accord, the Quiet Choir, and the Ashen Brand.
 
@@ -53,7 +53,7 @@ Planning lives under:
 Easiest option on Windows:
 
 ```powershell
-.\Play Roads That Remember.bat
+.\Play Aethrune.bat
 ```
 
 Terminal option:
@@ -156,7 +156,7 @@ During the retcon, some tests may continue to reference internal legacy IDs unti
 
 ## License And SRD Notice
 
-The world, story, factions, characters, and setting direction are original to Roads That Remember.
+The world, story, factions, characters, and setting direction are original to Aethrune.
 
 Some mechanics may remain derived from SRD 5.2.1 during the retcon. If SRD-derived rules remain in a released build, include the required attribution:
 

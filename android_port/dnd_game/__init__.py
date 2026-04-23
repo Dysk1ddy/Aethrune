@@ -1,1 +1,1 @@
-"""Roads That Remember Android text-adventure package."""
+"""Aethrune Android text-adventure package."""

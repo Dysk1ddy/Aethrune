@@ -45,7 +45,7 @@ SUGGESTED_CONTEXTS = (
 class StoryWriterStudioApp:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
-        self.root.title("OpenAI Story Writer Studio")
+        self.root.title("Aethrune Story Writer Studio")
         self.root.geometry("1360x920")
         self.root.minsize(1120, 760)
 

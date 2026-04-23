@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Aethrune lore codex entries used by the title-screen reference menu.
 
-The public codex now presents Roads That Remember as an original Aethrune
-campaign. Internal character-option keys still mirror the current mechanics so
-existing saves, tests, and creation flow remain stable during the retcon.
+The public codex now presents Aethrune as the game's original setting.
+Internal character-option keys still mirror the current mechanics so existing
+saves, tests, and creation flow remain stable during the retcon.
 """
 
 from collections.abc import Mapping
@@ -27,7 +27,7 @@ LoreSection = Mapping[str, LoreEntry]
 
 
 LORE_INTRO = (
-    "This codex introduces Aethrune, the original setting for Roads That Remember. "
+    "This codex introduces the world, factions, and rules framing of Aethrune. "
     "It focuses on Greywake, the Emberway, Iron Hollow, the Resonant Vaults, and "
     "the Meridian systems still shaping the world after their builders are gone. "
     "The underlying combat and character math still uses an SRD-derived d20 chassis, "
@@ -172,7 +172,7 @@ LOCATION_LORE: dict[str, LoreEntry] = {
             "The Meridian Forge is not just a workshop. It is a control chamber for making broken systems agree with "
             "one another again. In merciful hands, it could stabilize routes, waterworks, and signal relays. In the "
             "wrong hands, it could make oppression look like restored order.\n\n"
-            "That is why the Forge matters to the long arc of Roads That Remember. It forces the story to ask whether "
+            "That is why the Forge matters to the long arc of Aethrune. It forces the story to ask whether "
             "a broken world should be repaired exactly as it was, or whether survival requires refusing some of the "
             "old system's permissions."
         ),
@@ -210,7 +210,7 @@ CLASS_LORE: dict[str, LoreEntry] = {
             "Clerics carry faith into places where faith has to do work: triage yards, flooded claims, frightened "
             "milehouses, and rooms where nobody wants to say how many names are missing. Their power is framed as "
             "lantern discipline, oath, doctrine, and practiced channeling rather than borrowed setting theology.\n\n"
-            "A Cleric in Roads That Remember can be healer, witness, judge, exorcist, or road-priest. The common "
+            "A Cleric in Aethrune can be healer, witness, judge, exorcist, or road-priest. The common "
             "thread is responsibility under pressure."
         ),
     },
@@ -528,11 +528,11 @@ ABILITY_LORE: dict[str, LoreEntry] = {
 SKILL_LORE: dict[str, LoreEntry] = {
     "Acrobatics": {"menu": "Balance, tumbling, slips, falls, and unstable footing.", "text": "Acrobatics keeps a character moving when roofs sag, bridges tilt, and a fight spills across broken ground."},
     "Animal Handling": {"menu": "Working with mounts, hounds, livestock, and frightened beasts.", "text": "Animal Handling reads the panic and trust of living creatures, especially on roads where horses often know trouble first."},
-    "Arcana": {"label": "System Lore", "menu": "Knowledge of channeling, relics, old signals, and unstable forces.", "text": "System Lore explains Meridian machinery, channel patterns, relic behavior, and the difference between a miracle and a malfunction."},
+    "Arcana": {"label": "Arcana", "menu": "Knowledge of channeling, relics, old signals, and unstable forces.", "text": "Arcana explains Meridian machinery, channel patterns, relic behavior, and the difference between a miracle and a malfunction."},
     "Athletics": {"menu": "Climbing, swimming, jumping, grappling, and hard exertion.", "text": "Athletics is the body's answer when the route collapses, the gate sticks, or somebody has to hold a line by force."},
     "Deception": {"menu": "Lies, masks, forged confidence, and controlled misdirection.", "text": "Deception matters because Aethrune's factions often win by making false authority look official long enough to matter."},
     "History": {"menu": "Old records, battles, settlements, treaties, and ruins.", "text": "History turns names and buried stone into context, especially when the Meridian past keeps repeating through modern choices."},
-    "Insight": {"label": "Reading", "menu": "Understanding motive, fear, pressure, and concealed intent.", "text": "Reading catches the moment when a witness edits the truth, a leader hides panic, or a negotiator smiles too late."},
+    "Insight": {"label": "Insight", "menu": "Understanding motive, fear, pressure, and concealed intent.", "text": "Insight catches the moment when a witness edits the truth, a leader hides panic, or a negotiator smiles too late."},
     "Intimidation": {"menu": "Threat, command presence, and controlled menace.", "text": "Intimidation is the art of making consequences visible before anyone has to bleed for them."},
     "Investigation": {"menu": "Searching scenes, testing claims, and connecting evidence.", "text": "Investigation follows scratches, ledgers, footprints, missing objects, false seals, and the quiet math of what does not fit."},
     "Medicine": {"menu": "Triage, disease, wounds, fatigue, and field care.", "text": "Medicine keeps people alive when the shrine is full, the rain will not stop, and the next wagon is already overdue."},
@@ -540,10 +540,10 @@ SKILL_LORE: dict[str, LoreEntry] = {
     "Perception": {"menu": "Noticing threats, details, movement, sound, and ambush signs.", "text": "Perception is the skill of catching danger before it becomes a headline in someone else's ledger."},
     "Performance": {"menu": "Voice, rhythm, storytelling, public timing, and staged emotion.", "text": "Performance can rally survivors, distract a room, sell a false role, or make a truth memorable enough to travel."},
     "Persuasion": {"menu": "Honest pressure, negotiation, appeals, and earned trust.", "text": "Persuasion moves people without hiding the ask, which makes it precious in towns tired of being manipulated."},
-    "Religion": {"label": "Doctrine", "menu": "Shrine law, ritual practice, oaths, cults, and sacred obligations.", "text": "Doctrine covers Lantern rites, funeral names, oath language, forbidden symbols, and the difference between faith and control."},
-    "Sleight of Hand": {"label": "Handwork", "menu": "Quick fingers, hidden objects, small mechanisms, and misdirection.", "text": "Handwork handles palms, pins, seals, pockets, and the tiny movements that decide whether a plan survives contact."},
+    "Religion": {"label": "Religion", "menu": "Shrine law, ritual practice, oaths, cults, and sacred obligations.", "text": "Religion covers Lantern rites, funeral names, oath language, forbidden symbols, and the difference between faith and control."},
+    "Sleight of Hand": {"label": "Sleight of Hand", "menu": "Quick fingers, hidden objects, small mechanisms, and misdirection.", "text": "Sleight of Hand handles palms, pins, seals, pockets, and the tiny movements that decide whether a plan survives contact."},
     "Stealth": {"menu": "Quiet movement, concealment, shadowing, and not being where eyes expect.", "text": "Stealth lets a character move through controlled roads, occupied ruins, and frightened towns without becoming another report."},
-    "Survival": {"label": "Wayfinding", "menu": "Tracking, foraging, route sense, weather reading, and camp judgment.", "text": "Wayfinding keeps a party alive when maps are wrong, food is thin, and the road ahead has started lying."},
+    "Survival": {"label": "Survival", "menu": "Tracking, foraging, route sense, weather reading, and camp judgment.", "text": "Survival keeps a party alive when maps are wrong, food is thin, and the road ahead has started lying."},
 }
 
 
@@ -695,7 +695,7 @@ APPENDIX_LORE: dict[str, LoreEntry] = {
     "Appendix E: SRD-Derived Mechanics": {
         "menu": "A plain-language note on the current rules chassis.",
         "text": (
-            "Roads That Remember currently keeps an SRD-derived d20 math base for character creation, checks, combat timing, conditions, and equipment. "
+            "Aethrune currently keeps an SRD-derived d20 math base for character creation, checks, combat timing, conditions, and equipment. "
             "The public presentation is being rethemed in phases so the story, setting, factions, and terminology belong to Aethrune."
         ),
     },

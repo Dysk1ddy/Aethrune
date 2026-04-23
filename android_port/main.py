@@ -209,7 +209,7 @@ class GameScreen(BoxLayout):
         header = BoxLayout(orientation="vertical", size_hint_y=None, height=dp(88), spacing=dp(4))
         header.add_widget(
             Label(
-                text="Roads That Remember",
+                text="Aethrune",
                 color=(0.16, 0.11, 0.07, 1),
                 font_size="24sp",
                 bold=True,
@@ -368,7 +368,7 @@ class GameScreen(BoxLayout):
 
 class AndroidDnDApp(App):
     def build(self) -> GameScreen:
-        self.title = "Roads That Remember"
+        self.title = "Aethrune"
         try:
             Window.clearcolor = (0.93, 0.89, 0.80, 1)
         except Exception:

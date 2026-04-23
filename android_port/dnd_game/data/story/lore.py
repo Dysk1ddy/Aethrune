@@ -2,9 +2,9 @@ from __future__ import annotations
 
 """Aethrune lore codex entries used by the title-screen reference menu.
 
-The public codex now presents Roads That Remember as an original Aethrune
-campaign. Internal character-option keys still mirror the current mechanics so
-existing saves, tests, and creation flow remain stable during the retcon.
+The public codex now presents Aethrune as the game's original setting.
+Internal character-option keys still mirror the current mechanics so existing
+saves, tests, and creation flow remain stable during the retcon.
 """
 
 from collections.abc import Mapping
@@ -70,7 +70,7 @@ SKILL_PUBLIC_LABELS = {
 
 
 LORE_INTRO = (
-    "This codex introduces Aethrune, the original setting for Roads That Remember. "
+    "This codex introduces the world, factions, and rules framing of Aethrune. "
     "It focuses on Greywake, the Emberway, Iron Hollow, the Resonant Vaults, and "
     "the Meridian systems still shaping the world after their builders are gone. "
     "The underlying combat and character math still uses an SRD-derived d20 chassis, "
@@ -215,7 +215,7 @@ LOCATION_LORE: dict[str, LoreEntry] = {
             "The Meridian Forge is not just a workshop. It is a control chamber for making broken systems agree with "
             "one another again. In merciful hands, it could stabilize routes, waterworks, and signal relays. In the "
             "wrong hands, it could make oppression look like restored order.\n\n"
-            "That is why the Forge matters to the long arc of Roads That Remember. It forces the story to ask whether "
+            "That is why the Forge matters to the long arc of Aethrune. It forces the story to ask whether "
             "a broken world should be repaired exactly as it was, or whether survival requires refusing some of the "
             "old system's permissions."
         ),
@@ -253,7 +253,7 @@ CLASS_LORE: dict[str, LoreEntry] = {
             "Channelers carry faith into places where faith has to do work: triage yards, flooded claims, frightened "
             "milehouses, and rooms where nobody wants to say how many names are missing. Their power is framed as "
             "lantern discipline, oath, doctrine, and practiced channeling rather than borrowed setting theology.\n\n"
-            "A Channeler in Roads That Remember can be healer, witness, judge, exorcist, or road-priest. The common "
+            "A Channeler in Aethrune can be healer, witness, judge, exorcist, or road-priest. The common "
             "thread is responsibility under pressure."
         ),
     },
@@ -738,7 +738,7 @@ APPENDIX_LORE: dict[str, LoreEntry] = {
     "Appendix E: SRD-Derived Mechanics": {
         "menu": "A plain-language note on the current rules chassis.",
         "text": (
-            "Roads That Remember currently keeps an SRD-derived d20 math base for character creation, checks, combat timing, conditions, and equipment. "
+            "Aethrune currently keeps an SRD-derived d20 math base for character creation, checks, combat timing, conditions, and equipment. "
             "The public presentation is being rethemed in phases so the story, setting, factions, and terminology belong to Aethrune."
         ),
     },

@@ -1,6 +1,6 @@
 [app]
-title = Roads That Remember
-package.name = roadsthatremember
+title = Aethrune
+package.name = aethrune
 package.domain = org.textdnd
 source.dir = .
 source.include_exts = py,md,json

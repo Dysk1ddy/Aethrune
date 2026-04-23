@@ -30,7 +30,7 @@ Do not use model output as source of truth. The active retcon source of truth is
 
 ## Why This Shape
 
-For Roads That Remember, the safest AI workflow is:
+For Aethrune, the safest AI workflow is:
 
 1. Keep plot logic deterministic in code.
 2. Let the model draft or revise dialogue and scene prose.
@@ -137,7 +137,7 @@ python tools/story_writer.py `
   --title "Meridian Accord roadside relay" `
   --brief "Draft a compact lore note explaining how old Meridian relay stations shape modern route control without revealing Act 3 secrets." `
   --context "information/Retcon story/World/aethrune_world_v1.md" `
-  --context "information/Retcon story/Lore/roads_that_remember_v2_world.md"
+  --context "information/Retcon story/Lore/aethrune_v2_world.md"
 ```
 
 ## Notes On Defaults

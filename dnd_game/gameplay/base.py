@@ -509,7 +509,7 @@ class GameBase:
                     if callable(refresh_scene_music):
                         refresh_scene_music(default_to_menu=True)
                     choice = self.choose_title_menu(
-                        "Roads That Remember",
+                        "Aethrune",
                         "Acts I-II: Frontier Roads and Echoing Depths",
                         (
                             "An original choice-driven fantasy text adventure across the "

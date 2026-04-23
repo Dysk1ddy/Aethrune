@@ -42,13 +42,7 @@ ABILITY_FULL_LABELS = {
 }
 
 
-SKILL_PUBLIC_LABELS = {
-    "Arcana": "System Lore",
-    "Religion": "Doctrine",
-    "Insight": "Reading",
-    "Survival": "Wayfinding",
-    "Sleight of Hand": "Handwork",
-}
+SKILL_PUBLIC_LABELS: dict[str, str] = {}
 
 
 SPELL_PUBLIC_LABELS = {
