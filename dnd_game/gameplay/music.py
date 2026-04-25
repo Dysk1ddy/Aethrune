@@ -25,40 +25,54 @@ MUSIC_CONTEXT_FOLDERS: dict[str, tuple[str, ...]] = {
     "random_encounter": ("Wilderness exploration",),
 }
 
-SCENE_MUSIC_CONTEXTS: dict[str, str] = {
-    "background_prologue": "wilderness",
-    "wayside_luck_shrine": "wilderness",
-    "greywake_triage_yard": "city",
-    "greywake_road_breakout": "city",
-    "neverwinter_briefing": "city",
-    "blackwake_crossing": "dungeon",
-    "road_decision_post_blackwake": "wilderness",
-    "road_ambush": "wilderness",
-    "high_road_liars_circle": "wilderness",
-    "high_road_false_checkpoint": "wilderness",
-    "high_road_false_tollstones": "wilderness",
-    "phandalin_hub": "city",
-    "old_owl_well": "dungeon",
-    "wyvern_tor": "dungeon",
-    "cinderfall_ruins": "dungeon",
-    "ashfall_watch": "dungeon",
-    "tresendar_manor": "dungeon",
-    "emberhall_cellars": "dungeon",
-    "act1_complete": "city",
-    "act2_claims_council": "city",
-    "act2_expedition_hub": "city",
-    "conyberry_agatha": "dungeon",
-    "neverwinter_wood_survey_camp": "dungeon",
-    "stonehollow_dig": "dungeon",
-    "glasswater_intake": "dungeon",
-    "act2_midpoint_convergence": "dungeon",
-    "broken_prospect": "dungeon",
-    "south_adit": "dungeon",
-    "wave_echo_outer_galleries": "dungeon",
-    "black_lake_causeway": "dungeon",
-    "forge_of_spells": "dungeon",
-    "act2_scaffold_complete": "city",
-}
+# Town music is reserved for settled hubs and interior city beats. Greywake's
+# roadside triage sequence stays on wilderness tracks until the player reaches
+# Mira's actual city briefing.
+CITY_SCENE_KEYS: tuple[str, ...] = (
+    "neverwinter_briefing",
+    "phandalin_hub",
+    "act1_complete",
+    "act2_claims_council",
+    "act2_expedition_hub",
+    "act2_scaffold_complete",
+)
+
+WILDERNESS_SCENE_KEYS: tuple[str, ...] = (
+    "background_prologue",
+    "wayside_luck_shrine",
+    "greywake_triage_yard",
+    "greywake_road_breakout",
+    "road_decision_post_blackwake",
+    "road_ambush",
+    "high_road_liars_circle",
+    "high_road_false_checkpoint",
+    "high_road_false_tollstones",
+)
+
+DUNGEON_SCENE_KEYS: tuple[str, ...] = (
+    "blackwake_crossing",
+    "old_owl_well",
+    "wyvern_tor",
+    "cinderfall_ruins",
+    "ashfall_watch",
+    "tresendar_manor",
+    "emberhall_cellars",
+    "conyberry_agatha",
+    "neverwinter_wood_survey_camp",
+    "stonehollow_dig",
+    "glasswater_intake",
+    "act2_midpoint_convergence",
+    "broken_prospect",
+    "south_adit",
+    "wave_echo_outer_galleries",
+    "black_lake_causeway",
+    "forge_of_spells",
+)
+
+SCENE_MUSIC_CONTEXTS: dict[str, str] = {}
+SCENE_MUSIC_CONTEXTS.update({scene_name: "city" for scene_name in CITY_SCENE_KEYS})
+SCENE_MUSIC_CONTEXTS.update({scene_name: "wilderness" for scene_name in WILDERNESS_SCENE_KEYS})
+SCENE_MUSIC_CONTEXTS.update({scene_name: "dungeon" for scene_name in DUNGEON_SCENE_KEYS})
 
 MUSIC_TRANSITION_CURVE = "linear"
 MUSIC_CONTEXT_SWITCH_COOLDOWN_SECONDS = 0.45

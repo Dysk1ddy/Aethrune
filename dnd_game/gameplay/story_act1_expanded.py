@@ -331,7 +331,7 @@ class StoryAct1ExpandedMixin:
             else:
                 options.append(("emberhall", self.action_option("Descend into Emberhall Cellars")))
 
-            choice = self.scenario_choice("Where do you go next?", [text for _, text in options])
+            choice = self.scenario_choice("Where do you go next?", [text for _, text in options], echo_selection=True)
             selection_key, _ = options[choice - 1]
             if selection_key == "steward":
                 self.visit_steward()
@@ -745,7 +745,7 @@ class StoryAct1ExpandedMixin:
             hero_initiative_bonus=hero_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(first_encounter)
+        outcome = self.run_encounter_wave(first_encounter)
         if outcome == "defeat":
             self.handle_defeat("The dead keep their watch at Blackglass Well.")
             return
@@ -814,6 +814,7 @@ class StoryAct1ExpandedMixin:
             boss_enemies.append(create_enemy("carrion_lash_crawler"))
         if party_size >= 4:
             boss_enemies.append(self.act1_pick_enemy(("skeletal_sentry", "graveblade_wight", "lantern_fen_wisp")))
+        boss_enemies.append(create_enemy("skeletal_sentry", name="Corpse-Salt Sentry"))
         choice = self.scenario_choice(
             "How do you answer the gravecaller?",
             [
@@ -939,7 +940,7 @@ class StoryAct1ExpandedMixin:
             hero_initiative_bonus=hero_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(first_encounter)
+        outcome = self.run_encounter_wave(first_encounter)
         if outcome == "defeat":
             self.handle_defeat("Red Mesa Hold keeps the high ground and the road below it.")
             return
@@ -1135,7 +1136,7 @@ class StoryAct1ExpandedMixin:
             hero_initiative_bonus=hero_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(first_encounter)
+        outcome = self.run_encounter_wave(first_encounter)
         if outcome == "defeat":
             self.handle_defeat("Ashfall Watch remains in enemy hands.")
             return
@@ -1207,7 +1208,7 @@ class StoryAct1ExpandedMixin:
             hero_initiative_bonus=second_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(second_encounter)
+        outcome = self.run_encounter_wave(second_encounter)
         if outcome == "defeat":
             self.handle_defeat("Ashfall's lower barracks break the party in the smoke.")
             return
@@ -1224,6 +1225,7 @@ class StoryAct1ExpandedMixin:
             "You have cost my employers time, coin, and useful subordinates. I will not pretend that leaves us room for civility.",
         )
         boss_enemies = [create_enemy("rukhar")]
+        boss_enemies.append(create_enemy("ash_brand_enforcer"))
         if party_size >= 2:
             boss_enemies.append(self.act1_pick_enemy(("bandit", "gutter_zealot", "bugbear_reaver")))
         if party_size >= 4:
@@ -1363,7 +1365,7 @@ class StoryAct1ExpandedMixin:
             hero_initiative_bonus=hero_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(first_encounter)
+        outcome = self.run_encounter_wave(first_encounter)
         if outcome == "defeat":
             self.handle_defeat("The buried manor swallows the party beneath Iron Hollow.")
             return
@@ -1515,7 +1517,7 @@ class StoryAct1ExpandedMixin:
             hero_initiative_bonus=hero_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(first_encounter)
+        outcome = self.run_encounter_wave(first_encounter)
         if outcome == "defeat":
             self.handle_defeat("Emberhall's last guard line leaves the cellars to the Ashen Brand.")
             return

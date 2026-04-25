@@ -41,6 +41,8 @@ from dnd_game.gameplay.sound_effects import (
     closest_dice_roll_sound_effect,
 )
 from dnd_game.gameplay.music import (
+    CITY_SCENE_KEYS,
+    DUNGEON_SCENE_KEYS,
     MUSIC_AREA_TRANSITION_SECONDS,
     MUSIC_BOSS_TRANSITION_SECONDS,
     MUSIC_COMBAT_EXIT_TRANSITION_SECONDS,
@@ -52,6 +54,7 @@ from dnd_game.gameplay.music import (
     MUSIC_CONTEXT_FOLDERS,
     MUSIC_TRANSITION_CURVE,
     SCENE_MUSIC_CONTEXTS,
+    WILDERNESS_SCENE_KEYS,
     music_files_for_context,
     music_transition_seconds,
 )
@@ -182,15 +185,42 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(MUSIC_CONTEXT_FOLDERS["dungeon"], ("Dungeon",))
         self.assertEqual(MUSIC_CONTEXT_FOLDERS["main_menu"], ("Main menu",))
         self.assertEqual(MUSIC_CONTEXT_FOLDERS["camp"], ("Camp",))
+        self.assertEqual(
+            set(CITY_SCENE_KEYS),
+            {
+                "neverwinter_briefing",
+                "phandalin_hub",
+                "act1_complete",
+                "act2_claims_council",
+                "act2_expedition_hub",
+                "act2_scaffold_complete",
+            },
+        )
+        self.assertEqual(
+            set(WILDERNESS_SCENE_KEYS),
+            {
+                "background_prologue",
+                "wayside_luck_shrine",
+                "greywake_triage_yard",
+                "greywake_road_breakout",
+                "road_decision_post_blackwake",
+                "road_ambush",
+                "high_road_liars_circle",
+                "high_road_false_checkpoint",
+                "high_road_false_tollstones",
+            },
+        )
         self.assertEqual(SCENE_MUSIC_CONTEXTS["background_prologue"], "wilderness")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["wayside_luck_shrine"], "wilderness")
-        self.assertEqual(SCENE_MUSIC_CONTEXTS["greywake_triage_yard"], "city")
-        self.assertEqual(SCENE_MUSIC_CONTEXTS["greywake_road_breakout"], "city")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["greywake_triage_yard"], "wilderness")
+        self.assertEqual(SCENE_MUSIC_CONTEXTS["greywake_road_breakout"], "wilderness")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["neverwinter_briefing"], "city")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["phandalin_hub"], "city")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["tresendar_manor"], "dungeon")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["blackwake_crossing"], "dungeon")
         self.assertEqual(SCENE_MUSIC_CONTEXTS["road_ambush"], "wilderness")
+        all_mapped_scenes = set(CITY_SCENE_KEYS) | set(WILDERNESS_SCENE_KEYS) | set(DUNGEON_SCENE_KEYS)
+        self.assertEqual(set(SCENE_MUSIC_CONTEXTS), all_mapped_scenes)
         for node in ACT1_HYBRID_MAP.nodes.values():
             if node.enters_dungeon_id is not None:
                 self.assertEqual(SCENE_MUSIC_CONTEXTS[node.scene_key], "dungeon")
@@ -220,6 +250,20 @@ class CoreTests(unittest.TestCase):
             {path.resolve() for path in music_files_for_context("random_encounter")},
             {path.resolve() for path in music_files_for_context("wilderness")},
         )
+
+    def test_only_town_scenes_use_city_music_context(self) -> None:
+        self.assertEqual(
+            {scene for scene, context in SCENE_MUSIC_CONTEXTS.items() if context == "city"},
+            set(CITY_SCENE_KEYS),
+        )
+
+    def test_greywake_roadside_sequence_stays_wilderness_until_city_briefing(self) -> None:
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(900313))
+
+        for scene_name in ("wayside_luck_shrine", "greywake_triage_yard", "greywake_road_breakout"):
+            self.assertEqual(game.scene_music_context(scene_name), "wilderness")
+
+        self.assertEqual(game.scene_music_context("neverwinter_briefing"), "city")
 
     def test_music_picker_exhausts_folder_tracks_before_repeating(self) -> None:
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9003140))
@@ -864,6 +908,15 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(choice, 1)
         self.assertEqual(pauses, ["pause", "pause"])
 
+    def test_scenario_choice_can_echo_selected_option(self) -> None:
+        echoed: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90074))
+        game.choose_with_display_mode = lambda *args, **kwargs: 2  # type: ignore[method-assign]
+        game.player_choice_output = echoed.append  # type: ignore[method-assign]
+        choice = game.scenario_choice("Choose a path.", ["First", "Second"], allow_meta=False, echo_selection=True)
+        self.assertEqual(choice, 2)
+        self.assertEqual(echoed, ["Second"])
+
     def test_non_combat_choose_uses_keyboard_menu_when_supported(self) -> None:
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(900731))
         captured: dict[str, object] = {}
@@ -1289,6 +1342,87 @@ class CoreTests(unittest.TestCase):
         self.assertLess(events.index(("say", "A shadow lunges at you from the ditch.")), events.index(("music", "combat")))
         self.assertLess(events.index(("music", "combat")), events.index(("pause", "combat")))
 
+    def test_run_encounter_wave_defers_scene_music_until_final_encounter(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        first_enemy = create_enemy("goblin_skirmisher")
+        first_enemy.current_hp = 0
+        first_enemy.dead = True
+        second_enemy = create_enemy("bandit")
+        second_enemy.current_hp = 0
+        second_enemy.dead = True
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008111))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        game.pause_for_combat_transition = lambda: None
+        calls: list[tuple[str, object]] = []
+        game.play_encounter_music = lambda encounter: calls.append(("encounter", encounter.title))
+        game.refresh_scene_music = lambda default_to_menu=False: calls.append(("scene", default_to_menu))
+
+        first_outcome = game.run_encounter_wave(
+            Encounter(
+                title="Roadside Ambush: First Wave",
+                description="The first wave is already down.",
+                enemies=[first_enemy],
+                allow_post_combat_random_encounter=False,
+            )
+        )
+        second_outcome = game.run_encounter(
+            Encounter(
+                title="Emberway Second Wave",
+                description="The second wave is already down.",
+                enemies=[second_enemy],
+                allow_post_combat_random_encounter=False,
+            )
+        )
+
+        self.assertEqual(first_outcome, "victory")
+        self.assertEqual(second_outcome, "victory")
+        self.assertEqual(
+            calls,
+            [
+                ("encounter", "Roadside Ambush: First Wave"),
+                ("encounter", "Emberway Second Wave"),
+                ("scene", False),
+            ],
+        )
+
+    def test_run_encounter_wave_restores_scene_music_when_followup_never_happens(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        player.current_hp = 0
+        enemy = create_enemy("goblin_skirmisher")
+        game = TextDnDGame(input_fn=lambda _: "4", output_fn=lambda _: None, rng=random.Random(9008112))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        game.pause_for_combat_transition = lambda: None
+        calls: list[tuple[str, object]] = []
+        game.play_encounter_music = lambda encounter: calls.append(("encounter", encounter.title))
+        game.refresh_scene_music = lambda default_to_menu=False: calls.append(("scene", default_to_menu))
+
+        outcome = game.run_encounter_wave(
+            Encounter(
+                title="Roadside Ambush: First Wave",
+                description="The first wave can still be fled.",
+                enemies=[enemy],
+                allow_flee=True,
+                allow_post_combat_random_encounter=False,
+            )
+        )
+
+        self.assertEqual(outcome, "defeat")
+        self.assertEqual(calls, [("encounter", "Roadside Ambush: First Wave"), ("scene", False)])
+
     def test_start_new_game_keeps_main_menu_music_context(self) -> None:
         game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90082))
         calls: list[tuple[str, bool]] = []
@@ -1575,6 +1709,39 @@ class CoreTests(unittest.TestCase):
         game.speaker("Mira Thann", "We need it secured.")
         rendered = self.plain_output(log)
         self.assertEqual(rendered.count("Mira Thann is a sharp-eyed Greywake officer"), 1)
+
+    def test_speaker_introduces_public_alias_character_once(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(900831))
+        game.state = GameState(player=player, current_scene="wayside_luck_shrine")
+        game.speaker("Elira Lanternward", "Wash your hands first.")
+        game.speaker("Elira Dawnmantle", "Then keep pressure on the wound.")
+        rendered = self.plain_output(log)
+        self.assertEqual(rendered.count("Elira Lanternward is a priestess of the Lantern"), 1)
+        self.assertIn('Elira Lanternward: "Then keep pressure on the wound."', rendered)
+
+    def test_all_scripted_speakers_have_intro_text(self) -> None:
+        gameplay_root = Path(gameplay_base.__file__).resolve().parent
+        pattern = re.compile(r'self\.speaker\(\s*"([^"]+)"')
+        scripted_speakers: set[str] = set()
+        for path in gameplay_root.rglob("*.py"):
+            scripted_speakers.update(pattern.findall(path.read_text(encoding="utf-8")))
+        scripted_speakers.update({"Knight", "Priest", "Thief", "King"})
+        missing = sorted(
+            name
+            for name in scripted_speakers
+            if name not in gameplay_base.GameBase.NAMED_CHARACTER_INTROS
+            and gameplay_base.GameBase.PUBLIC_CHARACTER_NAMES.get(name, name) not in gameplay_base.GameBase.NAMED_CHARACTER_INTROS
+        )
+        self.assertEqual(missing, [])
 
     def test_run_encounter_introduces_unique_enemy_before_fight(self) -> None:
         player = build_character(
@@ -2495,13 +2662,15 @@ class CoreTests(unittest.TestCase):
         game.scene_old_owl_well()
         boss_encounter = next(encounter for encounter in encounters if encounter.title == "Miniboss: Vaelith Marr")
         self.assertTrue(game.state.flags["old_owl_ritual_sabotaged"])
-        self.assertEqual(len(boss_encounter.enemies), 3)
+        self.assertEqual(len(boss_encounter.enemies), 4)
         self.assertEqual(boss_encounter.enemies[0].name, "Vaelith Marr")
         self.assertEqual(boss_encounter.enemies[0].archetype, "vaelith_marr")
+        self.assertEqual(boss_encounter.enemies[0].level, 4)
+        self.assertEqual(boss_encounter.enemies[0].max_hp, 50)
         self.assertEqual(boss_encounter.enemies[0].current_hp, boss_encounter.enemies[0].max_hp - 4)
         self.assertIn("reeling", boss_encounter.enemies[0].conditions)
-        self.assertGreater(boss_encounter.enemies[0].max_hp, 26)
         self.assertTrue(any(enemy.name == "Carrion Lash Crawler" for enemy in boss_encounter.enemies[1:]))
+        self.assertTrue(any(enemy.name == "Corpse-Salt Sentry" for enemy in boss_encounter.enemies[1:]))
 
     def test_old_owl_vaelith_gravecall_clock_raises_support_and_blesses_line(self) -> None:
         player = build_character(
@@ -2567,6 +2736,34 @@ class CoreTests(unittest.TestCase):
         game.on_encounter_round_start(encounter, [player], [vaelith], [player, vaelith], 1)
 
         self.assertNotIn("gravecall_counter", vaelith.bond_flags)
+
+    def test_old_owl_vaelith_ritual_terrain_bites_even_when_gravecall_is_disrupted(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(90083215))
+        game.state = GameState(
+            player=player,
+            current_scene="old_owl_well",
+            flags={"miners_exchange_lead": True},
+        )
+        vaelith = create_enemy("vaelith_marr")
+        game.apply_status(vaelith, "reeling", 1, source="test disruption")
+        encounter = Encounter(title="Miniboss: Vaelith Marr", description="", enemies=[vaelith])
+        game.roll_with_display_bonus = lambda *args, **kwargs: SimpleNamespace(total=4)  # type: ignore[method-assign]
+        game.saving_throw = lambda actor, ability, dc, **kwargs: False  # type: ignore[method-assign]
+        starting_hp = player.current_hp
+
+        game.on_encounter_round_start(encounter, [player], [vaelith], [player, vaelith], 1)
+
+        self.assertNotIn("gravecall_counter", vaelith.bond_flags)
+        self.assertEqual(player.current_hp, starting_hp - 4)
+        self.assertIn("reeling", player.conditions)
 
     def test_old_owl_vaelith_bloodied_grave_ward_frightens_top_threat(self) -> None:
         player = build_character(
@@ -6587,10 +6784,11 @@ class CoreTests(unittest.TestCase):
 
         game.on_encounter_round_start(encounter, [player], encounter.enemies, [player, rukhar, support], 1)
 
-        self.assertEqual(rukhar.max_hp, 37)
+        self.assertEqual(rukhar.level, 3)
+        self.assertEqual(rukhar.max_hp, 45)
         self.assertIn("emboldened", support.conditions)
 
-        game.apply_damage(rukhar, 19)
+        game.apply_damage(rukhar, 23)
 
         self.assertTrue(rukhar.bond_flags["break_their_line_triggered"])
         self.assertEqual(rukhar.bond_flags["marked_target"], player.name)
@@ -6896,7 +7094,11 @@ class CoreTests(unittest.TestCase):
     def test_enemy_template_smoke(self) -> None:
         enemy = create_enemy("rukhar")
         self.assertEqual(enemy.name, "Rukhar Cinderfang")
-        self.assertGreater(enemy.max_hp, 20)
+        self.assertEqual(enemy.level, 3)
+        self.assertEqual(enemy.max_hp, 45)
+        vaelith = create_enemy("vaelith_marr")
+        self.assertEqual(vaelith.level, 4)
+        self.assertEqual(vaelith.max_hp, 50)
         saboteur = create_enemy("brand_saboteur")
         self.assertEqual(saboteur.name, "Ashen Brand Saboteur")
         self.assertEqual(saboteur.resources["flash_ash"], 1)
@@ -6932,7 +7134,8 @@ class CoreTests(unittest.TestCase):
 
     def test_inventory_line_shows_weapon_damage_and_enchantment_rules(self) -> None:
         line = strip_ansi(format_inventory_line("rapier_rare", 1))
-        self.assertRegex(line, r"\[[A-Z]\d{4}\] x1")
+        self.assertIn("x1", line)
+        self.assertNotRegex(line, r"\[[A-Z]\d{4}\]")
         self.assertIn("1d8 piercing", line)
         self.assertIn("enchantment Vicious", line)
         self.assertIn("+2d6 on crit", line)
@@ -7754,9 +7957,9 @@ class CoreTests(unittest.TestCase):
         game = TextDnDGame(input_fn=lambda _: "10", output_fn=lambda _: None, rng=random.Random(444))
         entries = game.item_manual_entries()
         self.assertIn("Weapons", entries)
-        self.assertIn("Consumables and Draughts", entries)
+        self.assertIn("Consumables", entries)
         self.assertIn("Scripts", entries)
-        self.assertIn("one-use", entries["Consumables and Draughts"]["text"])
+        self.assertIn("one-use", entries["Consumables"]["text"])
 
     def test_class_choice_displays_expanded_lore(self) -> None:
         answers = iter(["2", "1"])
@@ -7793,7 +7996,7 @@ class CoreTests(unittest.TestCase):
         game.scene_neverwinter_briefing()
         rendered = self.plain_output(log)
         self.assertIn("better story and a sharper tongue", rendered)
-        self.assertIn("Reward gained for Bard identity choice: 20 XP, 6 marks.", rendered)
+        self.assertIn("Reward gained for Bard identity choice: 20 XP, 6 gold.", rendered)
 
     def test_neverwinter_briefing_routes_response_menu_through_keyboard_choice_menu(self) -> None:
         player = build_character(
@@ -8615,7 +8818,7 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Strike with Oathflare Strike (4 MP, on hit)", options)
         self.assertIn("[PERSUASION / INTIMIDATION] Attempt Parley", options)
         self.assertIn("[STEALTH] Try to Flee", options)
-        self.assertIn("Drink a Red Recovery Draught", options)
+        self.assertIn("Drink a Potion of Healing", options)
         self.assertFalse(options[0].startswith("["))
 
     def test_second_wind_is_a_bonus_action_and_still_allows_attack(self) -> None:
@@ -8930,6 +9133,66 @@ class CoreTests(unittest.TestCase):
         self.assertFalse(game.skill_check(player, "Athletics", 1, context="to step over a twig"))
         self.assertFalse(game.saving_throw(player, "DEX", 1, context="against a harmless puff of dust"))
 
+    def test_guarded_stance_imposes_strain_on_visible_attackers(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        enemy = create_enemy("goblin_skirmisher")
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(1622))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        game._active_dodging_names = {player.name}
+
+        advantage = game.attack_advantage_state(enemy, player, [player], [enemy], set())
+
+        self.assertEqual(advantage, -1)
+
+    def test_guarded_stance_does_not_penalize_unseen_invisible_attackers(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        enemy = create_enemy("goblin_skirmisher")
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(1623))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        game._active_dodging_names = {player.name}
+        game.apply_status(enemy, "invisible", 1, source="test setup")
+
+        advantage = game.attack_advantage_state(enemy, player, [player], [enemy], set())
+
+        self.assertEqual(advantage, 1)
+
+    def test_guarded_stance_grants_advantage_on_dex_saving_throws(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(1624))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        game._active_dodging_names = {player.name}
+        seen: list[int] = []
+        game.roll_with_advantage = lambda actor, advantage_state: seen.append(advantage_state) or SimpleNamespace(
+            kept=20,
+            rolls=[20, 20],
+            rerolls=[],
+            advantage_state=advantage_state,
+        )
+
+        self.assertTrue(game.saving_throw(player, "DEX", 10, context="against a test trap"))
+        self.assertEqual(seen, [1])
+
     def test_level_up_party_instantly_levels_company_without_prompting(self) -> None:
         player = build_character(
             name="Velkor",
@@ -9196,9 +9459,9 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(companion.current_hp, companion.max_hp)
         self.assertEqual(game.state.short_rests_remaining, 2)
         rendered = self.plain_output(log)
-        self.assertIn("will cost 20 marks total", rendered)
+        self.assertIn("will cost 20 gold total", rendered)
         self.assertIn("Will long rest: Velkor, Kaelis Starling.", rendered)
-        self.assertIn("Spend 20 marks at Ashlamp Inn and long rest this company?", rendered)
+        self.assertIn("Spend 20 gold at Ashlamp Inn and long rest this company?", rendered)
 
     def test_paid_inn_long_rest_can_be_declined_after_cost_confirmation(self) -> None:
         player = build_character(
@@ -9230,7 +9493,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Will long rest: Velkor.", rendered)
         self.assertIn("Will not be restored by resting: Tolan Ironshield (dead).", rendered)
-        self.assertIn("You keep your marks and do not rent beds.", rendered)
+        self.assertIn("You keep your gold and do not rent beds.", rendered)
 
     def test_paid_inn_long_rest_requires_enough_gold(self) -> None:
         player = build_character(
@@ -9249,7 +9512,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.gold, 4)
         self.assertEqual(player.current_hp, 2)
         self.assertEqual(game.state.short_rests_remaining, 0)
-        self.assertIn("costs 10 marks", self.plain_output(log))
+        self.assertIn("costs 10 gold", self.plain_output(log))
 
     def test_short_rest_heals_half_maximum_hp_rounded_up(self) -> None:
         player = build_character(
@@ -9768,8 +10031,9 @@ class CoreTests(unittest.TestCase):
         )
         game.show_inventory(filter_key="consumables")
         rendered = self.plain_output(log)
-        self.assertIn("View: Draughts", rendered)
-        self.assertIn("Red Recovery Draught", rendered)
+        self.assertIn("View: Consumables", rendered)
+        self.assertIn("Potion of Healing", rendered)
+        self.assertNotRegex(rendered, r"\[[A-Z]\d{4}\]")
         self.assertNotIn("Bread Round", rendered)
         self.assertNotIn("Longsword", rendered)
 
@@ -9791,7 +10055,8 @@ class CoreTests(unittest.TestCase):
         )
         game.show_inventory()
         rendered = self.plain_output(log)
-        self.assertIn("On hand: Red Recovery Draught x2, Roadworn Longsword x1", rendered)
+        self.assertIn("On hand: Potion of Healing x2, Roadworn Longsword x1", rendered)
+        self.assertNotRegex(rendered, r"\[[A-Z]\d{4}\]")
         if RICH_AVAILABLE:
             self.assertIn("Shared Inventory", rendered)
             self.assertIn("Qty", rendered)
@@ -9835,8 +10100,8 @@ class CoreTests(unittest.TestCase):
         game.state = GameState(player=player, current_scene="phandalin_hub", inventory={})
         game.state.flags["merchant_attitudes"] = {"barthen_provisions": 50}
         self.assertEqual(game.trade_persuasion(), 5)
-        self.assertAlmostEqual(game.buy_price_multiplier("barthen_provisions"), 1.75)
-        self.assertAlmostEqual(game.sell_price_multiplier("barthen_provisions"), 1 / 1.75)
+        self.assertAlmostEqual(game.buy_price_multiplier("barthen_provisions"), 1.70)
+        self.assertAlmostEqual(game.sell_price_multiplier("barthen_provisions"), 1 / 1.70)
 
     def test_can_buy_multiple_items_from_merchant(self) -> None:
         player = build_character(
@@ -9855,7 +10120,7 @@ class CoreTests(unittest.TestCase):
         stock["bread_round"] = 5
         game.buy_items("barthen_provisions", "Hadrik")
         self.assertEqual(game.state.inventory["bread_round"], 3)
-        self.assertEqual(game.state.gold, 0)
+        self.assertEqual(game.state.gold, 3)
         self.assertEqual(stock["bread_round"], 2)
 
     def test_early_item_prices_are_more_affordable(self) -> None:
@@ -10410,6 +10675,45 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Sereth Vane", rendered)
         self.assertTrue(game.state.flags["inn_blackwake_rumor_asked"])
 
+    def test_keyboard_common_room_echoes_selected_mara_option_before_dialogue(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(9206))
+        game.state = GameState(player=player, current_scene="phandalin_hub")
+        game.keyboard_choice_menu_supported = lambda: True
+        common_room_visits = 0
+
+        def fake_run(prompt: str, options: list[str], *, title=None) -> int:
+            nonlocal common_room_visits
+            stripped = [strip_ansi(option) for option in options]
+            if prompt.startswith("The common room quiets for a moment as you enter."):
+                if common_room_visits == 0:
+                    common_room_visits = 1
+                    return self.option_index_containing(stripped, "Mara Ashlamp")
+                if any("Leave the common room" in option for option in stripped):
+                    return self.option_index_containing(stripped, "Leave the common room")
+                return self.option_index_containing(stripped, "Next page")
+            if prompt == "Choose what you say to Mara Ashlamp.":
+                return self.option_index_containing(stripped, "Leave Mara")
+            raise AssertionError(prompt)
+
+        game.run_keyboard_choice_menu = fake_run
+        game.visit_stonehill_inn()
+
+        rendered = self.plain_output(log)
+        selected_text = "Talk to Mara Ashlamp, who is keeping half the room from a fight."
+        mara_line = 'Mara Ashlamp: "If you\'re here to save the town, good.'
+        self.assertIn(selected_text, rendered)
+        self.assertIn(mara_line, rendered)
+        self.assertLess(rendered.index(selected_text), rendered.index(mara_line))
+
     def test_stonehill_marked_keg_quest_can_be_resolved_and_turned_in(self) -> None:
         player = build_character(
             name="Velkor",
@@ -10735,7 +11039,7 @@ class CoreTests(unittest.TestCase):
         game._ashfall_rukhar_command(dungeon, room)
 
         self.assertEqual(len(captured), 1)
-        self.assertEqual(captured[0].enemies[0].current_hp, 33)
+        self.assertEqual(captured[0].enemies[0].current_hp, 41)
 
     def test_emberhall_quiet_room_intel_option_reads_ledgers_without_check(self) -> None:
         player = build_character(
@@ -10823,6 +11127,43 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log)
         self.assertIn("Additional quest reward: Kestrel Ledger Clasp x1.", rendered)
         self.assertIn("Upstairs Contract Room", rendered)
+
+    def test_keyboard_contract_house_echoes_selected_sabra_option_before_dialogue(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Rogue",
+            background="Charlatan",
+            base_ability_scores={"STR": 10, "DEX": 15, "CON": 12, "INT": 14, "WIS": 13, "CHA": 14},
+            class_skill_choices=["Insight", "Investigation", "Sleight of Hand"],
+        )
+        log: list[str] = []
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(4191))
+        game.state = GameState(player=player, current_scene="neverwinter_briefing")
+        game.keyboard_choice_menu_supported = lambda: True
+        contract_house_visits = 0
+
+        def fake_run(prompt: str, options: list[str], *, title=None) -> int:
+            nonlocal contract_house_visits
+            stripped = [strip_ansi(option) for option in options]
+            if prompt == "The contract house room keeps three conversations going at once.":
+                contract_house_visits += 1
+                if contract_house_visits == 1:
+                    return self.option_index_containing(stripped, "Sabra Kestrel")
+                return self.option_index_containing(stripped, "Leave the contract house")
+            if prompt == "Choose what you say to Sabra Kestrel.":
+                return self.option_index_containing(stripped, "Leave Sabra")
+            raise AssertionError(prompt)
+
+        game.run_keyboard_choice_menu = fake_run
+        game.visit_neverwinter_contract_house()
+
+        rendered = self.plain_output(log)
+        selected_text = 'Let me see the ledgers Sabra Kestrel keeps glaring at.'
+        sabra_line = 'Sabra Kestrel: "Missing cargo would bother me less if it stayed missing honestly.'
+        self.assertIn(selected_text, rendered)
+        self.assertIn(sabra_line, rendered)
+        self.assertLess(rendered.index(selected_text), rendered.index(sabra_line))
 
     def test_act2_claims_council_mentions_harl_knot_and_quiet_room_intel(self) -> None:
         player = build_character(
@@ -11863,7 +12204,7 @@ class CoreTests(unittest.TestCase):
         rendered = self.plain_output(log).lower()
         self.assertIn("console commands", rendered)
         self.assertIn("give <item id> [quantity]", rendered)
-        self.assertIn("give marks [quantity]", rendered)
+        self.assertIn("give gold [quantity]", rendered)
         self.assertIn("clearconditions", rendered)
         self.assertIn("unlockmap", rendered)
         self.assertIn("unlockallmaps", rendered)
@@ -12145,7 +12486,7 @@ class CoreTests(unittest.TestCase):
         game.execute_console_command(f"identify {item_id}")
 
         rendered = self.plain_output(log)
-        self.assertIn("Identify: Red Recovery Draught", rendered)
+        self.assertIn("Identify: Potion of Healing", rendered)
         self.assertIn(f"ID: {item_id}", rendered)
         self.assertIn("Legacy ID: potion_healing", rendered)
         self.assertIn("Rules: restores 2d4+2", rendered)
@@ -12292,6 +12633,47 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(captured["prompt"], "Choose a target.")
         self.assertEqual(captured["options"], [game.describe_combatant(enemy), "Back"])
         self.assertIsNone(captured["title"])
+
+    def test_choose_target_aligns_health_bars_to_longest_name(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        enforcer = create_enemy("bandit", name="Ashen Brand Enforcer")
+        marksman = create_enemy("bandit_archer", name="Ashen Brand Marksman")
+        hound = create_enemy("wolf", name="Ashfang Hound")
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(40022))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        captured: dict[str, object] = {}
+        game.keyboard_choice_menu_supported = lambda: True
+
+        def fake_run(prompt, options, *, title=None):
+            captured["options"] = list(options)
+            return 1
+
+        game.run_keyboard_choice_menu = fake_run
+
+        target = game.choose_target([enforcer, marksman, hound], prompt="Choose a target.", allow_back=True)
+
+        self.assertIs(target, enforcer)
+        options = captured["options"]
+        self.assertIsInstance(options, list)
+        rendered_options = [strip_ansi(option) for option in options[:-1]]
+        hp_columns = [option.index("HP [") for option in rendered_options]
+        self.assertEqual(hp_columns, [hp_columns[0]] * len(hp_columns))
+        self.assertEqual(
+            options,
+            [
+                game.describe_combatant(enforcer, name_width=len("Ashen Brand Marksman")),
+                game.describe_combatant(marksman, name_width=len("Ashen Brand Marksman")),
+                game.describe_combatant(hound, name_width=len("Ashen Brand Marksman")),
+                "Back",
+            ],
+        )
 
     def test_grouped_combat_menu_renders_action_sections(self) -> None:
         player = build_character(

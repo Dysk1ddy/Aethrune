@@ -1,7 +1,7 @@
 {
   "player": {
     "name": "Riven Ashguard",
-    "race": "Half-Orc",
+    "race": "Orc",
     "class_name": "Fighter",
     "background": "Soldier",
     "level": 1,
@@ -24,8 +24,8 @@
       "CON"
     ],
     "features": [
-      "menacing",
-      "relentless_endurance",
+      "adrenaline_rush",
+      "darkvision",
       "second_wind"
     ],
     "weapon": {
@@ -61,7 +61,7 @@
       "Gaming Set"
     ],
     "resources": {
-      "second_wind": 1
+      "second_wind": 0
     },
     "max_resources": {
       "second_wind": 1
@@ -161,7 +161,7 @@
         "stealth_disadvantage": true
       },
       "hit_die": 8,
-      "current_hp": 10,
+      "current_hp": 4,
       "max_hp": 10,
       "shield": true,
       "spellcasting_ability": "WIS",
@@ -171,10 +171,12 @@
         "Celestial"
       ],
       "resources": {
-        "spell_slots_1": 2
+        "spell_slots_1": 2,
+        "mp": 11
       },
       "max_resources": {
-        "spell_slots_1": 2
+        "spell_slots_1": 2,
+        "mp": 13
       },
       "inventory": {},
       "conditions": {},
@@ -187,8 +189,8 @@
       },
       "notes": [
         "Healer's satchel: +1 to Medicine and Religion checks.",
-        "A priestess of Tymora tending the frontier faithful in Phandalin.",
-        "A priestess of Tymora whose compassion is sharpened, not softened, by the frontier's cruelty."
+        "A Lantern priestess tending the frontier faithful in Iron Hollow.",
+        "A priestess of the Lantern whose compassion is sharpened, not softened, by the frontier's cruelty."
       ],
       "tags": [
         "hero",
@@ -230,16 +232,14 @@
   ],
   "camp_companions": [],
   "current_act": 1,
-  "current_scene": "greywake_road_breakout",
+  "current_scene": "neverwinter_briefing",
   "flags": {
     "act1_started": true,
     "map_state": {
       "current_node_id": "wayside_luck_shrine",
       "current_dungeon_id": null,
       "current_room_id": null,
-      "visited_nodes": [
-        "wayside_luck_shrine"
-      ],
+      "visited_nodes": [],
       "cleared_rooms": [],
       "seen_story_beats": [],
       "node_history": [],
@@ -247,7 +247,10 @@
     },
     "introduced_characters": [
       "Ashen Brand Runner",
-      "Elira Dawnmantle"
+      "Elira Dawnmantle",
+      "Elira Lanternward",
+      "Mira Thann",
+      "Oren Vale"
     ],
     "background_prologue_completed": "Soldier",
     "system_profile_seeded": true,
@@ -258,6 +261,8 @@
     "elira_first_read": "triage_competence",
     "wayside_aid_route": "prayer",
     "elira_initial_trust_reason": "spiritual_kinship",
+    "elira_helped": true,
+    "wayside_prayer_steadied": true,
     "elira_wayside_recruit_attempted": true,
     "elira_pre_neverwinter_recruited": true,
     "elira_neverwinter_recruited": true,
@@ -269,48 +274,67 @@
     "greywake_outcome_manifest_read": true,
     "greywake_mira_evidence_kind": "marked_manifest",
     "varyn_route_pattern_seen": true,
-    "greywake_attack_imminent": true
+    "greywake_attack_imminent": true,
+    "greywake_breakout_resolved": true,
+    "briefing_seen": true,
+    "greywake_mira_reacted": true,
+    "briefing_q_neverwinter": true,
+    "briefing_q_phandalin": true,
+    "identity_neverwinter_briefing_class_fighter_map": true,
+    "briefing_q_brand": true,
+    "neverwinter_contract_house_seen": true
   },
   "clues": [
-    "A stolen dispatch confirms the attacks around Phandalin are organized enough to rattle Neverwinter's quartermasters.",
+    "A stolen dispatch confirms the attacks around Iron Hollow are organized enough to rattle Greywake's quartermasters.",
     "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
-    "The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived."
+    "The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived.",
+    "Mira identifies Greywake's outcome-marked manifest as proof someone is pre-sorting road casualties.",
+    "Mira marks the switchback, likely scout perches, and the rough spacing the gang prefers when collapsing on a wagon."
   ],
   "journal": [
-    "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
-    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
-    "Reward from South Barracks Breakout: 50 XP, 8 gp.",
-    "Looted Frontier Ale x1 from South Barracks Breakout.",
-    "Reward from holding the barracks line: 15 XP, 6 gp.",
-    "Clue: A stolen dispatch confirms the attacks around Phandalin are organized enough to rattle Neverwinter's quartermasters.",
-    "Your soldier prologue ends with the trail leading toward Mira Thann's private briefing in Neverwinter.",
+    "Your soldier's opening leaves you with a live look at how hard Greywake is leaning on thin patrol lines and tired veterans to protect the road south.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Greywake against Ashen Brand pressure around Iron Hollow.",
+    "Reward from South Barracks Breakout: 50 XP, 8 gold.",
+    "Reward from holding the barracks line: 15 XP, 6 gold.",
+    "Clue: A stolen dispatch confirms the attacks around Iron Hollow are organized enough to rattle Greywake's quartermasters.",
+    "Your soldier prologue ends with the trail leading toward Mira Thann's private briefing in Greywake.",
+    "Reward from steadying the Wayside Luck Shrine: 20 XP.",
     "Elira Dawnmantle joined the active party.",
     "Clue: Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
     "Clue: The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived.",
-    "Reward from Greywake Road Breakout: 100 XP, 17 gp.",
+    "Reward from Greywake Road Breakout: 100 XP, 17 gold.",
     "Looted Antitoxin Vial x1 from Greywake Road Breakout.",
-    "Looted Roasted Nut Mix x1 from Greywake Road Breakout."
+    "Looted Roadworn Shortbow x1 from Greywake Road Breakout.",
+    "Looted Roasted Nut Mix x1 from Greywake Road Breakout.",
+    "Reward from holding Greywake Yard before the Greywake briefing: 25 XP, 8 gold.",
+    "You held Greywake Yard long enough to carry its outcome-marked manifest pressure into Mira Thann's briefing.",
+    "Clue: Mira identifies Greywake's outcome-marked manifest as proof someone is pre-sorting road casualties.",
+    "Mira Thann treated Greywake's outcome marks as proof that the Ashen Brand was coordinating who got hurt and when.",
+    "Clue: Mira marks the switchback, likely scout perches, and the rough spacing the gang prefers when collapsing on a wagon.",
+    "Reward from Fighter identity choice: 10 XP.",
+    "You treated the contract like a fighter's field briefing and forced it into useful shape."
   ],
   "quests": {},
   "completed_acts": [],
-  "xp": 165,
-  "gold": 51,
+  "xp": 220,
+  "gold": 59,
   "inventory": {
-    "potion_healing": 3,
-    "bread_round": 4,
-    "travel_biscuits": 4,
-    "dried_fish": 3,
-    "goat_cheese": 2,
-    "frontier_ale": 3,
-    "root_vegetables": 2,
-    "antitoxin_vial": 2,
-    "chain_mail_common": 1,
-    "longsword_common": 1,
-    "shield_common": 2,
-    "blessed_salve": 1,
-    "scale_mail_common": 1,
-    "mace_common": 1,
-    "nut_mix": 1
+    "C0011": 3,
+    "S0002": 4,
+    "S0021": 4,
+    "S0005": 3,
+    "S0007": 2,
+    "S0006": 2,
+    "S0016": 2,
+    "C0000": 2,
+    "E0004": 1,
+    "E0097": 1,
+    "E0060": 2,
+    "C0001": 1,
+    "E0012": 1,
+    "E0102": 1,
+    "E0109": 1,
+    "S0013": 1
   },
   "short_rests_remaining": 2
 }

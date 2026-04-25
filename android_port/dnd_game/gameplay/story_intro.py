@@ -616,7 +616,7 @@ class StoryIntroMixin:
                 self.reward_party(xp=10, reason="seeking a blessing before the road")
             else:
                 self.say("The words do not quite settle, but the ritual still steadies your breathing before departure.")
-            self.say("A temple acolyte presses an extra healing draught into your hands before you leave.")
+            self.say("A temple acolyte presses an extra healing potion into your hands before you leave.")
         elif choice == 3:
             success = self.skill_check(self.state.player, "Persuasion", 12, context="to loosen anxious tongues on the docks")
             if success:

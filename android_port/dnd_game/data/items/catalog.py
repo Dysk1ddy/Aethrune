@@ -484,7 +484,7 @@ SUPPLY_ITEMS = [
 CONSUMABLE_ITEMS = [
     {
         "item_id": "potion_healing",
-        "name": "Red Recovery Draught",
+        "name": "Potion of Healing",
         "rarity": "common",
         "description": "A frontier-standard recovery blend carried by scouts, quartermasters, and anyone expecting blood on the road.",
         "source": "Starter kits, shrine aid packs, goblin satchels, and common loot drops.",
@@ -554,7 +554,7 @@ CONSUMABLE_ITEMS = [
     },
     {
         "item_id": "potion_heroism",
-        "name": "Resolve Draught",
+        "name": "Potion of Heroism",
         "rarity": "rare",
         "description": "A hard-burning stimulant that floods the body with reckless resolve before the worst part of the fight lands.",
         "source": "Sanctum vaults, champion kits, and rare support caches.",
@@ -1230,6 +1230,10 @@ LOOT_TABLES = {
 
 LEGACY_ITEM_NAMES = {
     "Healing Potion": "potion_healing",
+    "Potion of Healing": "potion_healing",
+    "Potion of Heroism": "potion_heroism",
+    "Antitoxin": "antitoxin_vial",
+    "Antitoxin Vial": "antitoxin_vial",
 }
 
 EQUIPMENT_SLOTS = [

@@ -204,6 +204,20 @@ class GameBase:
         "Kaelis Starling": "Kaelis Starling is a lean half-elf ranger whose attention never stops moving, as if every doorway and hedgeline is already a map in his head.",
         "Rhogar Valeguard": "Rhogar Valeguard is a bronze-scaled dragonborn paladin who carries himself like a sworn roadwarden, proud-backed and visibly made of vows.",
         "Tolan Ironshield": "Tolan Ironshield is a battle-scarred dwarven caravan guard with a wall of a shield, a gravel voice, and the look of someone who has outlived too many ambushes.",
+        "Oren Vale": "Oren Vale runs his contract house in rolled sleeves and measured glances, keeping a tidy room where frightened professionals can buy privacy by the bowl and the hour.",
+        "Sabra Kestrel": "Sabra Kestrel is a ledger hawk with ink on her fingers, tired eyes, and the kind of attention that catches one wrong line in a page full of clean lies.",
+        "Vessa Marr": "Vessa Marr is a river-road card shark in cheap rings and fine poise, smiling like the hand matters less than what your face does before it lands.",
+        "Garren Flint": "Garren Flint is a roadwarden gone winter-hard around the edges, square-shouldered and visibly angry that copied authority now sounds enough like his trade to work.",
+        "Jerek Harl": "Jerek Harl is a road laborer with workman's shoulders, red-rimmed eyes, and grief sitting on him like he slept in it.",
+        "Sella Quill": "Sella Quill is a lean inn singer with a travel harp, a dry mouth for gossip, and the habit of listening hardest when rooms think they are only muttering.",
+        "Old Tam Veller": "Old Tam Veller is an old miner with a cooling cup, stone dust worked into his clothes, and the far-off stare of a man still walking roads the town paved over.",
+        "Nera Doss": "Nera Doss is a bruised courier with a split lip, one shoulder angled toward the exits, and the wary stillness of someone used to carrying messages people would rather edit.",
+        "Ashlamp Teamster": "The Ashlamp teamster is a mud-caked wagon hand with cup-callused fingers, a road cough, and the blunt caution of someone who knows freight turns political before merchants admit it.",
+        "Nim Ardentglass": "Nim Ardentglass is a ruin scholar in chalk-marked layers, all satchel straps, quick hands, and nerves he disguises as precision.",
+        "Irielle Ashwake": "Irielle Ashwake is a soot-dark escapee from the Quiet Choir, thin from captivity, sharp with caution, and always half-listening for the next wrong note in the air.",
+        "Pale Witness": "The Pale Witness is Hushfen's dead memory made visible: a woman-shaped hush in funeral white, carrying grief like weather that learned to speak.",
+        "Brother Merik Sorn": "Brother Merik Sorn is a Quiet Choir field priest in damp work robes, calm at the wheel like a man who trusts mechanisms more than the people drinking from them.",
+        "Sister Caldra Voss": "Sister Caldra Voss is a severe Choir sister standing straight inside the Forge's hum, ash-pale and composed as if every wrong sound in the room already belongs to her.",
         "Vaelith Marr": "Vaelith Marr is a soot-handed gravecaller in scavenged ritual cloth, moving with the calm precision of someone who finds other people's dead more useful than the living.",
         "Brughor Skullcleaver": "Brughor Skullcleaver is a broad orc blood-chief in battered scale, grinning like every fight is a feast he intends to survive.",
         "Cragmaw-Ogre Thane": "The Cragmaw-Ogre Thane is a huge scar-latticed brute dragging a stone-shaved club, all stubborn muscle and habitually casual violence.",
@@ -211,6 +225,11 @@ class GameBase:
         "Rukhar Cinderfang": "Rukhar Cinderfang is a broad hobgoblin sergeant in disciplined mail, every movement controlled with the hard efficiency of a drilled war captain.",
         "Sereth Vane": "Sereth Vane is a road-dusted Ashen Brand quartermaster with a negotiator's smile, a fixer's eyes, and hands that never drift far from hidden ash capsules.",
         "Varyn Sable": "Varyn Sable is a poised, sharp-featured brigand captain dressed better than the rest of the gang, with a duelist's balance and a smile that never warms.",
+        "Town Council": "The town council answers like one tired body made of claimants, merchants, and locals who know every clean sentence in Iron Hollow is going to cost somebody.",
+        "Knight": "The Knight statue stands sword-down in cracked mail, weathered into a posture that still feels like discipline.",
+        "Priest": "The Priest statue is narrow-faced and lichen-dusted, with stone robes carved to fall like old ritual linen.",
+        "Thief": "The Thief statue leans forward under a chipped hood, grin still visible in the stone as if the answer amused it years ago.",
+        "King": "The King statue wears a chipped crown and a rain-smoothed face, expecting obedience even now.",
         "Ashen Brand Runner": "The Ashen Brand Runner is a wiry courier with road dust on their boots and the twitchy focus of someone used to escaping before blades can reach them.",
         "Ashen Brand Collector": "The Ashen Brand Collector looks like a dockside broker turned enforcer, weighed down by stolen papers, quiet greed, and a hand never far from steel.",
         "Archive Cutout": "The Archive Cutout is a hired bow-hand with ink-smudged fingers and a scavenger's posture, more accustomed to theft and flight than a fair fight.",
@@ -485,6 +504,9 @@ class GameBase:
         "barthen_provisions": 20,
         "linene_graywind": 15,
     }
+    MERCHANT_BASE_BUY_MULTIPLIER = 2.1
+    MERCHANT_PERSUASION_DISCOUNT = 0.05
+    MERCHANT_ATTITUDE_DISCOUNT = 0.003
 
     def run(self) -> None:
         try:
@@ -1706,7 +1728,12 @@ class GameBase:
     def buy_price_multiplier(self, merchant_id: str) -> float:
         persuasion = self.trade_persuasion()
         attitude = self.get_merchant_attitude(merchant_id)
-        return max(1.0, 2.5 - (0.1 * persuasion) - (0.005 * attitude))
+        return max(
+            1.0,
+            self.MERCHANT_BASE_BUY_MULTIPLIER
+            - (self.MERCHANT_PERSUASION_DISCOUNT * persuasion)
+            - (self.MERCHANT_ATTITUDE_DISCOUNT * attitude),
+        )
 
     def sell_price_multiplier(self, merchant_id: str) -> float:
         return 1.0 / self.buy_price_multiplier(merchant_id)
@@ -2126,7 +2153,7 @@ class GameBase:
     def add_developer_gold(self, amount: int = 10_000) -> int:
         assert self.state is not None
         self.state.gold += amount
-        self.say(f"Developer tools add {amount:,} marks. Total marks: {self.state.gold:,}.")
+        self.say(f"Developer tools add {amount:,} gold. Total gold: {self.state.gold:,}.")
         return self.state.gold
 
     def level_up_party_instantly(self, *, target_level: int | None = None, randomize_skill_choices: bool = True) -> int | None:
@@ -2215,7 +2242,7 @@ class GameBase:
     def console_command_reference(self) -> list[str]:
         return [
             "give <item id> [quantity] - add item(s) to the shared inventory; quantity defaults to 1",
-            "give marks [quantity] - add marks; quantity defaults to 1,000",
+            "give gold [quantity] - add gold; quantity defaults to 1,000 (marks also works)",
             "god - toggle party god mode",
             "heal - heal every living active party member to full HP",
             "revive - revive every dead or downed active party member at 1 HP",
@@ -2347,7 +2374,7 @@ class GameBase:
 
     def execute_give_console_command(self, tokens: list[str]) -> bool:
         if len(tokens) < 2 or len(tokens) > 3:
-            self.say("Usage: give <item id> [quantity] or give marks [quantity].")
+            self.say("Usage: give <item id> [quantity] or give gold [quantity].")
             return False
         if not self.active_console_state_available():
             return False
@@ -2357,7 +2384,7 @@ class GameBase:
             if quantity is None:
                 return False
             self.state.gold += quantity
-            self.say(f"Console grants {quantity:,} marks. Total marks: {self.state.gold:,}.")
+            self.say(f"Console grants {quantity:,} gold. Total gold: {self.state.gold:,}.")
             return False
         quantity = self.parse_console_quantity(tokens[2] if len(tokens) == 3 else None, default=1)
         if quantity is None:
@@ -2610,7 +2637,7 @@ class GameBase:
             options = [
                 f"Toggle god mode for the party [{'ON' if self.god_mode_enabled() else 'OFF'}]",
                 f"Toggle pass every dice check [{'ON' if self.always_pass_dice_checks_enabled() else 'OFF'}]",
-                "Add 10,000 marks instantly",
+                "Add 10,000 gold instantly",
                 "Level up the company instantly",
                 "Jump to the start of Act II with a level 4 test company",
                 "Back",
@@ -2882,26 +2909,38 @@ class GameBase:
         else:
             self.player_speaker(cleaned.strip('"'))
 
+    def character_intro_name(self, subject) -> str:
+        return str(subject.name if hasattr(subject, "name") else subject)
+
+    def character_intro_key(self, subject) -> str:
+        return self.public_character_name(self.character_intro_name(subject))
+
     def should_introduce_character(self, subject) -> bool:
         if self.state is None:
             return False
-        name = subject.name if hasattr(subject, "name") else str(subject)
+        name = self.character_intro_name(subject)
+        intro_key = self.character_intro_key(subject)
         seen = set(self.state.flags.get("introduced_characters", []))
-        return name not in seen
+        return name not in seen and intro_key not in seen
 
-    def mark_character_introduced(self, name: str) -> None:
+    def mark_character_introduced(self, subject) -> None:
         assert self.state is not None
+        name = self.character_intro_name(subject)
+        intro_key = self.character_intro_key(subject)
         seen = set(self.state.flags.get("introduced_characters", []))
-        if name in seen:
+        if name in seen or intro_key in seen:
             return
-        seen.add(name)
+        seen.add(intro_key)
         self.state.flags["introduced_characters"] = sorted(seen)
 
     def character_intro_text(self, subject) -> str:
+        name = self.character_intro_name(subject)
+        public_name = self.public_character_name(name)
+        if name in self.NAMED_CHARACTER_INTROS:
+            return self.NAMED_CHARACTER_INTROS[name]
+        if public_name in self.NAMED_CHARACTER_INTROS:
+            return self.NAMED_CHARACTER_INTROS[public_name]
         if hasattr(subject, "name"):
-            name = subject.name
-            if name in self.NAMED_CHARACTER_INTROS:
-                return self.NAMED_CHARACTER_INTROS[name]
             notes = list(getattr(subject, "notes", []))
             if notes:
                 return notes[0]
@@ -2910,18 +2949,13 @@ class GameBase:
                     f"{name} stands out immediately: a {race_label(subject.race).lower()} {class_label(subject.class_name).lower()} "
                     f"carrying themselves like the center of the whole fight."
                 )
-        else:
-            name = str(subject)
-            if name in self.NAMED_CHARACTER_INTROS:
-                return self.NAMED_CHARACTER_INTROS[name]
         return ""
 
     def introduce_character(self, subject) -> None:
         if not self.should_introduce_character(subject):
             return
-        name = subject.name if hasattr(subject, "name") else str(subject)
         intro = self.character_intro_text(subject)
-        self.mark_character_introduced(name)
+        self.mark_character_introduced(subject)
         if intro:
             self.say(intro, typed=True)
 
@@ -2977,13 +3011,13 @@ class GameBase:
                     "initiative bonuses, resistances, or other always-on utility effects."
                 ),
             },
-            "Consumables and Draughts": {
+            "Consumables": {
                 "menu": "Single-use items that heal, restore, protect, or clear conditions.",
                 "text": (
-                    "Consumables are one-use resources such as draughts, field tonics, and travel aids. In this game "
+                    "Consumables are one-use resources such as potions, field tonics, and travel aids. In this game "
                     "they usually restore hit points, temporary hit points, MP, or remove harmful "
                     "conditions.\n\n"
-                    "Most are best saved for emergencies because they are consumed immediately on use. Healing draughts "
+                    "Most are best saved for emergencies because they are consumed immediately on use. Healing potions "
                     "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is "
                     "faster than administering one to someone else."
                 ),
@@ -3074,7 +3108,7 @@ class GameBase:
             self.say(
                 "Under the hood, the game still uses an SRD-derived d20 chassis for ability checks, "
                 "proficiency, initiative, strike checks, resist checks, channel difficulty, conditions, "
-                "weapon damage, healing, draughts, and death saves, while compressing positioning and "
+                "weapon damage, healing, consumables, and death saves, while compressing positioning and "
                 "encounter flow to fit a text adventure."
             )
             self.say(

@@ -71,7 +71,7 @@ class StoryEndgameMixin:
             hero_initiative_bonus=encounter_bonus,
             allow_post_combat_random_encounter=False,
         )
-        outcome = self.run_encounter(first_encounter)
+        outcome = self.run_encounter_wave(first_encounter)
         if outcome == "defeat":
             self.handle_defeat("Ashfall Watch remains in enemy hands.")
             return
@@ -84,7 +84,7 @@ class StoryEndgameMixin:
             "At the tower's heart, a hobgoblin in disciplined armor steps through the smoke. "
             "Rukhar Cinderfang studies you with the patience of a veteran who has already measured the dead."
         )
-        boss_enemies = [create_enemy("rukhar")]
+        boss_enemies = [create_enemy("rukhar"), create_enemy("bandit_archer", name="Ashen Brand Lookout")]
         if len(self.state.party_members()) >= 3:
             boss_enemies.append(create_enemy("bandit", name="Ashen Brand Enforcer"))
         bonus = 0

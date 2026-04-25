@@ -454,11 +454,12 @@ class GameIOMixin:
         allow_meta: bool = True,
         show_hud: bool = True,
         sticky_trailing_options: int = 0,
+        echo_selection: bool = False,
     ) -> int:
         clear_pending_scaled_check_reward = getattr(self, "clear_pending_scaled_check_reward", None)
         if callable(clear_pending_scaled_check_reward):
             clear_pending_scaled_check_reward()
-        return self.choose_with_display_mode(
+        choice = self.choose_with_display_mode(
             prompt,
             options,
             allow_meta=allow_meta,
@@ -466,6 +467,11 @@ class GameIOMixin:
             show_hud=show_hud,
             sticky_trailing_options=sticky_trailing_options,
         )
+        if echo_selection:
+            player_choice_output = getattr(self, "player_choice_output", None)
+            if callable(player_choice_output) and 1 <= choice <= len(options):
+                player_choice_output(options[choice - 1])
+        return choice
 
     def keyboard_choice_menu_supported(self) -> bool:
         if not self.should_use_rich_ui():

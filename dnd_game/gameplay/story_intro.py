@@ -178,7 +178,7 @@ class StoryIntroMixin:
             self.player_action("Keep the shrine moving and save your strength for the road.")
             self.wayside_set_elira_trust("none", "reserved_kindness")
             self.add_inventory_item("potion_healing", source="Elira's road charity basket")
-            self.say("Elira presses a healing draught into your hands anyway. Luck, apparently, dislikes going unused.")
+            self.say("Elira presses a healing potion into your hands anyway. Luck, apparently, dislikes going unused.")
 
         if not self.has_companion("Elira Dawnmantle"):
             options = [
@@ -1530,7 +1530,7 @@ class StoryIntroMixin:
                 self.reward_party(xp=10, reason="seeking a blessing before the road")
             else:
                 self.say("The words do not quite settle, but the ritual still steadies your breathing before departure.")
-            self.say("A temple acolyte presses an extra healing draught into your hands before you leave.")
+            self.say("A temple acolyte presses an extra healing potion into your hands before you leave.")
         elif choice == 3:
             success = self.skill_check(self.state.player, "Persuasion", 12, context="to loosen anxious tongues on the docks")
             if success:
@@ -1619,7 +1619,7 @@ class StoryIntroMixin:
                 options.append(("garren", "\"Ask Garren Flint how false roadwarden seals keep getting obeyed.\""))
             options.extend(
                 [
-                    ("rest", self.action_option("Rent beds upstairs (10 marks per active party member).")),
+                    ("rest", self.action_option("Rent beds upstairs (10 gold per active party member).")),
                     ("leave", self.action_option("Leave the contract house and return to Mira's rooms.")),
                 ]
             )
@@ -1627,6 +1627,7 @@ class StoryIntroMixin:
                 "The contract house room keeps three conversations going at once.",
                 [text for _, text in options],
                 allow_meta=False,
+                echo_selection=True,
             )
             selection_key, _ = options[choice - 1]
             if selection_key == "private_room":
@@ -1642,7 +1643,6 @@ class StoryIntroMixin:
             elif selection_key == "rest":
                 self.paid_inn_long_rest("Oren Vale's contract house")
             else:
-                self.player_action("You leave the contract house and head back toward Mira's borrowed briefing rooms.")
                 return
 
     def neverwinter_talk_oren(self) -> None:
@@ -1818,7 +1818,7 @@ class StoryIntroMixin:
                 )
             if not self.state.flags.get("neverwinter_vessa_smoke_asked"):
                 options.append(("smoke", "\"What does the river-cut smoke mean to the people who profit from it?\""))
-            options.append(("leave", self.action_option("Leave Vessa Marr to the cards and the marks.")))
+            options.append(("leave", self.action_option("Leave Vessa Marr to the cards and the gold.")))
             choice = self.scenario_choice("Choose what you say to Vessa Marr.", [text for _, text in options], allow_meta=False)
             selection_key, _ = options[choice - 1]
             if selection_key == "detail":
@@ -1863,7 +1863,7 @@ class StoryIntroMixin:
                     "That somebody north of Miller's Ford got impatient. Smoke there means papers burned before witnesses could read them, which means the survivors will be worth more than the cargo for a day or two.",
                 )
             else:
-                self.player_action("You leave Vessa Marr to the cards and the marks.")
+                self.player_action("You leave Vessa Marr to the cards and the gold.")
                 return
 
     def neverwinter_talk_garren(self) -> None:
@@ -2134,7 +2134,7 @@ class StoryIntroMixin:
         else:
             self.player_action("Keep the shrine moving and save your strength for the road.")
             self.add_inventory_item("potion_healing", source="Elira's road charity basket")
-            self.say("Elira presses a healing draught into your hands anyway. Luck, apparently, dislikes going unused.")
+            self.say("Elira presses a healing potion into your hands anyway. Luck, apparently, dislikes going unused.")
 
         if self.has_companion("Elira Dawnmantle"):
             return
@@ -2855,7 +2855,12 @@ class StoryIntroMixin:
                         self.action_option("Challenge the false roadwarden checkpoint."),
                     )
                 )
-            choice = self.scenario_choice("Where do you go from the Emberway?", [text for _, text in options], allow_meta=False)
+            choice = self.scenario_choice(
+                "Where do you go from the Emberway?",
+                [text for _, text in options],
+                allow_meta=False,
+                echo_selection=True,
+            )
             selection_key, _ = options[choice - 1]
             if selection_key == "backtrack":
                 if not self.backtrack_act1_overworld_node():
@@ -2863,21 +2868,18 @@ class StoryIntroMixin:
                     return
                 return
             if selection_key == "liars_circle":
-                self.player_action("Follow the overgrown statue trail into the wilderness.")
                 self.travel_to_act1_node(
                     "liars_circle",
                     transition_text="You follow the thorn track away from the road until four old statues come into view.",
                 )
                 return
             if selection_key == "tollstones":
-                self.player_action("Investigate the broken roadwarden milemarker.")
                 self.travel_to_act1_node(
                     "false_tollstones",
                     transition_text="You follow the paint-scarred markers to a broken roadwarden stone and a waiting false toll.",
                 )
                 return
             if selection_key == "checkpoint":
-                self.player_action("Challenge the false roadwarden checkpoint.")
                 self.travel_to_act1_node(
                     "false_checkpoint",
                     transition_text="You follow fresh bootlines to a canvas shade and men wearing borrowed roadwarden authority.",
@@ -3012,7 +3014,7 @@ class StoryIntroMixin:
                                 self.apply_status(enemy, "emboldened", 1, source="seeing the bluff fail")
                         self.say("The goblins only cackle harder and close in.")
 
-            outcome = self.run_encounter(
+            outcome = self.run_encounter_wave(
                 Encounter(
                     title="Roadside Ambush: First Wave",
                     description="Roadside raiders and a hunting beast rush the ruined wagon.",

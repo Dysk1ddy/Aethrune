@@ -107,6 +107,9 @@ class GameBase:
         "barthen_provisions": 20,
         "linene_graywind": 15,
     }
+    MERCHANT_BASE_BUY_MULTIPLIER = 2.1
+    MERCHANT_PERSUASION_DISCOUNT = 0.05
+    MERCHANT_ATTITUDE_DISCOUNT = 0.003
 
     def run(self) -> None:
         try:
@@ -576,7 +579,12 @@ class GameBase:
     def buy_price_multiplier(self, merchant_id: str) -> float:
         persuasion = self.trade_persuasion()
         attitude = self.get_merchant_attitude(merchant_id)
-        return max(1.0, 2.5 - (0.1 * persuasion) - (0.005 * attitude))
+        return max(
+            1.0,
+            self.MERCHANT_BASE_BUY_MULTIPLIER
+            - (self.MERCHANT_PERSUASION_DISCOUNT * persuasion)
+            - (self.MERCHANT_ATTITUDE_DISCOUNT * attitude),
+        )
 
     def sell_price_multiplier(self, merchant_id: str) -> float:
         return 1.0 / self.buy_price_multiplier(merchant_id)
@@ -882,13 +890,13 @@ class GameBase:
                     "initiative bonuses, resistances, or other always-on utility effects."
                 ),
             },
-            "Consumables and Draughts": {
+            "Consumables": {
                 "menu": "Single-use items that heal, restore, protect, or clear conditions.",
                 "text": (
-                    "Consumables are one-use resources such as draughts, field tonics, and travel aids. In this game "
+                    "Consumables are one-use resources such as potions, field tonics, and travel aids. In this game "
                     "they usually restore hit points, temporary hit points, MP, or remove harmful "
                     "conditions.\n\n"
-                    "Most are best saved for emergencies because they are consumed immediately on use. Healing draughts "
+                    "Most are best saved for emergencies because they are consumed immediately on use. Healing potions "
                     "follow the game-specific combat timing rules already shown elsewhere: drinking one yourself is "
                     "faster than administering one to someone else."
                 ),

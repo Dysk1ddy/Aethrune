@@ -6,10 +6,14 @@ from ..content import create_enemy
 from ..data.story.public_terms import spell_label
 from ..items import get_item
 from ..models import Character
-from ..ui.colors import rich_style_name
+from ..ui.colors import rich_style_name, strip_ansi
 from ..ui.rich_render import Group, Live, Panel, Table, Text, box
 from .encounter import Encounter
 from .magic_points import has_magic_points, magic_point_cost
+
+
+HEALING_POTION_NAME = get_item("potion_healing").name
+DRINK_HEALING_POTION_ACTION = f"Drink a {HEALING_POTION_NAME}"
 
 
 @dataclass(slots=True)
@@ -45,7 +49,7 @@ PUBLIC_COMBAT_ACTION_KEYS = {
     "Use Oath Mend": "Use Lay on Hands",
     "Invoke Lantern Surge": "Invoke Channel Divinity",
     "Take Guarded Stance": "Take the Dodge action",
-    "Drink a Red Recovery Draught": "Drink a Healing Potion",
+    DRINK_HEALING_POTION_ACTION: "Drink a Healing Potion",
 }
 
 
@@ -56,9 +60,11 @@ class CombatFlowMixin:
     def run_encounter(self, encounter: Encounter) -> str:
         assert self.state is not None
         self.clear_pending_scaled_check_reward()
+        encounter_outcome: str | None = None
         previous_active_encounter = getattr(self, "_active_encounter", None)
         previous_active_heroes = getattr(self, "_active_combat_heroes", None)
         previous_active_enemies = getattr(self, "_active_combat_enemies", None)
+        previous_active_dodging = getattr(self, "_active_dodging_names", frozenset())
         previous_active_round = getattr(self, "_active_round_number", None)
         self._in_combat = True
         heroes: list[Character] = []
@@ -85,6 +91,7 @@ class CombatFlowMixin:
                 if enemy.is_conscious() and enemy.archetype == "carrion_stalker" and not self.has_status(enemy, "invisible"):
                     self.apply_status(enemy, "invisible", 1, source=f"{enemy.name}'s stalking entry")
             dodging: set[str] = set()
+            self._active_dodging_names = dodging
             initiative = self.roll_initiative(
                 heroes,
                 enemies,
@@ -95,18 +102,22 @@ class CombatFlowMixin:
             while True:
                 self._active_round_number = round_number
                 if not any(enemy.is_conscious() for enemy in enemies):
-                    return self.resolve_encounter_victory(encounter, enemies)
+                    encounter_outcome = self.resolve_encounter_victory(encounter, enemies)
+                    return encounter_outcome
                 if not any(hero.is_conscious() for hero in heroes):
-                    return "defeat"
+                    encounter_outcome = "defeat"
+                    return encounter_outcome
 
                 self.say(f"Round {round_number}")
                 round_start_hook = getattr(self, "on_encounter_round_start", None)
                 if callable(round_start_hook):
                     round_start_hook(encounter, heroes, enemies, initiative, round_number)
                     if not any(enemy.is_conscious() for enemy in enemies):
-                        return self.resolve_encounter_victory(encounter, enemies)
+                        encounter_outcome = self.resolve_encounter_victory(encounter, enemies)
+                        return encounter_outcome
                     if not any(hero.is_conscious() for hero in heroes):
-                        return "defeat"
+                        encounter_outcome = "defeat"
+                        return encounter_outcome
                 for actor in initiative:
                     if actor.name in dodging:
                         dodging.discard(actor.name)
@@ -124,14 +135,17 @@ class CombatFlowMixin:
                         self.tick_conditions(actor)
                         continue
                     if not any(hero.is_conscious() for hero in heroes):
-                        return "defeat"
+                        encounter_outcome = "defeat"
+                        return encounter_outcome
                     if not any(enemy.is_conscious() for enemy in enemies):
-                        return self.resolve_encounter_victory(encounter, enemies)
+                        encounter_outcome = self.resolve_encounter_victory(encounter, enemies)
+                        return encounter_outcome
 
                     if actor in heroes:
                         result = self.hero_turn(actor, heroes, enemies, encounter, dodging)
                         if result == "fled":
-                            return "fled"
+                            encounter_outcome = "fled"
+                            return encounter_outcome
                     else:
                         self.enemy_turn(actor, heroes, enemies, encounter, dodging)
                     self.tick_conditions(actor)
@@ -141,10 +155,25 @@ class CombatFlowMixin:
             self._active_encounter = previous_active_encounter
             self._active_combat_heroes = previous_active_heroes
             self._active_combat_enemies = previous_active_enemies
+            self._active_dodging_names = previous_active_dodging
             self._active_round_number = previous_active_round
             self._in_combat = False
-            if callable(refresh_scene_music):
+            deferred_refresh_outcomes = getattr(self, "_defer_scene_music_refresh_on_outcomes", frozenset())
+            if encounter_outcome not in deferred_refresh_outcomes and callable(refresh_scene_music):
                 refresh_scene_music()
+
+    def run_encounter_wave(
+        self,
+        encounter: Encounter,
+        *,
+        continue_on: tuple[str, ...] = ("victory",),
+    ) -> str:
+        previous_deferred_outcomes = getattr(self, "_defer_scene_music_refresh_on_outcomes", frozenset())
+        self._defer_scene_music_refresh_on_outcomes = frozenset(continue_on)
+        try:
+            return self.run_encounter(encounter)
+        finally:
+            self._defer_scene_music_refresh_on_outcomes = previous_deferred_outcomes
 
     def prepare_encounter_for_party(self, encounter: Encounter, *, heroes: list[Character] | None = None) -> None:
         assert self.state is not None
@@ -835,7 +864,10 @@ class CombatFlowMixin:
                     self.say(f"{self.style_name(actor)} has no focus left for Still Guard.")
                     return None
                 dodging.add(actor.name)
-                self.say(f"{self.style_name(actor)} spends 1 focus and slips into Still Guard.")
+                self.say(
+                    f"{self.style_name(actor)} spends 1 focus and slips into Still Guard. "
+                    "Attack rolls against them have strain, and DEX resists have edge until their next turn."
+                )
                 turn_state.bonus_action_available = False
                 continue
             if action == "Use Step of the Wind":
@@ -996,7 +1028,8 @@ class CombatFlowMixin:
             if action == "Take the Dodge action":
                 dodging.add(actor.name)
                 self.say(
-                    f"{self.style_name(actor)} focuses on defense. Strikes against them have strain until their next turn."
+                    f"{self.style_name(actor)} focuses on defense. "
+                    "Attack rolls against them have strain, and DEX resists have edge until their next turn."
                 )
                 turn_state.actions_remaining -= 1
                 continue
@@ -2230,7 +2263,7 @@ class CombatFlowMixin:
             if turn_state.attack_action_taken and self.can_make_off_hand_attack(actor):
                 options.append("Make Off-Hand Strike")
             if self.inventory_dict().get("potion_healing", 0) > 0:
-                options.append("Drink a Red Recovery Draught")
+                options.append(DRINK_HEALING_POTION_ACTION)
         options.append("End Turn")
         return options
 
@@ -2261,8 +2294,12 @@ class CombatFlowMixin:
     def rogue_sneak_attack_dice(self, actor: Character) -> str:
         return "2d6" if actor.level >= 3 else "1d6"
 
+    def combatant_menu_options(self, combatants: list[Character]) -> list[str]:
+        name_width = max((len(strip_ansi(self.style_name(combatant))) for combatant in combatants), default=0)
+        return [self.describe_combatant(combatant, name_width=name_width) for combatant in combatants]
+
     def choose_target(self, enemies: list[Character], *, prompt: str, allow_back: bool = False) -> Character | None:
-        options = [self.describe_combatant(enemy) for enemy in enemies]
+        options = self.combatant_menu_options(enemies)
         if allow_back:
             options.append("Back")
         index = self.choose(prompt, options, allow_meta=False, show_hud=False)
@@ -2272,7 +2309,7 @@ class CombatFlowMixin:
 
     def choose_ally(self, allies: list[Character], *, prompt: str, allow_back: bool = False) -> Character | None:
         valid = [ally for ally in allies if not ally.dead]
-        options = [self.describe_combatant(ally) for ally in valid]
+        options = self.combatant_menu_options(valid)
         if allow_back:
             options.append("Back")
         index = self.choose(prompt, options, allow_meta=False, show_hud=False)

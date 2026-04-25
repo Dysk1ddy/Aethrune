@@ -191,8 +191,6 @@ TERM_REPLACEMENTS = (
     (r"\bMagic item\b", "Relic"),
     (r"\bmagic items\b", "relics"),
     (r"\bMagic items\b", "Relics"),
-    (r"\bpotion\b", "draught"),
-    (r"\bPotion\b", "Draught"),
     (r"\bscroll\b", "script"),
     (r"\bScroll\b", "Script"),
     (r"\badvantage\b", "edge"),
@@ -269,7 +267,7 @@ def format_bonus_list(bonuses: Mapping[str, int], *, include_codes: bool = False
 
 
 def marks_label(value: int) -> str:
-    return f"{value} mark" if value == 1 else f"{value} marks"
+    return f"{value} gold"
 
 
 def guard_label(value: int) -> str:

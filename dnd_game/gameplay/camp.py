@@ -36,7 +36,7 @@ class CampMixin:
         status = Table.grid(expand=True, padding=(0, 1))
         status.add_column(style=f"bold {rich_style_name('light_yellow')}", width=12)
         status.add_column(ratio=1)
-        status.add_row("Marks", marks_label(self.state.gold))
+        status.add_row("Gold", marks_label(self.state.gold))
         status.add_row("Short rests", str(self.state.short_rests_remaining))
         status.add_row(
             "Carry",
@@ -145,7 +145,7 @@ class CampMixin:
                     "Rest and recovery",
                     "Talk to a companion",
                     "View journal",
-                    "Speak to the magic mirror (100 marks)",
+                    "Speak to the magic mirror (100 gold)",
                     "Break camp",
                 ]
                 if self.available_camp_banters():
@@ -661,12 +661,12 @@ class CampMixin:
     def visit_magic_mirror(self) -> None:
         assert self.state is not None
         if self.state.gold < 100:
-            self.say("The mirror's silver frame hums once, then falls quiet. You need 100 marks for a full respec.")
+            self.say("The mirror's silver frame hums once, then falls quiet. You need 100 gold for a full respec.")
             return
         self.say(
             "The magic mirror shows not your reflection, but a dozen possible versions of the life you might have led."
         )
-        if not self.confirm("Spend 100 marks to fully respec your character?"):
+        if not self.confirm("Spend 100 gold to fully respec your character?"):
             return
         previous_level = self.state.player.level
         previous_name = self.state.player.name
@@ -695,5 +695,5 @@ class CampMixin:
         for next_level in range(2, previous_level + 1):
             self.level_up_character(self.state.player, next_level)
         self.state.player.current_hp = self.state.player.max_hp
-        self.add_journal(f"The camp mirror reshaped {previous_name}'s training and talents for 100 marks.")
+        self.add_journal(f"The camp mirror reshaped {previous_name}'s training and talents for 100 gold.")
         self.say(f"The mirror settles. {previous_name} steps away remade, still level {previous_level}.")

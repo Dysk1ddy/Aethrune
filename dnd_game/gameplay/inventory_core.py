@@ -28,7 +28,7 @@ from ..ui.rich_render import Panel, RICH_AVAILABLE, Table, Text, box
 class InventoryCoreMixin:
     INVENTORY_FILTER_DEFINITIONS = (
         ("all", "All Items"),
-        ("consumables", "Draughts"),
+        ("consumables", "Consumables"),
         ("scrolls", "Scripts"),
         ("supplies", "Supplies"),
         ("weapons", "Weapons"),
@@ -103,7 +103,7 @@ class InventoryCoreMixin:
         if item.item_type == "shield":
             return "Shield"
         if item.category == "consumable":
-            return "Draught"
+            return "Consumable"
         if item.category == "scroll":
             return "Script"
         if item.category == "supply":
@@ -114,7 +114,7 @@ class InventoryCoreMixin:
         return item_rules_text(item) or item.description
 
     def inventory_rich_item_name(self, item):
-        label = f"{item.name} [{item.item_id}]"
+        label = item.name
         color = rarity_color(item.rarity)
         if not (RICH_AVAILABLE and Text is not None):
             return label
@@ -332,7 +332,7 @@ class InventoryCoreMixin:
         if dead_members:
             self.say(f"Will not be restored by resting: {', '.join(dead_members)} (dead).")
         if not self.confirm(f"Spend {marks_label(cost)} at {inn_name} and long rest this company?"):
-            self.say("You keep your marks and do not rent beds.")
+            self.say("You keep your gold and do not rent beds.")
             return False
         self.state.gold -= cost
         self.complete_long_rest_recovery()
@@ -346,7 +346,7 @@ class InventoryCoreMixin:
         self.say(
             f"View: {self.inventory_filter_label(filter_key)} | "
             f"Weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb | "
-            f"Supply points: {self.current_supply_points()} | Marks: {self.state.gold}"
+            f"Supply points: {self.current_supply_points()} | Gold: {self.state.gold}"
         )
         if not self.state.inventory:
             self.say("The shared inventory is empty.")
@@ -411,7 +411,7 @@ class InventoryCoreMixin:
             if quantity > 0 and get_item(item_id).is_combat_usable()
         ]
         if not item_ids:
-            self.say("You do not have a usable draught or script ready.")
+            self.say("You do not have a usable consumable or script ready.")
             return False
         item_ids.sort(key=lambda item_id: (get_item(item_id).rarity, get_item(item_id).name))
         choice = self.choose(

@@ -43,7 +43,7 @@ class InventoryManagementMixin:
         sidebar = Panel(
             Group(
                 self.rich_text(merchant_name, "light_aqua", bold=True),
-                self.rich_text(f"Party marks: {self.state.gold}", "light_yellow"),
+                self.rich_text(f"Party gold: {self.state.gold}", "light_yellow"),
                 self.rich_text(f"Carry room: {carry_room:.1f} lb", "white"),
                 self.rich_text(
                     f"Negotiator: {negotiator.name} (Persuasion +{negotiator.skill_bonus('Persuasion')})",
@@ -98,7 +98,7 @@ class InventoryManagementMixin:
                         self.skill_tag("TRADE", f"Buy items from {merchant_name}"),
                     ]
                 )
-            options.extend(["Use a draught or script", "Manage equipment", "Drop items"])
+            options.extend(["Use a consumable or script", "Manage equipment", "Drop items"])
             if merchant_id is not None and merchant_name is not None:
                 options.append(self.skill_tag("TRADE", f"Sell items to {merchant_name}"))
             options.append("Back")

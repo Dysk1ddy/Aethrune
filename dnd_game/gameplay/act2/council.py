@@ -275,12 +275,17 @@ class StoryAct2CouncilMixin:
                     ("turn_in", self.action_option("Report completed quests to their original givers.")),
                     ("camp", self.action_option("Return to camp and manage the wider company.")),
                     ("sidetrack", self.action_option("Follow a companion's Act 2 thread.")),
-                    ("inn", self.action_option("Rest at Ashlamp Inn (10 marks per active party member).")),
+                    ("inn", self.action_option("Rest at Ashlamp Inn (10 gold per active party member).")),
                     ("rest", self.action_option("Take a short rest.")),
                     ("party", self.action_option("Review the current party.")),
                 ]
             )
-            choice = self.scenario_choice("Where do you push next?", [text for _, text in options], allow_meta=False)
+            choice = self.scenario_choice(
+                "Where do you push next?",
+                [text for _, text in options],
+                allow_meta=False,
+                echo_selection=True,
+            )
             selection_key, _ = options[choice - 1]
             if selection_key == "agatha":
                 self.run_dialogue_input("act2_hub_agatha")

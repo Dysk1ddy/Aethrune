@@ -1,36 +1,38 @@
 {
   "player": {
-    "name": "Theron Vale",
-    "race": "Human",
-    "class_name": "Wizard",
-    "background": "Sage",
+    "name": "Riven Ashguard",
+    "race": "Orc",
+    "class_name": "Fighter",
+    "background": "Soldier",
     "level": 1,
     "ability_scores": {
-      "STR": 9,
-      "DEX": 15,
-      "CON": 14,
-      "INT": 16,
-      "WIS": 13,
-      "CHA": 11
+      "STR": 17,
+      "DEX": 12,
+      "CON": 15,
+      "INT": 8,
+      "WIS": 10,
+      "CHA": 13
     },
     "skill_proficiencies": [
-      "Arcana",
-      "History",
-      "Investigation"
+      "Athletics",
+      "Intimidation",
+      "Perception",
+      "Survival"
     ],
     "saving_throw_proficiencies": [
-      "INT",
-      "WIS"
+      "STR",
+      "CON"
     ],
     "features": [
-      "arcane_recovery",
-      "wizard_spellcasting"
+      "adrenaline_rush",
+      "darkvision",
+      "second_wind"
     ],
     "weapon": {
-      "name": "Roadworn Quarterstaff",
-      "damage": "1d6",
+      "name": "Roadworn Longsword",
+      "damage": "1d8",
       "ability": "STR",
-      "weapon_type": "quarterstaff",
+      "weapon_type": "longsword",
       "to_hit_bonus": 0,
       "damage_bonus": 0,
       "finesse": false,
@@ -40,33 +42,42 @@
         "versatile"
       ]
     },
-    "armor": null,
-    "hit_die": 6,
-    "current_hp": 0,
-    "max_hp": 8,
-    "shield": false,
-    "spellcasting_ability": "INT",
+    "armor": {
+      "name": "Roadworn Chain Mail",
+      "base_ac": 16,
+      "armor_type": "heavy",
+      "dex_cap": 0,
+      "heavy": true,
+      "stealth_disadvantage": true
+    },
+    "hit_die": 10,
+    "current_hp": 12,
+    "max_hp": 12,
+    "shield": true,
+    "spellcasting_ability": null,
     "skill_expertise": [],
     "bonus_proficiencies": [
-      "Calligrapher's Supplies",
-      "Draconic"
+      "Land Vehicles",
+      "Gaming Set"
     ],
     "resources": {
-      "spell_slots_1": 2
+      "second_wind": 0
     },
     "max_resources": {
-      "spell_slots_1": 2
+      "second_wind": 1
     },
     "inventory": {},
     "conditions": {},
     "equipment_bonuses": {
-      "Arcana": 1,
-      "History": 1
+      "Athletics": 1,
+      "Intimidation": 1
     },
-    "gear_bonuses": {},
+    "gear_bonuses": {
+      "AC": 0
+    },
     "notes": [
-      "Field journal: +1 to Arcana and History checks.",
-      "A clean arcane blaster setup with sharp utility skills, solid initiative, and enough toughness to survive mistakes.",
+      "Veteran's kit: +1 to Athletics and Intimidation checks.",
+      "A brutal shield-line veteran built to absorb pressure and keep swinging in the thick of a fight.",
       "Preset build: optimized for faster testing and quick starts."
     ],
     "tags": [
@@ -77,14 +88,14 @@
       "ring_1": null,
       "ring_2": null,
       "neck": null,
-      "chest": null,
+      "chest": "chain_mail_common",
       "gloves": null,
       "boots": null,
-      "main_hand": "quarterstaff_common",
-      "off_hand": null,
+      "main_hand": "longsword_common",
+      "off_hand": "shield_common",
       "cape": null
     },
-    "archetype": "wizard",
+    "archetype": "fighter",
     "companion_id": "",
     "disposition": 0,
     "lore": [],
@@ -94,9 +105,9 @@
     "relationship_bonuses": {},
     "story_skill_bonuses": {},
     "stable": false,
-    "dead": true,
-    "death_successes": 1,
-    "death_failures": 3,
+    "dead": false,
+    "death_successes": 0,
+    "death_failures": 0,
     "temp_hp": 0,
     "xp_value": 0,
     "gold_value": 0
@@ -150,7 +161,7 @@
         "stealth_disadvantage": true
       },
       "hit_die": 8,
-      "current_hp": 10,
+      "current_hp": 4,
       "max_hp": 10,
       "shield": true,
       "spellcasting_ability": "WIS",
@@ -160,10 +171,12 @@
         "Celestial"
       ],
       "resources": {
-        "spell_slots_1": 0
+        "spell_slots_1": 2,
+        "mp": 11
       },
       "max_resources": {
-        "spell_slots_1": 2
+        "spell_slots_1": 2,
+        "mp": 13
       },
       "inventory": {},
       "conditions": {},
@@ -176,8 +189,8 @@
       },
       "notes": [
         "Healer's satchel: +1 to Medicine and Religion checks.",
-        "A priestess of Tymora tending the frontier faithful in Phandalin.",
-        "A priestess of Tymora whose compassion is sharpened, not softened, by the frontier's cruelty."
+        "A Lantern priestess tending the frontier faithful in Iron Hollow.",
+        "A priestess of the Lantern whose compassion is sharpened, not softened, by the frontier's cruelty."
       ],
       "tags": [
         "hero",
@@ -197,7 +210,7 @@
       },
       "archetype": "cleric",
       "companion_id": "elira_dawnmantle",
-      "disposition": 2,
+      "disposition": 1,
       "lore": [
         "Elira learned battlefield triage from roadside shrines that treated lumber crews, miners, and pilgrims with equal urgency.",
         "She believes luck is not random mercy but a chance people build for one another with courage and timing.",
@@ -232,20 +245,22 @@
       "node_history": [],
       "room_history": []
     },
-    "background_prologue_completed": "Sage",
+    "introduced_characters": [
+      "Ashen Brand Runner",
+      "Elira Dawnmantle",
+      "Elira Lanternward"
+    ],
+    "background_prologue_completed": "Soldier",
     "system_profile_seeded": true,
     "wayside_luck_shrine_seen": true,
     "wayside_luck_bell_seen": true,
     "elira_first_contact": true,
     "neverwinter_elira_met": true,
-    "elira_first_read": "knowledge_vs_saving",
-    "introduced_characters": [
-      "Elira Dawnmantle"
-    ],
-    "wayside_aid_route": "wounded",
-    "elira_initial_trust_reason": "warm_trust",
+    "elira_first_read": "triage_competence",
+    "wayside_aid_route": "prayer",
+    "elira_initial_trust_reason": "spiritual_kinship",
     "elira_helped": true,
-    "wayside_drover_stabilized": true,
+    "wayside_prayer_steadied": true,
     "elira_wayside_recruit_attempted": true,
     "elira_pre_neverwinter_recruited": true,
     "elira_neverwinter_recruited": true,
@@ -253,48 +268,54 @@
     "wayside_luck_bell_promised": true,
     "greywake_triage_yard_seen": true,
     "greywake_outcome_sorting_seen": true,
-    "greywake_mira_evidence_kind": "unverified_outcome_board",
-    "greywake_attack_imminent": true,
-    "greywake_wounded_line_guarded": true
+    "greywake_manifest_preserved": true,
+    "greywake_outcome_manifest_read": true,
+    "greywake_mira_evidence_kind": "marked_manifest",
+    "varyn_route_pattern_seen": true,
+    "greywake_attack_imminent": true
   },
   "clues": [
-    "Archive notes point to old cellar routes beneath manor-side stonework in and around Phandalin.",
-    "Elira identifies an ash-bitter poison reaching victims before the road even enters Neverwinter.",
-    "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard."
+    "A stolen dispatch confirms the attacks around Iron Hollow are organized enough to rattle Greywake's quartermasters.",
+    "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
+    "The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived."
   ],
   "journal": [
-    "Your sage's opening frames the campaign as a puzzle of old stone, missing records, and dangerous people trying very hard to keep those pieces apart.",
-    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
-    "Reward from untangling the archive theft: 30 XP.",
-    "Clue: Archive notes point to old cellar routes beneath manor-side stonework in and around Phandalin.",
-    "Your sage prologue ends with the trail leading toward Mira Thann's private briefing in Neverwinter.",
-    "Clue: Elira identifies an ash-bitter poison reaching victims before the road even enters Neverwinter.",
-    "Reward from helping Elira stabilize a poisoned drover: 10 XP.",
+    "Your soldier's opening leaves you with a live look at how hard Greywake is leaning on thin patrol lines and tired veterans to protect the road south.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Greywake against Ashen Brand pressure around Iron Hollow.",
+    "Reward from South Barracks Breakout: 50 XP, 8 gold.",
+    "Reward from holding the barracks line: 15 XP, 6 gold.",
+    "Clue: A stolen dispatch confirms the attacks around Iron Hollow are organized enough to rattle Greywake's quartermasters.",
+    "Your soldier prologue ends with the trail leading toward Mira Thann's private briefing in Greywake.",
+    "Reward from steadying the Wayside Luck Shrine: 20 XP.",
     "Elira Dawnmantle joined the active party.",
     "Clue: Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
-    "Reward from Greywake Road Breakout: 100 XP, 17 gp.",
-    "Looted Roasted Nut Mix x1 from Greywake Road Breakout.",
-    "Looted Potion of Healing x1 from Greywake Road Breakout."
+    "Clue: The Greywake manifest pre-sorted travelers by expected wound, delay, and loss before their wagons arrived.",
+    "Reward from Greywake Road Breakout: 100 XP, 17 gold.",
+    "Looted Antitoxin Vial x1 from Greywake Road Breakout.",
+    "Looted Roadworn Shortbow x1 from Greywake Road Breakout.",
+    "Looted Roasted Nut Mix x1 from Greywake Road Breakout."
   ],
   "quests": {},
   "completed_acts": [],
-  "xp": 140,
-  "gold": 37,
+  "xp": 185,
+  "gold": 51,
   "inventory": {
-    "potion_healing": 3,
-    "bread_round": 4,
-    "travel_biscuits": 4,
-    "dried_fish": 3,
-    "goat_cheese": 2,
-    "frontier_ale": 2,
-    "root_vegetables": 2,
-    "antitoxin_vial": 1,
-    "quarterstaff_common": 1,
-    "focus_ink": 1,
-    "scale_mail_common": 1,
-    "mace_common": 1,
-    "shield_common": 1,
-    "nut_mix": 1
+    "C0011": 3,
+    "S0002": 4,
+    "S0021": 4,
+    "S0005": 3,
+    "S0007": 2,
+    "S0006": 2,
+    "S0016": 2,
+    "C0000": 2,
+    "E0004": 1,
+    "E0097": 1,
+    "E0060": 2,
+    "C0001": 1,
+    "E0012": 1,
+    "E0102": 1,
+    "E0109": 1,
+    "S0013": 1
   },
   "short_rests_remaining": 2
 }

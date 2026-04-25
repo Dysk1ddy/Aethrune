@@ -1,7 +1,7 @@
 {
   "player": {
     "name": "Riven Ashguard",
-    "race": "Half-Orc",
+    "race": "Orc",
     "class_name": "Fighter",
     "background": "Soldier",
     "level": 1,
@@ -24,8 +24,8 @@
       "CON"
     ],
     "features": [
-      "menacing",
-      "relentless_endurance",
+      "adrenaline_rush",
+      "darkvision",
       "second_wind"
     ],
     "weapon": {
@@ -51,7 +51,7 @@
       "stealth_disadvantage": true
     },
     "hit_die": 10,
-    "current_hp": 12,
+    "current_hp": 6,
     "max_hp": 12,
     "shield": true,
     "spellcasting_ability": null,
@@ -67,7 +67,9 @@
       "second_wind": 1
     },
     "inventory": {},
-    "conditions": {},
+    "conditions": {
+      "emboldened": 1
+    },
     "equipment_bonuses": {
       "Athletics": 1,
       "Intimidation": 1
@@ -135,27 +137,30 @@
   },
   "clues": [],
   "journal": [
-    "Your soldier's opening leaves you with a live look at how hard Neverwinter is leaning on thin patrol lines and tired veterans to protect the road south.",
-    "Word reaches you that Mira Thann is quietly gathering capable hands in Neverwinter against a new bandit threat around Phandalin.",
-    "Reward from South Barracks Breakout: 50 XP, 8 gp.",
+    "Your soldier's opening leaves you with a live look at how hard Greywake is leaning on thin patrol lines and tired veterans to protect the road south.",
+    "Word reaches you that Mira Thann is quietly gathering capable hands in Greywake against Ashen Brand pressure around Iron Hollow.",
+    "Reward from South Barracks Breakout: 50 XP, 8 marks.",
+    "Looted Bitter Antivenin x1 from South Barracks Breakout.",
+    "Looted Roadworn Leather Armor x1 from South Barracks Breakout.",
     "Looted Frontier Ale x1 from South Barracks Breakout."
   ],
   "quests": {},
   "completed_acts": [],
-  "xp": 50,
-  "gold": 28,
+  "xp": 100,
+  "gold": 36,
   "inventory": {
-    "potion_healing": 2,
-    "bread_round": 4,
-    "travel_biscuits": 4,
-    "dried_fish": 3,
-    "goat_cheese": 2,
-    "frontier_ale": 3,
-    "root_vegetables": 2,
-    "antitoxin_vial": 1,
-    "chain_mail_common": 1,
-    "longsword_common": 1,
-    "shield_common": 1
+    "C0011": 2,
+    "S0002": 4,
+    "S0021": 4,
+    "S0005": 3,
+    "S0007": 2,
+    "S0006": 3,
+    "S0016": 2,
+    "C0000": 2,
+    "E0004": 1,
+    "E0097": 1,
+    "E0060": 1,
+    "E0009": 1
   },
   "short_rests_remaining": 2
 }

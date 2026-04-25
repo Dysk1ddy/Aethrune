@@ -58,6 +58,19 @@ class CombatResolutionMixin:
             return None
         return item
 
+    def actor_is_dodging(self, actor) -> bool:
+        return getattr(actor, "name", None) in getattr(self, "_active_dodging_names", frozenset())
+
+    def dodge_applies_against_attacker(self, defender, attacker) -> bool:
+        if not self.actor_is_dodging(defender):
+            return False
+        defender_features = set(getattr(defender, "features", []))
+        if self.has_status(defender, "blinded") and "blind_sense" not in defender_features:
+            return False
+        if self.has_status(attacker, "invisible") and "blind_sense" not in defender_features:
+            return False
+        return True
+
     def trigger_blacklake_adjudicator_reflection(self, attacker, target, *, source: str) -> None:
         if getattr(target, "archetype", "") != "blacklake_adjudicator":
             return
@@ -1081,14 +1094,15 @@ class CombatResolutionMixin:
         self.say(f"{self.style_name(actor)} stabilizes {self.style_name(target)}, but they cannot stand yet.")
 
     def use_healing_potion(self, user, target) -> None:
-        if not user.spend_item("Healing Potion"):
-            self.say(f"{self.style_name(user)} fumbles for a recovery draught that is no longer there.")
+        healing_potion = ITEMS["potion_healing"]
+        if not (user.spend_item("Healing Potion") or user.spend_item(healing_potion.name)):
+            self.say(f"{self.style_name(user)} fumbles for a healing potion that is no longer there.")
             return
         healed = target.heal(
             self.roll_with_animation_context(
                 "2d4+2",
                 style="healing",
-                context_label="Red Recovery Draught",
+                context_label=healing_potion.name,
                 outcome_kind="healing",
             ).total
         )
@@ -1096,7 +1110,7 @@ class CombatResolutionMixin:
         if healed > 0 and callable(play_heal_sound_for):
             play_heal_sound_for(user)
         self.say(
-            f"{self.style_name(user)} uses a Red Recovery Draught on {self.style_name(target)}, "
+            f"{self.style_name(user)} uses {healing_potion.name} on {self.style_name(target)}, "
             f"restoring {self.style_healing(healed)} hit points."
         )
 
@@ -1146,7 +1160,7 @@ class CombatResolutionMixin:
 
     def attack_advantage_state(self, attacker, target, heroes, enemies, dodging, *, ranged: bool = False) -> int:
         state = 0
-        if target.name in dodging:
+        if self.dodge_applies_against_attacker(target, attacker):
             state -= 1
         if "pack_tactics" in getattr(attacker, "features", []) and any(enemy.is_conscious() and enemy is not attacker for enemy in enemies):
             state += 1
@@ -1391,6 +1405,8 @@ class CombatResolutionMixin:
             self.say(f"{self.style_name(actor)} automatically fails the {resist_label} {context}.")
             return False
         advantage = 1 if against_poison and "dwarven_resilience" in actor.features else 0
+        if ability == "DEX" and self.actor_is_dodging(actor):
+            advantage += 1
         if self.has_status(actor, "restrained") and ability == "DEX":
             advantage -= 1
         exhaustion = max(0, int(actor.conditions.get("exhaustion", 0)))

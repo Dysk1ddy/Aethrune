@@ -126,7 +126,7 @@ class StoryTownHubMixin:
                     ("ashfall", ready_text),
                 ]
             )
-            choice = self.scenario_choice("Where do you go next?", [text for _, text in options])
+            choice = self.scenario_choice("Where do you go next?", [text for _, text in options], echo_selection=True)
             selection_key, _ = options[choice - 1]
             if selection_key == "steward":
                 self.visit_steward()
@@ -327,10 +327,15 @@ class StoryTownHubMixin:
                     )
                 if self.state.flags.get("tolan_waiting_at_inn") and not self.has_companion("Tolan Ironshield"):
                     options.append(("recruit_tolan", self.action_option("Wave Tolan over and ask him to gear up.")))
-                options.append(("paid_rest", self.action_option("Rent beds for a long rest (10 marks per active party member).")))
+                options.append(("paid_rest", self.action_option("Rent beds for a long rest (10 gold per active party member).")))
                 options.append(("leave", self.action_option("Leave the common room for now.")))
-                choice = self.scenario_choice("The common room quiets for a moment as you enter.", [text for _, text in options])
-                selection_key, _ = options[choice - 1]
+                choice = self.scenario_choice(
+                    "The common room quiets for a moment as you enter.",
+                    [text for _, text in options],
+                )
+                selection_key, selected_text = options[choice - 1]
+                if selection_key in {"mara", "jerek", "sella", "tam", "nera", "barfight", "quiet_room"}:
+                    self.player_choice_output(selected_text)
                 if selection_key == "drink":
                     self.state.flags["inn_buy_drink_asked"] = True
                     self.player_speaker("Mind if I buy you a drink and ask a few questions?")

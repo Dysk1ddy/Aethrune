@@ -1508,7 +1508,7 @@ class MapSystemMixin:
             if backtrack_node is not None:
                 options.append(("backtrack", self.skill_tag("BACKTRACK", self.action_option(f"Backtrack to {backtrack_node.title}"))))
 
-            choice = self.scenario_choice("Where do you go next?", [text for _, text in options])
+            choice = self.scenario_choice("Where do you go next?", [text for _, text in options], echo_selection=True)
             selection_key, _ = options[choice - 1]
             if selection_key == "steward":
                 self.visit_steward()
@@ -5873,6 +5873,7 @@ class MapSystemMixin:
 
     def on_encounter_round_start(self, encounter, heroes, enemies, initiative, round_number: int) -> None:
         self.handle_old_owl_vaelith_gravecall(encounter, heroes, enemies, initiative, round_number)
+        self.handle_old_owl_vaelith_ritual_terrain(encounter, heroes, enemies)
         self.handle_varyn_spell_clock(encounter, heroes, enemies, round_number)
         self.handle_ashfall_alarm_clock(encounter, enemies, initiative, round_number)
         self.handle_ashfall_barracks_shield_line(encounter, enemies)
@@ -5908,6 +5909,30 @@ class MapSystemMixin:
             for enemy in enemies:
                 if enemy.is_conscious():
                     self.apply_status(enemy, "blessed", 2, source="Vaelith's gravecall")
+
+    def handle_old_owl_vaelith_ritual_terrain(self, encounter, heroes, enemies) -> None:
+        if not self.is_old_owl_vaelith_encounter(encounter):
+            return
+        vaelith = self.find_vaelith_marr(enemies)
+        if vaelith is None or not vaelith.is_conscious():
+            return
+        conscious_heroes = [hero for hero in heroes if hero.is_conscious()]
+        if not conscious_heroes:
+            return
+        target = max(conscious_heroes, key=self.old_owl_damage_pressure_score)
+        self.say("The corpse-salt ring flexes underfoot and spits grave-ash toward the well lip.")
+        if self.saving_throw(target, "DEX", 12, context="against the Blackglass corpse-salt ring"):
+            self.say(f"{target.name} slips clear of the worst of the grave-ash spray.")
+            return
+        damage_roll = self.roll_with_display_bonus(
+            "1d4",
+            style="damage",
+            context_label="Blackglass corpse-salt ring",
+            outcome_kind="damage",
+        )
+        actual = self.apply_damage(target, damage_roll.total, damage_type="necrotic")
+        self.apply_status(target, "reeling", 1, source="the Blackglass corpse-salt ring")
+        self.say(f"The Blackglass corpse-salt ring bites {target.name} for {self.style_damage(actual)} necrotic damage.")
 
     def varyn_spell_dc(self, varyn) -> int:
         return max(14, 8 + varyn.proficiency_bonus + varyn.ability_mod("CHA"))
@@ -6337,6 +6362,7 @@ class MapSystemMixin:
             boss_enemies.append(create_enemy("carrion_lash_crawler"))
         if party_size >= 4:
             boss_enemies.append(self.act1_pick_enemy(("skeletal_sentry", "graveblade_wight", "lantern_fen_wisp")))
+        boss_enemies.append(create_enemy("skeletal_sentry", name="Corpse-Salt Sentry"))
         if not (self.state.flags.get("old_owl_prospector_rescued") or self.state.flags.get("old_owl_notes_found")):
             boss_enemies.append(create_enemy("skeletal_sentry", name="Gravecalled Sentry"))
             self.say("With no rescued witness or preserved notes to spoil the cadence, one more dead sentry rises beside the well.")
@@ -7196,6 +7222,7 @@ class MapSystemMixin:
         )
         party_size = self.act1_party_size()
         boss_enemies = [create_enemy("rukhar")]
+        boss_enemies.append(create_enemy("ash_brand_enforcer"))
         if not self.act1_relay_sabotaged():
             boss_enemies[0].grant_temp_hp(4)
             self.say("Reserve draughts and spare armor plates still reached Rukhar before you did. He squares up behind the fort's last full edge.")

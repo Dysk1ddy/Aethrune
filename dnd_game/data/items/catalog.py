@@ -565,7 +565,7 @@ SUPPLY_ITEMS = [
 CONSUMABLE_ITEMS = [
     {
         "item_id": "potion_healing",
-        "name": "Red Recovery Draught",
+        "name": "Potion of Healing",
         "rarity": "common",
         "description": "A frontier-standard recovery blend carried by scouts, quartermasters, and anyone expecting blood on the road.",
         "source": "Starter kits, lantern aid packs, raider satchels, and common loot drops.",
@@ -657,7 +657,7 @@ CONSUMABLE_ITEMS = [
     },
     {
         "item_id": "potion_heroism",
-        "name": "Resolve Draught",
+        "name": "Potion of Heroism",
         "rarity": "rare",
         "description": "A hard-burning stimulant that floods the body with reckless resolve before the worst part of the fight lands.",
         "source": "Sanctum vaults, champion kits, and rare support caches.",
@@ -703,7 +703,7 @@ CONSUMABLE_ITEMS = [
     },
     {
         "item_id": "antitoxin_vial",
-        "name": "Bitter Antivenin",
+        "name": "Antitoxin Vial",
         "rarity": "common",
         "description": "A bitter counteragent brewed to neutralize venom fast, even if it leaves the tongue numb for an hour.",
         "source": "Apothecaries, lantern stores, and caravan medicine kits.",
@@ -1150,14 +1150,14 @@ def format_bonus_map(bonuses: dict[str, int] | None, *, suffix: str = "") -> lis
 
 
 PUBLIC_ITEM_CATEGORY_LABELS = {
-    "consumable": "draught",
+    "consumable": "consumable",
     "scroll": "script",
     "equipment": "gear",
     "trinket": "relic",
 }
 
 PUBLIC_ITEM_TYPE_LABELS = {
-    "potion": "draught",
+    "potion": "potion",
     "scroll": "script",
     "trinket": "relic",
 }
@@ -1176,7 +1176,7 @@ def item_type_label(item_type: str) -> str:
 
 
 def marks_label(value: int) -> str:
-    return f"{value} marks"
+    return f"{value} gold"
 
 
 def save_bonus_label(name: str) -> str:
@@ -2050,6 +2050,10 @@ LOOT_TABLES = {
 
 LEGACY_ITEM_NAMES = {
     "Healing Potion": "potion_healing",
+    "Potion of Healing": "potion_healing",
+    "Potion of Heroism": "potion_heroism",
+    "Antitoxin": "antitoxin_vial",
+    "Antitoxin Vial": "antitoxin_vial",
 }
 
 EQUIPMENT_SLOTS = [
@@ -2276,7 +2280,7 @@ def format_inventory_line(item_id: str, quantity: int) -> str:
     rarity_title = colorize(item.rarity_title, rarity_color(item.rarity))
     rules = item_rules_text(item)
     return (
-        f"{item_name} [{item.item_id}] x{quantity} [{rarity_title}] "
+        f"{item_name} x{quantity} [{rarity_title}] "
         f"({item_category_label(item.category)}/{item_type_label(item.item_type)}, {total_weight:.1f} lb, {item.supply_label()}, {marks_label(item.value)} each) "
         + (f"- {rules}" if rules else "")
     ).strip()

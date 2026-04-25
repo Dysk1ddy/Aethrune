@@ -417,7 +417,7 @@ class JournalMixin:
             summary.add_column(style=f"bold {rich_style_name('light_yellow')}", width=12)
             summary.add_column(ratio=1)
             summary.add_row("Progress", self.xp_progress_summary())
-            summary.add_row("Marks", marks_label(self.state.gold))
+            summary.add_row("Gold", marks_label(self.state.gold))
             summary.add_row("Short rests", str(self.state.short_rests_remaining))
             summary.add_row(
                 "Carry",
@@ -457,7 +457,7 @@ class JournalMixin:
             ):
                 return
         self.say(
-            f"{self.xp_progress_summary()} | Marks: {marks_label(self.state.gold)} | "
+            f"{self.xp_progress_summary()} | Gold: {marks_label(self.state.gold)} | "
             f"Short rests left: {self.state.short_rests_remaining} | "
             f"Carry weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb"
         )
