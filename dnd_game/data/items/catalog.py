@@ -2167,16 +2167,8 @@ def initial_merchant_stock(merchant_id: str, *, rng: random.Random | None = None
     return stock
 
 
-def inventory_weight(inventory: dict[str, int]) -> float:
-    return sum(get_item(item_id).weight * quantity for item_id, quantity in inventory.items() if item_id in ITEMS for quantity in [quantity])
-
-
 def inventory_supply_points(inventory: dict[str, int]) -> int:
     return sum(get_item(item_id).supply_points * quantity for item_id, quantity in inventory.items() if item_id in ITEMS)
-
-
-def party_carry_capacity(party: list[Character]) -> int:
-    return sum(member.ability_scores["STR"] * 15 for member in party if not member.dead)
 
 
 def roll_loot_for_enemy(enemy: Character, rng: random.Random) -> dict[str, int]:
@@ -2275,13 +2267,12 @@ def item_rules_text(item: Item) -> str:
 
 def format_inventory_line(item_id: str, quantity: int) -> str:
     item = get_item(item_id)
-    total_weight = item.weight * quantity
     item_name = colorize(item.name, rarity_color(item.rarity))
     rarity_title = colorize(item.rarity_title, rarity_color(item.rarity))
     rules = item_rules_text(item)
     return (
         f"{item_name} x{quantity} [{rarity_title}] "
-        f"({item_category_label(item.category)}/{item_type_label(item.item_type)}, {total_weight:.1f} lb, {item.supply_label()}, {marks_label(item.value)} each) "
+        f"({item_category_label(item.category)}/{item_type_label(item.item_type)}, {item.supply_label()}, {marks_label(item.value)} each) "
         + (f"- {rules}" if rules else "")
     ).strip()
 
@@ -2319,7 +2310,7 @@ def write_item_catalog(destination: Path) -> None:
         + ".",
         "Four-digit counters run from `0000` through `9999` within each prefix.",
         "",
-        "Each entry lists catalog ID, internal item key, rarity, player-facing category, combat rules, weight, supply value, and where it is obtained.",
+        "Each entry lists catalog ID, internal item key, rarity, player-facing category, combat rules, supply value, and where it is obtained.",
         "",
     ]
     for rarity in RARITY_ORDER:
@@ -2331,7 +2322,7 @@ def write_item_catalog(destination: Path) -> None:
             rules = item_rules_text(item) or "No special field rules."
             lines.append(
                 f"- **{item.name}** (`{item.item_id}`, legacy key `{item.legacy_id}`) [{item_category_label(item.category)}] "
-                f"{item.weight:.1f} lb, {item.supply_label()}, {marks_label(item.value)}, type `{item_type_label(item.item_type)}`. "
+                f"{item.supply_label()}, {marks_label(item.value)}, type `{item_type_label(item.item_type)}`. "
                 f"{item.description} Rules: {rules}. Obtain from: {item.source}"
             )
         lines.append("")

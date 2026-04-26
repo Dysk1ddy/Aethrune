@@ -39,12 +39,10 @@ class InventoryManagementMixin:
                 self.inventory_item_rules_summary(item),
             )
         negotiator = self.trade_negotiator()
-        carry_room = max(0.0, self.carrying_capacity() - self.current_inventory_weight())
         sidebar = Panel(
             Group(
                 self.rich_text(merchant_name, "light_aqua", bold=True),
                 self.rich_text(f"Party gold: {self.state.gold}", "light_yellow"),
-                self.rich_text(f"Carry room: {carry_room:.1f} lb", "white"),
                 self.rich_text(
                     f"Negotiator: {negotiator.name} (Persuasion +{negotiator.skill_bonus('Persuasion')})",
                     "white",
@@ -205,17 +203,9 @@ class InventoryManagementMixin:
                 self.say(f"{merchant_name} has run out of {item.name}.")
                 return
             affordable = self.state.gold // max(1, unit_price)
-            if item.weight > 0:
-                capacity_left = max(0.0, self.carrying_capacity() - self.current_inventory_weight())
-                carry_limit = int(capacity_left // item.weight)
-            else:
-                carry_limit = available
-            maximum = min(available, affordable, carry_limit)
+            maximum = min(available, affordable)
             if maximum <= 0:
-                if affordable <= 0:
-                    self.say(f"You cannot afford {item.name} right now.")
-                else:
-                    self.say(f"The party cannot carry any more {item.name} right now.")
+                self.say(f"You cannot afford {item.name} right now.")
                 return
             quantity = maximum if maximum == 1 else self.ask_quantity_or_back(f"How many {item.name} do you want to buy?", maximum)
             if quantity is None:
@@ -226,6 +216,9 @@ class InventoryManagementMixin:
             total_price = unit_price * quantity
             self.state.gold -= total_price
             self.add_inventory_item(item_id, quantity=quantity, source=merchant_name)
+            tutorial_tracker = getattr(self, "record_opening_tutorial_event", None)
+            if callable(tutorial_tracker):
+                tutorial_tracker("bought_item", merchant_id=merchant_id, item_id=item_id, quantity=quantity)
             play_sound_effect = getattr(self, "play_sound_effect", None)
             if callable(play_sound_effect):
                 play_sound_effect("buy_item")
@@ -421,6 +414,9 @@ class InventoryManagementMixin:
             member.equipment_slots["off_hand"] = None
         member.equipment_slots[slot] = item.legacy_id or item.item_id
         self.sync_equipment(member)
+        tutorial_tracker = getattr(self, "record_opening_tutorial_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("equipped_item", member_name=member.name, slot=slot, item_id=item.item_id)
         self.say(f"{member.name} equips {item.name} in {equipment_slot_label(slot)}.")
         return True
 
@@ -497,6 +493,9 @@ class InventoryManagementMixin:
                 self.state.gold += total_price
                 stock = self.get_merchant_stock(merchant_id)
                 stock[item_id] = stock.get(item_id, 0) + quantity
+                tutorial_tracker = getattr(self, "record_opening_tutorial_event", None)
+                if callable(tutorial_tracker):
+                    tutorial_tracker("sold_item", merchant_id=merchant_id, item_id=item_id, quantity=quantity)
                 play_sound_effect = getattr(self, "play_sound_effect", None)
                 if callable(play_sound_effect):
                     play_sound_effect("sell_item")

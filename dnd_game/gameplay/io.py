@@ -590,9 +590,11 @@ class GameIOMixin:
         show_instructions: bool,
     ):
         prompt_block = Text()
-        prompt_block.append(prompt, style="bold bright_white")
+        if prompt:
+            prompt_block.append(prompt, style="bold bright_white")
         if show_instructions:
-            prompt_block.append("\n", style="dim")
+            if prompt:
+                prompt_block.append("\n", style="dim")
             prompt_block.append("Arrows move. Enter confirms. ", style="dim")
             if len(options) <= 9:
                 prompt_block.append("1-9 jumps. ", style="dim")
@@ -621,14 +623,19 @@ class GameIOMixin:
         if feedback:
             footer_items.append(self.rich_text(feedback, "light_red"))
 
-        return Panel(
-            Group(
-                prompt_block,
-                self.rich_text("", dim=True),
+        group_items = []
+        if prompt or show_instructions:
+            group_items.extend([prompt_block, self.rich_text("", dim=True)])
+        group_items.extend(
+            [
                 option_table,
                 self.rich_text("", dim=True),
                 *footer_items,
-            ),
+            ]
+        )
+
+        return Panel(
+            Group(*group_items),
             title=self.rich_text(title, "light_yellow", bold=True),
             subtitle=self.rich_text("Keyboard Choice Menu", "light_aqua", bold=True),
             border_style=rich_style_name("light_green"),
@@ -885,7 +892,7 @@ class GameIOMixin:
         resources_line = (
             f"{self.style_text('Resources:', 'light_yellow')} {marks_label(self.state.gold)} | "
             f"Short rests: {self.state.short_rests_remaining} | "
-            f"Carry: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb"
+            f"Supplies: {self.current_supply_points()}"
         )
         party_line = f"{self.style_text('Party:', 'light_yellow')} {self.hud_party_summary()}"
         if not self.emit_rich(
@@ -961,7 +968,7 @@ class GameIOMixin:
                 self.output_fn("")
                 if self.maybe_render_compact_hud(show_hud=show_hud) and prompt_context_lines:
                     self.replay_prompt_context(prompt_context_lines)
-                paged_prompt = f"{prompt} (page {page + 1})"
+                paged_prompt = f"{prompt} (page {page + 1})" if prompt else f"Page {page + 1}"
                 if self.should_use_keyboard_choice_menu():
                     selected = self.run_keyboard_choice_menu(paged_prompt, labels)
                     if selected is None:
@@ -999,7 +1006,8 @@ class GameIOMixin:
                 if selected is not None:
                     return selected
                 continue
-            self.say(prompt)
+            if prompt:
+                self.say(prompt)
             self.render_choice_options(options, staggered=staggered)
             raw = self.read_input("> ").strip()
             if self.handle_meta_command(raw):
@@ -1056,13 +1064,20 @@ class GameIOMixin:
             self.say("There is no active game to save.")
             return
         slot_name = self.ask_text("Save slot name")
+        path = self.save_path_for_slot_name(slot_name)
+        if path.exists() and not self.confirm(f"Overwrite {path.name}?"):
+            self.say("The existing save stays untouched.")
+            return
         path = self.save_game(slot_name=slot_name)
         self.say(f"Saved to {path.name}.")
 
+    def save_path_for_slot_name(self, slot_name: str) -> Path:
+        safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", slot_name).strip("_") or "save"
+        return self.save_dir / f"{safe_name}.json"
+
     def save_game(self, *, slot_name: str) -> Path:
         assert self.state is not None
-        safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", slot_name).strip("_") or "save"
-        path = self.save_dir / f"{safe_name}.json"
+        path = self.save_path_for_slot_name(slot_name)
         with path.open("w", encoding="utf-8") as handle:
             json.dump(self.state.to_dict(), handle, indent=2)
         return path

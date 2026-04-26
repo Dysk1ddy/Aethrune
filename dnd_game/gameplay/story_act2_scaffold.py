@@ -5,6 +5,14 @@ from .encounter import Encounter
 
 
 class StoryAct2ScaffoldMixin:
+    ACT2_CLAIMS_COUNCIL_SEEN_FLAG = "iron_hollow_claims_council_seen"
+    ACT2_SABOTAGE_RESOLVED_FLAG = "iron_hollow_sabotage_resolved"
+    ACT3_TOWN_STATE_FLAG = "act3_iron_hollow_state"
+    ACT2_LEGACY_FLAG_ALIASES = (
+        ("phandelver_claims_council_seen", "iron_hollow_claims_council_seen"),
+        ("phandalin_sabotage_resolved", "iron_hollow_sabotage_resolved"),
+        ("act3_phandalin_state", "act3_iron_hollow_state"),
+    )
     ACT2_BRANCH_FLAGS = (
         "agatha_truth_secured",
         "stonehollow_dig_cleared",
@@ -60,6 +68,13 @@ class StoryAct2ScaffoldMixin:
 
     def act2_pick_enemy(self, templates, *, name: str | None = None):
         return create_enemy(self.rng.choice(tuple(templates)), name=name)
+
+    def normalize_act2_legacy_flags(self) -> None:
+        assert self.state is not None
+        for legacy_flag, canonical_flag in self.ACT2_LEGACY_FLAG_ALIASES:
+            if canonical_flag not in self.state.flags and legacy_flag in self.state.flags:
+                self.state.flags[canonical_flag] = self.state.flags[legacy_flag]
+            self.state.flags.pop(legacy_flag, None)
 
     def act2_award_milestone_gear(self, reward_flag: str, item_id: str, *, source: str) -> None:
         assert self.state is not None
@@ -713,7 +728,7 @@ class StoryAct2ScaffoldMixin:
         route = self.act2_metric_value("act2_route_control")
         whisper = self.act2_metric_value("act2_whisper_pressure")
         forge_cleared = [flag_name for flag_name, _ in self.ACT2_FORGE_SUBROUTES if self.state.flags.get(flag_name)]
-        self.state.flags["act3_phandalin_state"] = "united" if town >= 4 else "holding" if town >= 2 else "fractured"
+        self.state.flags[self.ACT3_TOWN_STATE_FLAG] = "united" if town >= 4 else "holding" if town >= 2 else "fractured"
         self.state.flags["act3_claims_balance"] = "secured" if route >= 4 else "contested" if route >= 2 else "chaotic"
         self.state.flags["act3_whisper_state"] = "contained" if whisper <= 1 else "lingering" if whisper <= 3 else "carried_out"
         self.state.flags["act3_forge_subroutes_cleared"] = forge_cleared
@@ -923,6 +938,22 @@ class StoryAct2ScaffoldMixin:
                 self.state.flags["act2_midpoint_priority"] = "infiltrator"
                 if self.state.flags.get("bryn_false_ledgers_salted"):
                     hero_bonus += 1
+        if self.state.flags.get("sabotage_supply_watch_warned"):
+            hero_bonus += 1
+            if not self.state.flags.get("siltlock_sabotage_watch_payoff_applied"):
+                self.state.flags["siltlock_sabotage_watch_payoff_applied"] = True
+                self.say(
+                    "The Siltlock bell work pays out in the ugliest useful way: one watch post hears the supply alarm before the smoke reaches the claims hall."
+                )
+                self.act2_shift_metric(
+                    "act2_town_stability",
+                    1,
+                    "Siltlock's warning bell gives Iron Hollow one prepared watch post before sabotage night fully opens",
+                )
+            if len(enemies) > 2 and not self.state.flags.get("siltlock_sabotage_reserve_cut"):
+                self.state.flags["siltlock_sabotage_reserve_cut"] = True
+                missing_enemy = enemies.pop()
+                self.say(f"{missing_enemy.name} never reaches the fight; Siltlock's ration tags put the reserve crew under watch before they can move.")
         outcome = self.run_encounter(
             Encounter(
                 title="Midpoint: Sabotage Night",
@@ -943,7 +974,7 @@ class StoryAct2ScaffoldMixin:
             self.say("You pull the party clear, but the sabotage still scars the town.")
             return
         self.state.flags["claims_meet_held"] = True
-        self.state.flags["phandalin_sabotage_resolved"] = True
+        self.state.flags[self.ACT2_SABOTAGE_RESOLVED_FLAG] = True
         if choice == 1:
             self.say(
                 "You keep the hall from breaking. People still shout, still grieve, still accuse, but the town does not fully lose the shape of a plan."
@@ -1458,7 +1489,7 @@ class StoryAct2ScaffoldMixin:
         assert self.state is not None
         self.act2_record_epilogue_flags()
         self.banner("Act II Complete")
-        town_state = self.state.flags.get("act3_phandalin_state", "holding")
+        town_state = self.state.flags.get(self.ACT3_TOWN_STATE_FLAG, "holding")
         claims_state = self.state.flags.get("act3_claims_balance", "contested")
         whisper_state = self.state.flags.get("act3_whisper_state", "lingering")
         forge_state = str(self.state.flags.get("act3_forge_route_state", "direct"))

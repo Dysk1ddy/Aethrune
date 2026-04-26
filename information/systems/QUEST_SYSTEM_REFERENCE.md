@@ -199,9 +199,8 @@ Items are added through `add_inventory_item(item_id, quantity, source=definition
 Effects:
 
 - Looks up the item in `ITEMS`.
-- Adds items to shared inventory while carrying capacity allows.
+- Adds items to shared inventory.
 - Prints an add line for successfully added items.
-- Prints a left-behind line if capacity blocks the rest.
 - Adds a quest reward journal line listing successfully received items.
 
 Maintenance rule: every quest reward item id must exist in `dnd_game/data/items/catalog.py`. After adding catalog items, regenerate `information/catalogs/ITEM_CATALOG.md`.
@@ -359,7 +358,6 @@ Current relevant tests include:
 - Empty `completion_flags` means immediately ready after grant.
 - Completed quests do not reopen if flags later change.
 - Item reward ids are looked up at runtime. A typo can break quest panels or turn-ins.
-- `add_inventory_item()` respects carrying capacity. A reward item can be left behind if the party is overloaded.
 - Reward flags should be durable and descriptive because later story code will read them from saves.
 - Avoid paying merchant attitude manually in a scene if the quest reward already does it.
 - Avoid bulk turn-ins unless the UI still requires the player to choose the original giver report.

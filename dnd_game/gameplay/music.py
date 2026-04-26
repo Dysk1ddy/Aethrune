@@ -61,11 +61,13 @@ DUNGEON_SCENE_KEYS: tuple[str, ...] = (
     "neverwinter_wood_survey_camp",
     "stonehollow_dig",
     "glasswater_intake",
+    "siltlock_counting_house",
     "act2_midpoint_convergence",
     "broken_prospect",
     "south_adit",
     "wave_echo_outer_galleries",
     "black_lake_causeway",
+    "blackglass_relay_house",
     "forge_of_spells",
 )
 

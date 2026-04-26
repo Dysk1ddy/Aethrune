@@ -99,17 +99,9 @@ class InventoryManagementMixin:
                 self.say(f"{merchant_name} has run out of {item.name}.")
                 return
             affordable = self.state.gold // max(1, unit_price)
-            if item.weight > 0:
-                capacity_left = max(0.0, self.carrying_capacity() - self.current_inventory_weight())
-                carry_limit = int(capacity_left // item.weight)
-            else:
-                carry_limit = available
-            maximum = min(available, affordable, carry_limit)
+            maximum = min(available, affordable)
             if maximum <= 0:
-                if affordable <= 0:
-                    self.say(f"You cannot afford {item.name} right now.")
-                else:
-                    self.say(f"The party cannot carry any more {item.name} right now.")
+                self.say(f"You cannot afford {item.name} right now.")
                 return
             quantity = maximum if maximum == 1 else self.ask_quantity_or_back(f"How many {item.name} do you want to buy?", maximum)
             if quantity is None:

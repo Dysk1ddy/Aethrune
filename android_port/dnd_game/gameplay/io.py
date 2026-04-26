@@ -208,13 +208,20 @@ class GameIOMixin:
             self.say("There is no active game to save.")
             return
         slot_name = self.ask_text("Save slot name")
+        path = self.save_path_for_slot_name(slot_name)
+        if path.exists() and not self.confirm(f"Overwrite {path.name}?"):
+            self.say("The existing save stays untouched.")
+            return
         path = self.save_game(slot_name=slot_name)
         self.say(f"Saved to {path.name}.")
 
+    def save_path_for_slot_name(self, slot_name: str) -> Path:
+        safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", slot_name).strip("_") or "save"
+        return self.save_dir / f"{safe_name}.json"
+
     def save_game(self, *, slot_name: str) -> Path:
         assert self.state is not None
-        safe_name = re.sub(r"[^A-Za-z0-9_-]+", "_", slot_name).strip("_") or "save"
-        path = self.save_dir / f"{safe_name}.json"
+        path = self.save_path_for_slot_name(slot_name)
         with path.open("w", encoding="utf-8") as handle:
             json.dump(self.state.to_dict(), handle, indent=2)
         return path

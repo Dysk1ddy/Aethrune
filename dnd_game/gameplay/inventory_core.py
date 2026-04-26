@@ -7,11 +7,9 @@ from ..items import (
     format_inventory_line,
     get_item,
     inventory_supply_points,
-    inventory_weight,
     item_rules_text,
     item_type_label,
     marks_label,
-    party_carry_capacity,
     roll_loot_for_enemy,
 )
 from .magic_points import (
@@ -41,13 +39,6 @@ class InventoryCoreMixin:
         assert self.state is not None
         self.state.inventory = canonicalize_item_mapping(self.state.inventory)
         return self.state.inventory
-
-    def carrying_capacity(self) -> int:
-        assert self.state is not None
-        return party_carry_capacity(self.state.party_members())
-
-    def current_inventory_weight(self) -> float:
-        return inventory_weight(self.inventory_dict())
 
     def current_supply_points(self) -> int:
         return inventory_supply_points(self.inventory_dict())
@@ -142,7 +133,6 @@ class InventoryCoreMixin:
         table.add_column("Qty", justify="right", no_wrap=True)
         if show_free_count:
             table.add_column("Free", justify="right", no_wrap=True)
-        table.add_column("Wt", justify="right", no_wrap=True)
         table.add_column("Value", justify="right", no_wrap=True)
         table.add_column("Rules", ratio=4, overflow="fold")
         for item_id in item_ids:
@@ -157,7 +147,6 @@ class InventoryCoreMixin:
                 row.append(str(self.available_inventory_count(item_id)))
             row.extend(
                 [
-                    f"{item.weight * quantity:.1f} lb",
                     marks_label(item.value),
                     self.inventory_item_rules_summary(item),
                 ]
@@ -177,15 +166,10 @@ class InventoryCoreMixin:
         if quantity <= 0:
             return 0
         item = get_item(item_id)
-        added = 0
-        while added < quantity and self.current_inventory_weight() + item.weight <= self.carrying_capacity():
-            self.inventory_dict()[item_id] = self.inventory_dict().get(item_id, 0) + 1
-            added += 1
-        if added and source:
-            self.say(f"You add {item.name} x{added} from {source}.")
-        if added < quantity:
-            self.say(f"You leave {item.name} behind because the party is at carrying capacity.")
-        return added
+        self.inventory_dict()[item_id] = self.inventory_dict().get(item_id, 0) + quantity
+        if source:
+            self.say(f"You add {item.name} x{quantity} from {source}.")
+        return quantity
 
     def remove_inventory_item(self, item_id: str, quantity: int = 1) -> bool:
         current = self.inventory_dict().get(item_id, 0)
@@ -265,6 +249,9 @@ class InventoryCoreMixin:
             heal_amount = max(1, (member.max_hp + 1) // 2)
             member.heal(heal_amount)
             self.restore_short_rest_resources(member)
+        tutorial_tracker = getattr(self, "record_opening_tutorial_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("short_rest")
         self.say(
             f"The party takes a short rest, spends bandages and breath, and steadies up. "
             f"Short rests remaining before a long rest: {self.state.short_rests_remaining}."
@@ -305,6 +292,9 @@ class InventoryCoreMixin:
         for item_id, quantity in consumed.items():
             self.remove_inventory_item(item_id, quantity)
         self.complete_long_rest_recovery()
+        tutorial_tracker = getattr(self, "record_opening_tutorial_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("long_rest")
         consumed_text = ", ".join(f"{get_item(item_id).name} x{quantity}" for item_id, quantity in consumed.items())
         self.say(f"The party completes a long rest after using {consumed_text}.")
 
@@ -336,6 +326,9 @@ class InventoryCoreMixin:
             return False
         self.state.gold -= cost
         self.complete_long_rest_recovery()
+        tutorial_tracker = getattr(self, "record_opening_tutorial_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("long_rest")
         self.say(f"The party pays {marks_label(cost)} for beds at {inn_name} and completes a long rest without using camp supplies.")
         self.add_journal(f"Paid {marks_label(cost)} for a long rest at {inn_name}.")
         return True
@@ -345,7 +338,6 @@ class InventoryCoreMixin:
         self.banner("Inventory")
         self.say(
             f"View: {self.inventory_filter_label(filter_key)} | "
-            f"Weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb | "
             f"Supply points: {self.current_supply_points()} | Gold: {self.state.gold}"
         )
         if not self.state.inventory:

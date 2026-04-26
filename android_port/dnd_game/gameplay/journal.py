@@ -67,7 +67,7 @@ class JournalMixin:
         self.say(
             f"{self.xp_progress_summary()} | Gold: {self.state.gold} gp | "
             f"Short rests left: {self.state.short_rests_remaining} | "
-            f"Carry weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb"
+            f"Supply points: {self.current_supply_points()}"
         )
         self.say("Active party:")
         for member in self.state.party_members():

@@ -98,6 +98,76 @@ class CoreTests(unittest.TestCase):
                 return index
         raise AssertionError(f"Could not find option containing {needle!r} in {plain_options!r}")
 
+    def build_opening_tutorial_game(
+        self,
+        *,
+        seed: int,
+        output_fn=None,
+        input_fn=None,
+    ) -> TextDnDGame:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(
+            input_fn=input_fn or (lambda _: "1"),
+            output_fn=output_fn or (lambda _: None),
+            rng=random.Random(seed),
+        )
+        game.begin_adventure(player)
+        game.scene_background_prologue()
+        self.assertIsNotNone(game.state)
+        self.assertEqual(game.state.current_scene, "opening_tutorial")
+        return game
+
+    def opening_tutorial_state_snapshot(self, game: TextDnDGame) -> dict[str, object]:
+        assert game.state is not None
+        return {
+            "current_scene": game.state.current_scene,
+            "inventory": dict(game.state.inventory),
+            "gold": game.state.gold,
+            "short_rests_remaining": game.state.short_rests_remaining,
+            "player_hp": game.state.player.current_hp,
+            "player_slots": dict(game.state.player.equipment_slots),
+            "companions": [member.name for member in game.state.companions],
+            "camp_companions": [member.name for member in game.state.camp_companions],
+            "journal": list(game.state.journal),
+        }
+
+    def assert_opening_tutorial_state_restored(self, game: TextDnDGame, snapshot: dict[str, object]) -> None:
+        assert game.state is not None
+        self.assertEqual(game.state.current_scene, snapshot["current_scene"])
+        self.assertEqual(dict(game.state.inventory), snapshot["inventory"])
+        self.assertEqual(game.state.gold, snapshot["gold"])
+        self.assertEqual(game.state.short_rests_remaining, snapshot["short_rests_remaining"])
+        self.assertEqual(game.state.player.current_hp, snapshot["player_hp"])
+        self.assertEqual(dict(game.state.player.equipment_slots), snapshot["player_slots"])
+        self.assertEqual([member.name for member in game.state.companions], snapshot["companions"])
+        self.assertEqual([member.name for member in game.state.camp_companions], snapshot["camp_companions"])
+        self.assertEqual(list(game.state.journal), snapshot["journal"])
+
+    def guard_opening_tutorial_prompt(
+        self,
+        steps: dict[str, int],
+        kind: str,
+        prompt: str,
+        options: list[str],
+        *,
+        limit: int,
+    ) -> list[str]:
+        stripped = [strip_ansi(option) for option in options]
+        steps[kind] = steps.get(kind, 0) + 1
+        self.assertLessEqual(
+            steps[kind],
+            limit,
+            f"Opening tutorial {kind} loop exceeded {limit} steps at {prompt!r} with options {stripped!r}",
+        )
+        return stripped
+
     def assert_dungeon_map_header_is_balanced(self, rendered: str) -> None:
         self.assertNotIn("Compass", rendered)
         rendered_lines = rendered.splitlines()
@@ -1392,6 +1462,46 @@ class CoreTests(unittest.TestCase):
             ],
         )
 
+    def test_run_encounter_wave_suppresses_random_events_until_final_encounter(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        first_enemy = create_enemy("goblin_skirmisher")
+        first_enemy.current_hp = 0
+        first_enemy.dead = True
+        second_enemy = create_enemy("bandit")
+        second_enemy.current_hp = 0
+        second_enemy.dead = True
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(9008113))
+        game.state = GameState(player=player, current_scene="road_ambush")
+        game.pause_for_combat_transition = lambda: None  # type: ignore[method-assign]
+        random_calls: list[str] = []
+        game.maybe_run_post_combat_random_encounter = lambda encounter: random_calls.append(encounter.title)  # type: ignore[method-assign]
+
+        first_outcome = game.run_encounter_wave(
+            Encounter(
+                title="Roadside Ambush: First Wave",
+                description="The first wave is already down.",
+                enemies=[first_enemy],
+            )
+        )
+        second_outcome = game.run_encounter(
+            Encounter(
+                title="Emberway Second Wave",
+                description="The second wave is already down.",
+                enemies=[second_enemy],
+            )
+        )
+
+        self.assertEqual(first_outcome, "victory")
+        self.assertEqual(second_outcome, "victory")
+        self.assertEqual(random_calls, ["Emberway Second Wave"])
+
     def test_run_encounter_wave_restores_scene_music_when_followup_never_happens(self) -> None:
         player = build_character(
             name="Velkor",
@@ -1969,6 +2079,45 @@ class CoreTests(unittest.TestCase):
         self.assertLess(briefing_row, emberway_row)
         self.assertLess(emberway_row, iron_hollow_row)
         self.assertGreater(blackwake_center, briefing_center)
+
+    @unittest.skipUnless(RICH_AVAILABLE, "Rich rendering is optional")
+    def test_rich_act2_overworld_map_preserves_right_edge_node_card_widths(self) -> None:
+        inner_width = max(len(node.short_label) for node in ACT2_ENEMY_DRIVEN_MAP.nodes.values()) + 2
+
+        def hidden_token(node_id: str) -> str:
+            return f"[{'???'.center(inner_width)}]"
+
+        def explored_token(node_id: str) -> str:
+            node = ACT2_ENEMY_DRIVEN_MAP.nodes[node_id]
+            return f"[{node.short_label.center(inner_width)}]"
+
+        hidden_state = DraftMapState(
+            current_node_id="act2_expedition_hub",
+            visited_nodes={"act2_expedition_hub"},
+        )
+        hidden_rendered = "\n".join(
+            strip_ansi(line)
+            for line in render_rich_lines(build_overworld_panel(ACT2_ENEMY_DRIVEN_MAP, hidden_state), width=108)
+        )
+        siltlock_hidden = hidden_token("siltlock_counting_house")
+        expected_hidden_cards = sum(
+            1
+            for node in ACT2_ENEMY_DRIVEN_MAP.nodes.values()
+            if hidden_token(node.node_id) == siltlock_hidden and node.node_id != hidden_state.current_node_id
+        )
+        self.assertGreaterEqual(hidden_rendered.count(siltlock_hidden), expected_hidden_cards)
+        self.assertIn("[???] Hidden", hidden_rendered)
+        self.assertNotIn(f"[{'?'.center(inner_width)}]", hidden_rendered)
+
+        explored_state = DraftMapState(
+            current_node_id="act2_expedition_hub",
+            visited_nodes=set(ACT2_ENEMY_DRIVEN_MAP.nodes),
+        )
+        explored_rendered = "\n".join(
+            strip_ansi(line)
+            for line in render_rich_lines(build_overworld_panel(ACT2_ENEMY_DRIVEN_MAP, explored_state), width=108)
+        )
+        self.assertIn(explored_token("siltlock_counting_house"), explored_rendered)
 
     def test_act1_overworld_panel_groups_route_key_and_travel_top_right(self) -> None:
         rendered_map = build_overworld_panel_text(
@@ -2606,6 +2755,106 @@ class CoreTests(unittest.TestCase):
                     },
                 ),
                 requirement,
+            )
+        )
+
+    def test_act2_blackglass_relay_branch_unlocks_after_causeway(self) -> None:
+        relay_node = ACT2_ENEMY_DRIVEN_MAP.nodes["blackglass_relay_house"]
+        relay_dungeon = ACT2_ENEMY_DRIVEN_MAP.dungeons["blackglass_relay_house"]
+
+        self.assertFalse(requirement_met(DraftMapState(current_node_id="act2_expedition_hub"), relay_node.requirement))
+        self.assertTrue(
+            requirement_met(
+                DraftMapState(current_node_id="act2_expedition_hub", flags={"black_lake_crossed"}),
+                relay_node.requirement,
+            )
+        )
+        self.assertFalse(
+            requirement_met(
+                DraftMapState(
+                    current_node_id="act2_expedition_hub",
+                    flags={"black_lake_crossed", "caldra_defeated"},
+                ),
+                relay_node.requirement,
+            )
+        )
+        self.assertEqual(relay_node.enters_dungeon_id, "blackglass_relay_house")
+        self.assertEqual(relay_dungeon.completion_flags, ("blackglass_relay_house_cleared", "forge_signal_grounded"))
+        self.assertEqual(relay_dungeon.boss_room_id, "counterweight_crown")
+        self.assertEqual(
+            set(relay_dungeon.rooms),
+            {"relay_gate", "cable_sump", "keeper_ledger", "null_bell_walk", "counterweight_crown"},
+        )
+        self.assertEqual(relay_dungeon.rooms["relay_gate"].exits, ("cable_sump", "keeper_ledger"))
+        self.assertEqual(relay_dungeon.rooms["cable_sump"].exits, ("keeper_ledger", "null_bell_walk"))
+        self.assertEqual(relay_dungeon.rooms["keeper_ledger"].exits, ("cable_sump", "null_bell_walk"))
+        self.assertEqual(relay_dungeon.rooms["null_bell_walk"].exits, ("counterweight_crown",))
+        self.assertTrue(
+            requirement_met(
+                DraftMapState(current_node_id="act2_expedition_hub", flags={"black_lake_crossed"}),
+                ACT2_ENEMY_DRIVEN_MAP.nodes["forge_of_spells"].requirement,
+            )
+        )
+
+    def test_act2_siltlock_branch_opens_after_one_early_lead_and_feeds_glasswater(self) -> None:
+        siltlock_node = ACT2_ENEMY_DRIVEN_MAP.nodes["siltlock_counting_house"]
+        siltlock_dungeon = ACT2_ENEMY_DRIVEN_MAP.dungeons["siltlock_counting_house"]
+
+        self.assertFalse(
+            requirement_met(
+                DraftMapState(current_node_id="act2_expedition_hub", flags={"act2_started"}),
+                siltlock_node.requirement,
+            )
+        )
+        self.assertTrue(
+            requirement_met(
+                DraftMapState(current_node_id="act2_expedition_hub", flags={"act2_started", "agatha_truth_secured"}),
+                siltlock_node.requirement,
+            )
+        )
+        self.assertTrue(
+            requirement_met(
+                DraftMapState(current_node_id="act2_expedition_hub", flags={"act2_started", "woodland_survey_cleared"}),
+                siltlock_node.requirement,
+            )
+        )
+        self.assertFalse(
+            requirement_met(
+                DraftMapState(
+                    current_node_id="act2_expedition_hub",
+                    flags={"act2_started", "stonehollow_dig_cleared", "caldra_defeated"},
+                ),
+                siltlock_node.requirement,
+            )
+        )
+        self.assertEqual(siltlock_node.enters_dungeon_id, "siltlock_counting_house")
+        self.assertEqual(
+            siltlock_dungeon.completion_flags,
+            ("siltlock_counting_house_cleared", "glasswater_permit_fraud_exposed", "sabotage_supply_watch_warned"),
+        )
+        self.assertEqual(siltlock_dungeon.boss_room_id, "auditor_stair")
+        self.assertEqual(
+            set(siltlock_dungeon.rooms),
+            {
+                "public_counter",
+                "permit_stacks",
+                "ration_cellar",
+                "back_till",
+                "valve_wax_archive",
+                "sluice_bell_alcove",
+                "auditor_stair",
+            },
+        )
+        self.assertEqual(siltlock_dungeon.rooms["public_counter"].exits, ("permit_stacks", "ration_cellar", "back_till"))
+        self.assertEqual(siltlock_dungeon.rooms["permit_stacks"].clear_grants_flags, ("siltlock_permit_chain_read", "glasswater_permit_fraud_exposed"))
+        self.assertEqual(siltlock_dungeon.rooms["sluice_bell_alcove"].clear_grants_flags, ("siltlock_sluice_bell_armed", "sabotage_supply_watch_warned"))
+        self.assertTrue(
+            requirement_met(
+                DraftMapState(
+                    current_node_id="siltlock_counting_house",
+                    flags={"act2_started", "agatha_truth_secured", "glasswater_permit_fraud_exposed"},
+                ),
+                next(edge for edge in ACT2_ENEMY_DRIVEN_MAP.edges if edge.edge_id == "siltlock_to_glasswater").requirement,
             )
         )
 
@@ -4783,7 +5032,7 @@ class CoreTests(unittest.TestCase):
             current_scene="south_adit",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_first_late_route": "broken_prospect",
                 "act2_captive_outcome": "captives_endangered",
                 "act2_town_stability": 3,
@@ -4847,7 +5096,7 @@ class CoreTests(unittest.TestCase):
             current_scene="south_adit",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_town_stability": 3,
                 "act2_route_control": 3,
                 "act2_whisper_pressure": 2,
@@ -4903,7 +5152,7 @@ class CoreTests(unittest.TestCase):
             current_scene="south_adit",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_town_stability": 3,
                 "act2_route_control": 3,
                 "act2_whisper_pressure": 2,
@@ -5083,7 +5332,7 @@ class CoreTests(unittest.TestCase):
             current_scene="conyberry_agatha",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_neglected_lead": "agatha_truth_secured",
                 "agatha_circuit_defiled": True,
                 "act2_town_stability": 3,
@@ -5315,7 +5564,7 @@ class CoreTests(unittest.TestCase):
                 "agatha_truth_secured": True,
                 "woodland_survey_cleared": True,
                 "stonehollow_dig_cleared": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_town_stability": 3,
                 "act2_route_control": 3,
                 "act2_whisper_pressure": 2,
@@ -5404,7 +5653,7 @@ class CoreTests(unittest.TestCase):
             current_scene="broken_prospect",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "south_adit_cleared": True,
                 "act2_first_late_route": "south_adit",
                 "act2_town_stability": 3,
@@ -5667,7 +5916,7 @@ class CoreTests(unittest.TestCase):
             current_scene="act2_expedition_hub",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_first_late_route": "broken_prospect",
                 "south_adit_cleared": True,
                 "act2_captive_outcome": "few_saved",
@@ -6212,6 +6461,66 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(restored.short_rests_remaining, 1)
         Path(path).unlink(missing_ok=True)
 
+    def test_inline_save_keeps_existing_file_when_overwrite_declined(self) -> None:
+        player = build_character(
+            name="Iri",
+            race="Human",
+            class_name="Wizard",
+            background="Sage",
+            base_ability_scores={"STR": 8, "DEX": 14, "CON": 12, "INT": 15, "WIS": 13, "CHA": 10},
+            class_skill_choices=["Arcana", "Investigation"],
+        )
+        save_dir = Path.cwd() / "tests_output"
+        save_dir.mkdir(exist_ok=True)
+        existing_path = save_dir / "inline_save_decline_slot.json"
+        existing_path.write_text('{"sentinel":"old"}', encoding="utf-8")
+        try:
+            log: list[str] = []
+            prompts: list[str] = []
+            game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, save_dir=save_dir, rng=random.Random(31))
+            game.state = GameState(player=player, current_scene="phandalin_hub")
+            game.ask_text = lambda prompt: "inline_save_decline_slot"  # type: ignore[method-assign]
+            game.confirm = lambda prompt: prompts.append(prompt) or False  # type: ignore[method-assign]
+
+            game.inline_save()
+
+            self.assertEqual(existing_path.read_text(encoding="utf-8"), '{"sentinel":"old"}')
+            self.assertEqual(prompts, ["Overwrite inline_save_decline_slot.json?"])
+            rendered = self.plain_output(log)
+            self.assertIn("The existing save stays untouched.", rendered)
+        finally:
+            existing_path.unlink(missing_ok=True)
+
+    def test_inline_save_overwrites_existing_file_when_confirmed(self) -> None:
+        player = build_character(
+            name="Iri",
+            race="Human",
+            class_name="Wizard",
+            background="Sage",
+            base_ability_scores={"STR": 8, "DEX": 14, "CON": 12, "INT": 15, "WIS": 13, "CHA": 10},
+            class_skill_choices=["Arcana", "Investigation"],
+        )
+        save_dir = Path.cwd() / "tests_output"
+        save_dir.mkdir(exist_ok=True)
+        existing_path = save_dir / "inline_save_confirm_slot.json"
+        existing_path.write_text('{"sentinel":"old"}', encoding="utf-8")
+        try:
+            prompts: list[str] = []
+            game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, save_dir=save_dir, rng=random.Random(32))
+            game.state = GameState(player=player, current_scene="phandalin_hub", gold=37)
+            game.ask_text = lambda prompt: "inline_save_confirm_slot"  # type: ignore[method-assign]
+            game.confirm = lambda prompt: prompts.append(prompt) or True  # type: ignore[method-assign]
+
+            game.inline_save()
+
+            loaded = json.loads(existing_path.read_text(encoding="utf-8"))
+            self.assertEqual(loaded["current_scene"], "phandalin_hub")
+            self.assertEqual(loaded["gold"], 37)
+            self.assertEqual(loaded["player"]["name"], "Iri")
+            self.assertEqual(prompts, ["Overwrite inline_save_confirm_slot.json?"])
+        finally:
+            existing_path.unlink(missing_ok=True)
+
     def test_information_dialogue_can_grant_quest_and_show_in_journal(self) -> None:
         player = build_character(
             name="Iri",
@@ -6428,6 +6737,73 @@ class CoreTests(unittest.TestCase):
         game.maybe_run_post_combat_random_encounter(
             Encounter(title="Chained", description="", enemies=[], allow_post_combat_random_encounter=False)
         )
+        self.assertEqual(calls, [])
+
+    def test_map_room_context_allows_campaign_random_event_despite_legacy_opt_out(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(8131))
+        game.state = GameState(player=player, current_scene="old_owl_well", current_act=1)
+        calls: list[str] = []
+        game.run_named_post_combat_random_encounter = lambda encounter_id: calls.append(encounter_id)
+        game.rng = SimpleNamespace(random=lambda: 0.0, choice=lambda options: options[0])
+        game._post_combat_random_encounter_context = {"act": 1, "room_role": "entrance", "room_id": "well_ring"}
+
+        game.maybe_run_post_combat_random_encounter(
+            Encounter(title="Blackglass Well Outer Ring", description="", enemies=[], allow_post_combat_random_encounter=False)
+        )
+
+        self.assertEqual(calls, ["locked_chest_under_ferns"])
+
+    def test_map_boss_context_keeps_campaign_random_event_blocked(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(8132))
+        game.state = GameState(player=player, current_scene="forge_of_spells", current_act=2)
+        calls: list[str] = []
+        game.run_named_post_combat_random_encounter = lambda encounter_id: calls.append(encounter_id)
+        game.rng = SimpleNamespace(random=lambda: 0.0, choice=lambda options: options[0])
+        game._post_combat_random_encounter_context = {"act": 2, "room_role": "boss", "room_id": "caldra_dais"}
+
+        game.maybe_run_post_combat_random_encounter(
+            Encounter(title="Boss: Sister Caldra Voss", description="", enemies=[], allow_post_combat_random_encounter=False)
+        )
+
+        self.assertEqual(calls, [])
+
+    def test_random_encounter_active_blocks_map_context_chaining(self) -> None:
+        player = build_character(
+            name="Vale",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(8133))
+        game.state = GameState(player=player, current_scene="old_owl_well", current_act=1)
+        calls: list[str] = []
+        game.run_named_post_combat_random_encounter = lambda encounter_id: calls.append(encounter_id)
+        game.rng = SimpleNamespace(random=lambda: 0.0, choice=lambda options: options[0])
+        game._random_encounter_active = True
+        game._post_combat_random_encounter_context = {"act": 1, "room_role": "combat", "room_id": "well_ring"}
+
+        game.maybe_run_post_combat_random_encounter(
+            Encounter(title="Chest Scavengers", description="", enemies=[], allow_post_combat_random_encounter=False)
+        )
+
         self.assertEqual(calls, [])
 
     def test_locked_chest_random_encounter_can_award_loot_without_combat(self) -> None:
@@ -7136,6 +7512,7 @@ class CoreTests(unittest.TestCase):
         line = strip_ansi(format_inventory_line("rapier_rare", 1))
         self.assertIn("x1", line)
         self.assertNotRegex(line, r"\[[A-Z]\d{4}\]")
+        self.assertNotIn("lb", line)
         self.assertIn("1d8 piercing", line)
         self.assertIn("enchantment Vicious", line)
         self.assertIn("+2d6 on crit", line)
@@ -7416,6 +7793,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.current_scene, "phandalin_hub")
         self.assertTrue(any(companion.name == "Tolan Ironshield" for companion in game.state.companions))
         self.assertEqual([encounter.title for encounter in encounters], ["Roadside Ambush: First Wave", "Emberway Second Wave"])
+        self.assertFalse(encounters[0].allow_post_combat_random_encounter)
+        self.assertTrue(encounters[1].allow_post_combat_random_encounter)
         rendered = self.plain_output(log)
         self.assertIn("Tolan Ironshield: \"Good. Give me a minute to cinch the shield", rendered)
 
@@ -7880,6 +8259,50 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Preset abilities:", rendered)
         self.assertIn("Starting point:", rendered)
 
+    @unittest.skipUnless(RICH_AVAILABLE, "Rich rendering is optional")
+    def test_describe_preset_character_uses_rich_rendering_when_available(self) -> None:
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(441))
+        captured: list[object] = []
+        game.should_use_rich_ui = lambda: True  # type: ignore[method-assign]
+        game.emit_rich = lambda renderable, **kwargs: captured.append(renderable) or True  # type: ignore[method-assign]
+        game.say = lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Plain-text fallback should not run"))  # type: ignore[method-assign]
+
+        game.describe_preset_character("Fighter")
+
+        self.assertTrue(captured)
+        rendered = "\n".join(strip_ansi(line) for line in render_rich_lines(captured[0], width=108))
+        self.assertIn("Fighter Preset", rendered)
+        self.assertIn("Riven Ashguard", rendered)
+        self.assertIn("Preset Abilities", rendered)
+        self.assertIn("Preset Training", rendered)
+        self.assertIn("Perception, Survival", rendered)
+
+    @unittest.skipUnless(RICH_AVAILABLE, "Rich rendering is optional")
+    def test_preview_character_uses_rich_rendering_when_available(self) -> None:
+        player = build_character(
+            name="Velkor",
+            race="Human",
+            class_name="Fighter",
+            background="Soldier",
+            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
+            class_skill_choices=["Athletics", "Survival"],
+        )
+        game = TextDnDGame(input_fn=lambda _: "1", output_fn=lambda _: None, rng=random.Random(442))
+        captured: list[object] = []
+        game.should_use_rich_ui = lambda: True  # type: ignore[method-assign]
+        game.emit_rich = lambda renderable, **kwargs: captured.append(renderable) or True  # type: ignore[method-assign]
+        game.say = lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Plain-text fallback should not run"))  # type: ignore[method-assign]
+
+        game.preview_character(player)
+
+        self.assertTrue(captured)
+        rendered = "\n".join(strip_ansi(line) for line in render_rich_lines(captured[0], width=108))
+        self.assertIn("Character Summary", rendered)
+        self.assertIn("Ability Scores", rendered)
+        self.assertIn("Loadout & Start", rendered)
+        self.assertIn("Background training", rendered)
+        self.assertIn("Starting point", rendered)
+
     def test_background_prologue_routes_new_games_into_opening_tutorial(self) -> None:
         player = build_character(
             name="Vale",
@@ -7924,30 +8347,107 @@ class CoreTests(unittest.TestCase):
         self.assertIn("Skip ahead to your character's opening.", rendered)
         self.assertIn("You wave the primer off and keep moving.", rendered)
 
-    def test_opening_tutorial_teaches_core_loop_in_continue_batches(self) -> None:
-        player = build_character(
-            name="Vale",
-            race="Human",
-            class_name="Fighter",
-            background="Soldier",
-            base_ability_scores={"STR": 15, "DEX": 14, "CON": 13, "INT": 8, "WIS": 12, "CHA": 10},
-            class_skill_choices=["Athletics", "Survival"],
-        )
+    def test_opening_tutorial_routes_through_all_interactive_lanes_without_state_leakage(self) -> None:
         log: list[str] = []
-        game = TextDnDGame(input_fn=lambda _: "1", output_fn=log.append, rng=random.Random(4443))
-        game.begin_adventure(player)
-        game.scene_background_prologue()
-        prompts: list[str] = []
-        options_seen: list[list[str]] = []
+        game = self.build_opening_tutorial_game(seed=4443, output_fn=log.append)
+        assert game.state is not None
+        initial_inventory = dict(game.state.inventory)
+        initial_gold = game.state.gold
+        initial_short_rests = game.state.short_rests_remaining
+        initial_player_hp = game.state.player.current_hp
+        initial_player_slots = dict(game.state.player.equipment_slots)
+        steps = {"scenario": 0, "choose": 0}
+        hub_options: list[list[str]] = []
+        choose_prompts: list[str] = []
 
         def tutorial_choice(prompt: str, options: list[str], **kwargs) -> int:
-            prompts.append(prompt)
-            options_seen.append([strip_ansi(option) for option in options])
-            return 1
+            stripped = self.guard_opening_tutorial_prompt(steps, "scenario", prompt, options, limit=20)
+            if prompt == "Do you want the opening tutorial before your own prologue starts?":
+                return self.option_index_containing(stripped, "Take the short tutorial")
+            if prompt == "":
+                return 1
+            if prompt == "Which lane do you take?":
+                hub_options.append(stripped)
+                if not game.state.flags.get("opening_tutorial_lesson_companions_complete"):
+                    return self.option_index_containing(stripped, "Run the companions drill")
+                if not game.state.flags.get("opening_tutorial_lesson_equipment_complete"):
+                    return self.option_index_containing(stripped, "Run the equipment drill")
+                if not game.state.flags.get("opening_tutorial_lesson_trading_complete"):
+                    return self.option_index_containing(stripped, "Run the trading drill")
+                if not game.state.flags.get("opening_tutorial_lesson_resting_complete"):
+                    return self.option_index_containing(stripped, "Run the resting drill")
+                return self.option_index_containing(stripped, "Finish the primer")
+            if prompt == "Step into the camp lane or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the camp drill")
+            if prompt == "Step to the gear table or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the gear table")
+            if prompt == "Step to the trade desk or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the trade desk")
+            if prompt == "Step to the recovery tents or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the recovery drill")
+            raise AssertionError(f"Unexpected tutorial prompt: {prompt!r}")
+
+        def tutorial_menu(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "choose", prompt, options, limit=60)
+            choose_prompts.append(prompt)
+            if prompt == "How do you spend this stop at camp?":
+                if game.state.flags.get("opening_tutorial_companion_called_to_party"):
+                    return self.option_index_containing(stripped, "Break camp")
+                return self.option_index_containing(stripped, "Party and roster")
+            if prompt == "Choose a party task.":
+                if not game.state.flags.get("opening_tutorial_companions_reviewed"):
+                    return self.option_index_containing(stripped, "Review the active party")
+                if not game.state.flags.get("opening_tutorial_companion_called_to_party"):
+                    return self.option_index_containing(stripped, "Manage the active party")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Manage who travels in the active party.":
+                if not game.state.flags.get("opening_tutorial_companion_sent_to_camp"):
+                    return self.option_index_containing(stripped, "Send an active companion to camp")
+                if not game.state.flags.get("opening_tutorial_companion_called_to_party"):
+                    return self.option_index_containing(stripped, "Call a camp companion into the active party")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Choose who returns to camp.":
+                return 1
+            if prompt == "Choose who joins the active party.":
+                return 1
+            if prompt == "Choose whose equipment you want to manage.":
+                if not game.state.flags.get("opening_tutorial_equipment_player_ready"):
+                    return self.option_index_containing(stripped, game.state.player.name)
+                if not game.state.flags.get("opening_tutorial_equipment_companion_ready"):
+                    return self.option_index_containing(stripped, "Tolan Ironshield")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == f"Manage equipment for {game.state.player.name}.":
+                if not game.state.flags.get("opening_tutorial_equipment_player_ready"):
+                    return self.option_index_containing(stripped, "Off Hand")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Manage equipment for Tolan Ironshield.":
+                if not game.state.flags.get("opening_tutorial_equipment_companion_ready"):
+                    return self.option_index_containing(stripped, "Off Hand")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == f"What do you want to do with Off Hand for {game.state.player.name}?":
+                return self.option_index_containing(stripped, "Shield")
+            if prompt == "What do you want to do with Off Hand for Tolan Ironshield?":
+                return self.option_index_containing(stripped, "Dagger")
+            if prompt == "Manage the party's shared inventory while dealing with Hadrik.":
+                if not game.state.flags.get("opening_tutorial_trading_sold_item"):
+                    return self.option_index_containing(stripped, "Sell items to Hadrik")
+                if not game.state.flags.get("opening_tutorial_trading_bought_item"):
+                    return self.option_index_containing(stripped, "Buy items from Hadrik")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Choose an item to sell to Hadrik.":
+                return self.option_index_containing(stripped, "Shield")
+            if prompt == "Choose an item to buy from Hadrik.":
+                return self.option_index_containing(stripped, "Bread Round")
+            if prompt == "Choose how the party recovers tonight.":
+                if not game.state.flags.get("opening_tutorial_resting_short_rest_taken"):
+                    return self.option_index_containing(stripped, "Take a short rest")
+                if not game.state.flags.get("opening_tutorial_resting_long_rest_taken"):
+                    return self.option_index_containing(stripped, "Take a long rest")
+                return self.option_index_containing(stripped, "Back")
+            raise AssertionError(f"Unexpected tutorial menu prompt: {prompt!r}")
 
         game.scenario_choice = tutorial_choice  # type: ignore[method-assign]
-        game.run_encounter = lambda encounter: (_ for _ in ()).throw(AssertionError("Tutorial should not start combat"))  # type: ignore[method-assign]
-        game.skill_check = lambda actor, skill, dc, context: (_ for _ in ()).throw(AssertionError("Tutorial should not force a skill check"))  # type: ignore[method-assign]
+        game.choose = tutorial_menu  # type: ignore[method-assign]
 
         game.scene_opening_tutorial()
 
@@ -7956,21 +8456,214 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["opening_tutorial_completed"])
         self.assertFalse(game.state.flags["opening_tutorial_pending"])
         self.assertIn("You finished Greywake's frontier primer before the road turned serious.", game.state.journal)
-        self.assertEqual(
-            options_seen[0],
-            ["*Take the short tutorial.", "*Skip ahead to your character's opening."],
-        )
-        self.assertTrue(all(options == ["*Continue."] for options in options_seen[1:]))
-        self.assertGreaterEqual(len(options_seen), 5)
+        self.assertFalse(game.state.companions)
+        self.assertFalse(game.state.camp_companions)
+        self.assertEqual(dict(game.state.inventory), initial_inventory)
+        self.assertEqual(game.state.gold, initial_gold)
+        self.assertEqual(game.state.short_rests_remaining, initial_short_rests)
+        self.assertEqual(game.state.player.current_hp, initial_player_hp)
+        self.assertEqual(dict(game.state.player.equipment_slots), initial_player_slots)
+        self.assertGreaterEqual(len(hub_options), 2)
+        self.assertTrue(any("Skip the rest of the primer" in option for option in hub_options[0]))
+        self.assertFalse(any("Finish the primer" in option for option in hub_options[0]))
+        self.assertTrue(any("Finish the primer" in option for option in hub_options[-1]))
+        self.assertFalse(any("Skip the rest of the primer" in option for option in hub_options[-1]))
+        self.assertIn("How do you spend this stop at camp?", choose_prompts)
+        self.assertIn("Choose whose equipment you want to manage.", choose_prompts)
+        self.assertIn("Manage the party's shared inventory while dealing with Hadrik.", choose_prompts)
+        self.assertIn("Choose how the party recovers tonight.", choose_prompts)
         rendered = self.plain_output(log)
         self.assertIn("Global Commands", rendered)
-        self.assertIn("companions start joining", rendered.lower())
-        self.assertIn("active lineup and anyone waiting at camp", rendered.lower())
-        self.assertIn("swap which companions travel with you", rendered.lower())
-        self.assertIn("type `help` whenever you want the command list again", rendered.lower())
-        self.assertIn("Combat gives you a menu of actions your character can use right now.", rendered)
-        self.assertNotIn("Frontier Primer: Sparring Lane", rendered)
-        self.assertNotIn("Greywake Drill Dummy", rendered)
+        self.assertIn("Greywake hangs a chalk board", rendered)
+        self.assertIn("[Ready] Companions", rendered)
+        self.assertIn("[Ready] Equipment", rendered)
+        self.assertIn("[Ready] Trading", rendered)
+        self.assertIn("[Ready] Resting", rendered)
+        self.assertIn("Tolan Ironshield", rendered)
+        self.assertIn("Kaelis Starling", rendered)
+        self.assertIn("That is the company rhythm", rendered)
+        self.assertIn("Gear lives in the shared inventory", rendered)
+        self.assertIn("Trade runs through the same shared inventory", rendered)
+        self.assertIn("Short rests steady a hurt company", rendered)
+
+    def test_opening_tutorial_companions_lesson_tracks_review_and_swap_without_state_leakage(self) -> None:
+        log: list[str] = []
+        game = self.build_opening_tutorial_game(seed=4444, output_fn=log.append)
+        snapshot = self.opening_tutorial_state_snapshot(game)
+        steps = {"scenario": 0, "choose": 0}
+        choose_prompts: list[str] = []
+
+        def lesson_choice(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "scenario", prompt, options, limit=8)
+            if prompt == "Step into the camp lane or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the camp drill")
+            raise AssertionError(f"Unexpected companions prompt: {prompt!r}")
+
+        def lesson_menu(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "choose", prompt, options, limit=12)
+            choose_prompts.append(prompt)
+            if prompt == "How do you spend this stop at camp?":
+                if game.state.flags.get("opening_tutorial_companion_called_to_party"):
+                    return self.option_index_containing(stripped, "Break camp")
+                return self.option_index_containing(stripped, "Party and roster")
+            if prompt == "Choose a party task.":
+                if not game.state.flags.get("opening_tutorial_companions_reviewed"):
+                    return self.option_index_containing(stripped, "Review the active party")
+                if not game.state.flags.get("opening_tutorial_companion_called_to_party"):
+                    return self.option_index_containing(stripped, "Manage the active party")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Manage who travels in the active party.":
+                if not game.state.flags.get("opening_tutorial_companion_sent_to_camp"):
+                    return self.option_index_containing(stripped, "Send an active companion to camp")
+                if not game.state.flags.get("opening_tutorial_companion_called_to_party"):
+                    return self.option_index_containing(stripped, "Call a camp companion into the active party")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Choose who returns to camp.":
+                return 1
+            if prompt == "Choose who joins the active party.":
+                return 1
+            raise AssertionError(f"Unexpected companions menu prompt: {prompt!r}")
+
+        game.scenario_choice = lesson_choice  # type: ignore[method-assign]
+        game.choose = lesson_menu  # type: ignore[method-assign]
+
+        self.assertTrue(game.run_opening_tutorial_companions_lesson())
+
+        self.assertTrue(game.state.flags["opening_tutorial_lesson_companions_complete"])
+        self.assertFalse(game.state.flags.get("opening_tutorial_companions_lesson_active"))
+        self.assert_opening_tutorial_state_restored(game, snapshot)
+        self.assertIn("Manage who travels in the active party.", choose_prompts)
+        self.assertIn("That is the company rhythm", self.plain_output(log))
+
+    def test_opening_tutorial_equipment_lesson_can_repeat_briefing_without_state_leakage(self) -> None:
+        log: list[str] = []
+        game = self.build_opening_tutorial_game(seed=4445, output_fn=log.append)
+        snapshot = self.opening_tutorial_state_snapshot(game)
+        steps = {"scenario": 0, "choose": 0}
+        choose_prompts: list[str] = []
+        explained = {"used": False}
+
+        def lesson_choice(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "scenario", prompt, options, limit=10)
+            if prompt == "Step to the gear table or return to the primer board.":
+                if not explained["used"]:
+                    explained["used"] = True
+                    return self.option_index_containing(stripped, "Explain the drill again")
+                return self.option_index_containing(stripped, "Open the gear table")
+            raise AssertionError(f"Unexpected equipment prompt: {prompt!r}")
+
+        def lesson_menu(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "choose", prompt, options, limit=12)
+            choose_prompts.append(prompt)
+            if prompt == "Choose whose equipment you want to manage.":
+                if not game.state.flags.get("opening_tutorial_equipment_player_ready"):
+                    return self.option_index_containing(stripped, game.state.player.name)
+                if not game.state.flags.get("opening_tutorial_equipment_companion_ready"):
+                    return self.option_index_containing(stripped, "Tolan Ironshield")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == f"Manage equipment for {game.state.player.name}.":
+                if not game.state.flags.get("opening_tutorial_equipment_player_ready"):
+                    return self.option_index_containing(stripped, "Off Hand")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Manage equipment for Tolan Ironshield.":
+                if not game.state.flags.get("opening_tutorial_equipment_companion_ready"):
+                    return self.option_index_containing(stripped, "Off Hand")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == f"What do you want to do with Off Hand for {game.state.player.name}?":
+                return self.option_index_containing(stripped, "Shield")
+            if prompt == "What do you want to do with Off Hand for Tolan Ironshield?":
+                return self.option_index_containing(stripped, "Dagger")
+            raise AssertionError(f"Unexpected equipment menu prompt: {prompt!r}")
+
+        game.scenario_choice = lesson_choice  # type: ignore[method-assign]
+        game.choose = lesson_menu  # type: ignore[method-assign]
+
+        self.assertTrue(game.run_opening_tutorial_equipment_lesson())
+
+        self.assertTrue(game.state.flags["opening_tutorial_lesson_equipment_complete"])
+        self.assertFalse(game.state.flags.get("opening_tutorial_equipment_lesson_active"))
+        self.assert_opening_tutorial_state_restored(game, snapshot)
+        self.assertIn("Manage equipment for Tolan Ironshield.", choose_prompts)
+        rendered = self.plain_output(log)
+        self.assertGreaterEqual(rendered.count("fit the Shield to your off hand"), 2)
+
+    def test_opening_tutorial_trading_lesson_tracks_sale_and_purchase_without_state_leakage(self) -> None:
+        log: list[str] = []
+        game = self.build_opening_tutorial_game(seed=4446, output_fn=log.append)
+        snapshot = self.opening_tutorial_state_snapshot(game)
+        steps = {"scenario": 0, "choose": 0}
+        choose_prompts: list[str] = []
+
+        def lesson_choice(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "scenario", prompt, options, limit=8)
+            if prompt == "Step to the trade desk or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the trade desk")
+            raise AssertionError(f"Unexpected trading prompt: {prompt!r}")
+
+        def lesson_menu(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "choose", prompt, options, limit=10)
+            choose_prompts.append(prompt)
+            if prompt == "Manage the party's shared inventory while dealing with Hadrik.":
+                if not game.state.flags.get("opening_tutorial_trading_sold_item"):
+                    return self.option_index_containing(stripped, "Sell items to Hadrik")
+                if not game.state.flags.get("opening_tutorial_trading_bought_item"):
+                    return self.option_index_containing(stripped, "Buy items from Hadrik")
+                return self.option_index_containing(stripped, "Back")
+            if prompt == "Choose an item to sell to Hadrik.":
+                return self.option_index_containing(stripped, "Shield")
+            if prompt == "Choose an item to buy from Hadrik.":
+                return self.option_index_containing(stripped, "Bread Round")
+            raise AssertionError(f"Unexpected trading menu prompt: {prompt!r}")
+
+        game.scenario_choice = lesson_choice  # type: ignore[method-assign]
+        game.choose = lesson_menu  # type: ignore[method-assign]
+
+        self.assertTrue(game.run_opening_tutorial_trading_lesson())
+
+        self.assertTrue(game.state.flags["opening_tutorial_lesson_trading_complete"])
+        self.assertFalse(game.state.flags.get("opening_tutorial_trading_lesson_active"))
+        self.assert_opening_tutorial_state_restored(game, snapshot)
+        self.assertIn("Choose an item to buy from Hadrik.", choose_prompts)
+        rendered = self.plain_output(log)
+        self.assertIn("Hadrik buys", rendered)
+        self.assertIn("You buy Bread Round x1 from Hadrik", rendered)
+
+    def test_opening_tutorial_resting_lesson_tracks_short_and_long_rest_without_state_leakage(self) -> None:
+        log: list[str] = []
+        game = self.build_opening_tutorial_game(seed=4447, output_fn=log.append)
+        snapshot = self.opening_tutorial_state_snapshot(game)
+        steps = {"scenario": 0, "choose": 0}
+        choose_prompts: list[str] = []
+
+        def lesson_choice(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "scenario", prompt, options, limit=8)
+            if prompt == "Step to the recovery tents or return to the primer board.":
+                return self.option_index_containing(stripped, "Open the recovery drill")
+            raise AssertionError(f"Unexpected resting prompt: {prompt!r}")
+
+        def lesson_menu(prompt: str, options: list[str], **kwargs) -> int:
+            stripped = self.guard_opening_tutorial_prompt(steps, "choose", prompt, options, limit=8)
+            choose_prompts.append(prompt)
+            if prompt == "Choose how the party recovers tonight.":
+                if not game.state.flags.get("opening_tutorial_resting_short_rest_taken"):
+                    return self.option_index_containing(stripped, "Take a short rest")
+                if not game.state.flags.get("opening_tutorial_resting_long_rest_taken"):
+                    return self.option_index_containing(stripped, "Take a long rest")
+                return self.option_index_containing(stripped, "Back")
+            raise AssertionError(f"Unexpected resting menu prompt: {prompt!r}")
+
+        game.scenario_choice = lesson_choice  # type: ignore[method-assign]
+        game.choose = lesson_menu  # type: ignore[method-assign]
+
+        self.assertTrue(game.run_opening_tutorial_resting_lesson())
+
+        self.assertTrue(game.state.flags["opening_tutorial_lesson_resting_complete"])
+        self.assertFalse(game.state.flags.get("opening_tutorial_resting_lesson_active"))
+        self.assert_opening_tutorial_state_restored(game, snapshot)
+        self.assertIn("Choose how the party recovers tonight.", choose_prompts)
+        rendered = self.plain_output(log)
+        self.assertIn("The party takes a short rest", rendered)
+        self.assertIn("The party completes a long rest", rendered)
 
     def test_background_prologues_converge_to_wayside_luck_shrine(self) -> None:
         for background in BACKGROUNDS:
@@ -11882,6 +12575,7 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(game.state.flags["greywake_mira_evidence_kind"], "marked_manifest")
         self.assertEqual(game.state.current_scene, "neverwinter_briefing")
         self.assertEqual([encounter.title for encounter in encounters], ["Greywake Road Breakout"])
+        self.assertTrue(encounters[0].allow_post_combat_random_encounter)
 
     def test_neverwinter_briefing_reacts_to_greywake_outcome_manifest(self) -> None:
         player = build_character(
@@ -12278,6 +12972,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["neverwinter_woodline_path"])
         self.assertTrue(game.state.flags["road_ambush_scouted"])
         self.assertEqual([encounter.title for encounter in encounters], ["Emberway Milehouse Intercept"])
+        self.assertTrue(encounters[0].allow_post_combat_random_encounter)
         self.assertEqual(len(encounters[0].enemies), 2)
 
     def test_neverwinter_signal_cairn_sets_second_wave_edge(self) -> None:
@@ -12304,6 +12999,7 @@ class CoreTests(unittest.TestCase):
         self.assertTrue(game.state.flags["road_reinforcement_signal_cut"])
         self.assertTrue(game.state.flags["road_second_wave_trail_read"])
         self.assertEqual([encounter.title for encounter in encounters], ["Greywake Wood Signal Cairn"])
+        self.assertTrue(encounters[0].allow_post_combat_random_encounter)
         self.assertEqual(len(encounters[0].enemies), 2)
 
     def test_phandalin_shrine_defers_when_elira_joined_in_neverwinter(self) -> None:

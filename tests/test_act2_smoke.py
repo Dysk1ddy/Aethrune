@@ -179,6 +179,7 @@ class Act2SmokeTests(unittest.TestCase):
         self.assertIn("Survey Integrity", rendered)
         self.assertIn("Sabotage Cover", rendered)
         self.assertEqual([encounter.title for encounter in encounters], ["Woodland Saboteurs"])
+        self.assertTrue(encounters[0].allow_post_combat_random_encounter)
 
     def test_neverwinter_wood_delayed_route_salvages_living_witnesses_without_blocking_progress(self) -> None:
         log: list[str] = []
@@ -188,7 +189,7 @@ class Act2SmokeTests(unittest.TestCase):
             output_lines=log,
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_neglected_lead": "woodland_survey_cleared",
                 "act2_town_stability": 2,
                 "act2_route_control": 2,
@@ -251,7 +252,7 @@ class Act2SmokeTests(unittest.TestCase):
             output_lines=log,
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_neglected_lead": "stonehollow_dig_cleared",
                 "act2_town_stability": 2,
                 "act2_route_control": 2,
@@ -312,6 +313,42 @@ class Act2SmokeTests(unittest.TestCase):
             ["Glasswater Intake Yard", "Glasswater Valve Hall", "Glasswater Filter Beds", "Brother Merik Sorn"],
         )
 
+    def test_siltlock_counting_house_smoke_route_reaches_hub_and_sets_payoffs(self) -> None:
+        game, encounters = self.make_route_game(
+            seed=940043,
+            current_scene="siltlock_counting_house",
+            flags={
+                "act2_started": True,
+                "agatha_truth_secured": True,
+                "act2_sponsor": "exchange",
+                "act2_town_stability": 3,
+                "act2_route_control": 2,
+                "act2_whisper_pressure": 2,
+            },
+        )
+
+        def fake_scenario_choice(prompt: str, options: list[str], **kwargs) -> int:
+            if prompt == "What do you do from Public Counter?":
+                return self.option_index_containing(options, "Permit Stacks")
+            if prompt == "What do you do from Permit Stacks?":
+                return self.option_index_containing(options, "Back Till Cage")
+            if prompt == "What do you do from Back Till Cage?":
+                return self.option_index_containing(options, "Sluice Bell Alcove")
+            if prompt == "What do you do from Sluice Bell Alcove?":
+                return self.option_index_containing(options, "Auditor's Stair")
+            return 1
+
+        game.scenario_choice = fake_scenario_choice  # type: ignore[method-assign]
+        game.scene_siltlock_counting_house()
+
+        assert game.state is not None
+        self.assertEqual(game.state.current_scene, "act2_expedition_hub")
+        self.assertTrue(game.state.flags["siltlock_counting_house_cleared"])
+        self.assertTrue(game.state.flags["glasswater_permit_fraud_exposed"])
+        self.assertTrue(game.state.flags["sabotage_supply_watch_warned"])
+        self.assertTrue(game.state.flags["act2_sponsor_pressure_named"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Siltlock Auditor's Stair"])
+
     def test_conyberry_agatha_smoke_route_reaches_hub_with_clean_warning(self) -> None:
         game = self.make_game(
             seed=940042,
@@ -362,7 +399,7 @@ class Act2SmokeTests(unittest.TestCase):
             current_scene="conyberry_agatha",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_neglected_lead": "agatha_truth_secured",
                 "agatha_circuit_defiled": True,
                 "act2_town_stability": 3,
@@ -483,7 +520,7 @@ class Act2SmokeTests(unittest.TestCase):
 
         assert game.state is not None
         self.assertTrue(game.state.flags["pattern_preserves_people"])
-        self.assertTrue(game.state.flags["phandalin_sabotage_resolved"])
+        self.assertTrue(game.state.flags["iron_hollow_sabotage_resolved"])
         self.assertEqual(game.state.current_scene, "act2_expedition_hub")
 
     def test_act2_hub_smoke_warns_before_first_late_route_choice(self) -> None:
@@ -498,7 +535,7 @@ class Act2SmokeTests(unittest.TestCase):
                 "agatha_truth_secured": True,
                 "woodland_survey_cleared": True,
                 "stonehollow_dig_cleared": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_town_stability": 3,
                 "act2_route_control": 3,
                 "act2_whisper_pressure": 2,
@@ -533,7 +570,7 @@ class Act2SmokeTests(unittest.TestCase):
             output_lines=log,
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "act2_first_late_route": "broken_prospect",
                 "act2_captive_outcome": "captives_endangered",
                 "act2_town_stability": 3,
@@ -569,7 +606,7 @@ class Act2SmokeTests(unittest.TestCase):
             current_scene="broken_prospect",
             flags={
                 "act2_started": True,
-                "phandalin_sabotage_resolved": True,
+                "iron_hollow_sabotage_resolved": True,
                 "south_adit_cleared": True,
                 "act2_first_late_route": "south_adit",
                 "act2_town_stability": 3,
@@ -626,7 +663,7 @@ class Act2SmokeTests(unittest.TestCase):
         assert game.state is not None
         self.assertEqual(game.state.current_scene, "act2_expedition_hub")
         self.assertTrue(game.state.flags["wave_echo_outer_cleared"])
-        self.assertEqual([encounter.title for encounter in encounters], ["Wave Echo Slime Sluice", "Outer Gallery Pressure"])
+        self.assertEqual([encounter.title for encounter in encounters], ["Resonant Vaults Slime Sluice", "Outer Gallery Pressure"])
 
     def test_black_lake_smoke_route_reaches_hub(self) -> None:
         game, encounters = self.make_route_game(
@@ -659,7 +696,47 @@ class Act2SmokeTests(unittest.TestCase):
         self.assertTrue(game.state.flags["black_lake_barracks_raided"])
         self.assertEqual(
             [encounter.title for encounter in encounters],
-            ["Black Lake Barracks", "Black Lake Waterline", "Black Lake Causeway"],
+            ["Blackglass Barracks", "Blackglass Waterline", "Blackglass Causeway"],
+        )
+
+    def test_blackglass_relay_smoke_route_reaches_hub_and_sets_forge_payoffs(self) -> None:
+        game, encounters = self.make_route_game(
+            seed=94012,
+            current_scene="blackglass_relay_house",
+            flags={
+                "act2_started": True,
+                "black_lake_crossed": True,
+                "black_lake_barracks_orders_taken": True,
+                "act2_town_stability": 3,
+                "act2_route_control": 3,
+                "act2_whisper_pressure": 2,
+            },
+        )
+
+        def fake_scenario_choice(prompt: str, options: list[str], **kwargs) -> int:
+            if prompt == "What do you do from Relay Gate?":
+                return self.option_index_containing(options, "Cable Sump")
+            if prompt == "What do you do from Cable Sump?":
+                return self.option_index_containing(options, "Keeper Ledger")
+            if prompt == "What do you do from Keeper Ledger?":
+                return self.option_index_containing(options, "Null-Bell Walk")
+            if prompt == "What do you do from Null-Bell Walk?":
+                return self.option_index_containing(options, "Counterweight Crown")
+            return 1
+
+        game.scenario_choice = fake_scenario_choice  # type: ignore[method-assign]
+        game.scene_blackglass_relay_house()
+
+        assert game.state is not None
+        self.assertEqual(game.state.current_scene, "act2_expedition_hub")
+        self.assertTrue(game.state.flags["blackglass_relay_house_cleared"])
+        self.assertTrue(game.state.flags["forge_signal_grounded"])
+        self.assertTrue(game.state.flags["forge_reserve_timing_known"])
+        self.assertTrue(game.state.flags["blackglass_relay_bell_tuned"])
+        self.assertTrue(game.state.flags["blackglass_relay_cables_cleared"])
+        self.assertEqual(
+            [encounter.title for encounter in encounters],
+            ["Blackglass Relay Cable Sump", "Blackglass Relay Crown"],
         )
 
     def test_forge_smoke_route_reaches_hub_and_records_handoff_flags(self) -> None:

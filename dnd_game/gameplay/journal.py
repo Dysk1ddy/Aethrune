@@ -411,6 +411,9 @@ class JournalMixin:
 
     def show_party(self) -> None:
         assert self.state is not None
+        tutorial_tracker = getattr(self, "record_opening_tutorial_companion_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("party_reviewed")
         self.banner("Party")
         if self.rich_ledger_enabled():
             summary = Table.grid(expand=True, padding=(0, 1))
@@ -419,10 +422,7 @@ class JournalMixin:
             summary.add_row("Progress", self.xp_progress_summary())
             summary.add_row("Gold", marks_label(self.state.gold))
             summary.add_row("Short rests", str(self.state.short_rests_remaining))
-            summary.add_row(
-                "Carry",
-                f"{self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb",
-            )
+            summary.add_row("Supplies", str(self.current_supply_points()))
             active_panels = [self.member_summary_panel(member) for member in self.state.party_members()]
             camp_content = (
                 Group(*(self.rich_from_ansi(f"- {self.companion_status_line(companion)}") for companion in self.state.camp_companions))
@@ -459,7 +459,7 @@ class JournalMixin:
         self.say(
             f"{self.xp_progress_summary()} | Gold: {marks_label(self.state.gold)} | "
             f"Short rests left: {self.state.short_rests_remaining} | "
-            f"Carry weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb"
+            f"Supplies: {self.current_supply_points()}"
         )
         self.say("Active party:")
         for member in self.state.party_members():

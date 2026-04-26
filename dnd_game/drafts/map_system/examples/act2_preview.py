@@ -6,21 +6,23 @@ from ..runtime import DraftMapState, render_screen_with_rich
 
 def main() -> None:
     state = DraftMapState(
-        current_node_id="act2_expedition_hub",
-        current_room_id="causeway_lip",
+        current_node_id="blackglass_relay_house",
+        current_room_id="relay_gate",
         flags={
             "act2_started",
             "agatha_truth_secured",
             "woodland_survey_cleared",
             "stonehollow_dig_cleared",
             "claims_meet_held",
-            "phandalin_sabotage_resolved",
+            "iron_hollow_sabotage_resolved",
             "broken_prospect_cleared",
             "south_adit_cleared",
             "wave_echo_reached",
             "quiet_choir_identified",
             "wave_echo_outer_cleared",
             "black_lake_reached",
+            "black_lake_crossed",
+            "blackglass_relay_route_known",
         },
         flag_values={
             "act2_town_stability": 4,
@@ -40,11 +42,12 @@ def main() -> None:
             "south_adit",
             "wave_echo_outer_galleries",
             "black_lake_causeway",
+            "blackglass_relay_house",
         },
-        cleared_rooms={"causeway_lip"},
-        seen_story_beats={"act2_midpoint_ready", "late_routes_open", "forge_route_confirmed"},
+        cleared_rooms={"causeway_lip", "far_landing"},
+        seen_story_beats={"act2_midpoint_ready", "late_routes_open", "forge_route_confirmed", "blackglass_relay_found"},
     )
-    dungeon = ACT2_ENEMY_DRIVEN_MAP.dungeons["black_lake_crossing"]
+    dungeon = ACT2_ENEMY_DRIVEN_MAP.dungeons["blackglass_relay_house"]
     render_screen_with_rich(
         blueprint=ACT2_ENEMY_DRIVEN_MAP,
         state=state,
@@ -55,8 +58,8 @@ def main() -> None:
         quest_text="Sever the Quiet Choir",
         act_text="Act 2",
         scene_text=(
-            "The Act 2 map is enemy-driven: each route foregrounds a pressure package, and Black Lake "
-            "asks whether the party breaks the shrine, barracks, or causeway problem first."
+            "The Act 2 map now shows the far-side relay branch between Blackglass and the Meridian Forge, "
+            "where wet cable, timing slates, and the null bell can blunt Caldra's support line."
         ),
     )
 

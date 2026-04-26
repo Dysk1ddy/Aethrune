@@ -13,7 +13,7 @@ When a combat encounter is won, the game awards guaranteed XP and gold from each
 | Purpose | File |
 | --- | --- |
 | Item definitions, `LootEntry`, `LOOT_TABLES`, and drop rolling | `dnd_game/data/items/catalog.py` |
-| Inventory capacity, adding items, and collecting combat loot | `dnd_game/gameplay/inventory_core.py` |
+| Inventory handling, adding items, and collecting combat loot | `dnd_game/gameplay/inventory_core.py` |
 | Combat victory reward flow | `dnd_game/gameplay/combat_flow.py` |
 | Enemy archetypes, XP values, and gold values | `dnd_game/data/story/factories.py` |
 | Direct random encounter rewards | `dnd_game/gameplay/random_encounters.py` |
@@ -29,7 +29,7 @@ When a combat encounter is won, the game awards guaranteed XP and gold from each
 7. Every `LootEntry` in that table rolls independently.
 8. Successful item rolls choose a quantity between `minimum` and `maximum`.
 9. All drops from the encounter are combined into totals.
-10. `add_inventory_item()` adds the items if the party has carrying capacity.
+10. `add_inventory_item()` adds the items to shared inventory.
 
 ## How To Read `LootEntry`
 
@@ -58,8 +58,7 @@ This means the enemy always drops 2 to 3 spiced sausages.
 - Each copy of an enemy rolls separately. Three `goblin` enemies roll the `goblin` table three times.
 - Item IDs are resolved through `resolve_item_id()`, so legacy aliases can still map to current item IDs.
 - If an enemy archetype has no entry in `LOOT_TABLES`, that enemy drops no items.
-- Carrying capacity matters. `add_inventory_item()` can leave some or all dropped items behind if the party is overloaded.
-- The journal records successfully looted items, not items that were rolled but left behind.
+- The journal records successfully looted items that were added to shared inventory.
 
 ## XP And Gold
 
@@ -96,7 +95,7 @@ grant_random_encounter_rewards(
 )
 ```
 
-Those rewards are direct grants. They still use `add_inventory_item()`, so carrying capacity still applies, but they do not roll enemy loot tables.
+Those rewards are direct grants. They still use `add_inventory_item()`, but they do not roll enemy loot tables.
 
 Scripted story rewards often call `add_inventory_item()` directly for the same reason.
 

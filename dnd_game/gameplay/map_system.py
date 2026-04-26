@@ -345,6 +345,9 @@ class MapSystemMixin:
             self._clear_map_view_cache()
             self._act1_map_cache_state_owner_id = None
             return
+        normalize_act2_legacy_flags = getattr(self, "normalize_act2_legacy_flags", None)
+        if callable(normalize_act2_legacy_flags):
+            normalize_act2_legacy_flags()
         owner_id = id(self.state)
         if getattr(self, "_act1_map_cache_state_owner_id", None) != owner_id:
             self._act1_map_cache_state_owner_id = owner_id
@@ -1330,7 +1333,16 @@ class MapSystemMixin:
         dungeon = self.current_act2_dungeon()
         site_label = "Current Site (not available here)"
         if dungeon is not None:
-            playable_sites = {"stonehollow_dig", "broken_prospect", "south_adit", "wave_echo_outer_galleries", "black_lake_causeway", "forge_of_spells"}
+            playable_sites = {
+                "stonehollow_dig",
+                "siltlock_counting_house",
+                "broken_prospect",
+                "south_adit",
+                "wave_echo_outer_galleries",
+                "black_lake_causeway",
+                "blackglass_relay_house",
+                "forge_of_spells",
+            }
             site_label = dungeon.title if dungeon.entry_node_id in playable_sites else f"{dungeon.title} (draft, read-only)"
         while True:
             choice = self.choose(
@@ -1687,6 +1699,11 @@ class MapSystemMixin:
             self.state.current_scene = "glasswater_intake"
         self.run_act2_dungeon("glasswater_intake")
 
+    def scene_siltlock_counting_house(self) -> None:
+        if self.state is not None:
+            self.state.current_scene = "siltlock_counting_house"
+        self.run_act2_dungeon("siltlock_counting_house")
+
     def scene_broken_prospect(self) -> None:
         if self.state is not None:
             self.state.current_scene = "broken_prospect"
@@ -1706,6 +1723,11 @@ class MapSystemMixin:
         if self.state is not None:
             self.state.current_scene = "black_lake_causeway"
         self.run_act2_dungeon("black_lake_causeway")
+
+    def scene_blackglass_relay_house(self) -> None:
+        if self.state is not None:
+            self.state.current_scene = "blackglass_relay_house"
+        self.run_act2_dungeon("blackglass_relay_house")
 
     def scene_forge_of_spells(self) -> None:
         if self.state is not None:
@@ -1818,7 +1840,15 @@ class MapSystemMixin:
             ("emberhall_cellars", "varyn_sanctum"): self._emberhall_varyn_sanctum,
         }
         handler = handlers[(node_id, room.room_id)]
-        handler(dungeon, room)
+        previous_context = getattr(self, "_post_combat_random_encounter_context", None)
+        self._post_combat_random_encounter_context = {"act": 1, "room_role": room.role, "room_id": room.room_id}
+        try:
+            handler(dungeon, room)
+        finally:
+            if previous_context is None:
+                delattr(self, "_post_combat_random_encounter_context")
+            else:
+                self._post_combat_random_encounter_context = previous_context
 
     def _blackwake_adjust_named_companion(self, name: str, delta: int, reason: str) -> None:
         companion = self.find_companion(name)
@@ -2585,6 +2615,13 @@ class MapSystemMixin:
             ("glasswater_intake", "filter_beds"): self._glasswater_filter_beds,
             ("glasswater_intake", "pump_gallery"): self._glasswater_pump_gallery,
             ("glasswater_intake", "headgate_chamber"): self._glasswater_headgate_chamber,
+            ("siltlock_counting_house", "public_counter"): self._siltlock_public_counter,
+            ("siltlock_counting_house", "permit_stacks"): self._siltlock_permit_stacks,
+            ("siltlock_counting_house", "ration_cellar"): self._siltlock_ration_cellar,
+            ("siltlock_counting_house", "back_till"): self._siltlock_back_till,
+            ("siltlock_counting_house", "valve_wax_archive"): self._siltlock_valve_wax_archive,
+            ("siltlock_counting_house", "sluice_bell_alcove"): self._siltlock_sluice_bell_alcove,
+            ("siltlock_counting_house", "auditor_stair"): self._siltlock_auditor_stair,
             ("broken_prospect", "broken_shelf"): self._broken_prospect_broken_shelf,
             ("broken_prospect", "pact_markers"): self._broken_prospect_pact_markers,
             ("broken_prospect", "rival_survey_shelf"): self._broken_prospect_rival_survey_shelf,
@@ -2609,6 +2646,11 @@ class MapSystemMixin:
             ("black_lake_causeway", "anchor_chains"): self._black_lake_anchor_chains,
             ("black_lake_causeway", "blackwater_edge"): self._black_lake_blackwater_edge,
             ("black_lake_causeway", "far_landing"): self._black_lake_far_landing,
+            ("blackglass_relay_house", "relay_gate"): self._blackglass_relay_gate,
+            ("blackglass_relay_house", "cable_sump"): self._blackglass_relay_cable_sump,
+            ("blackglass_relay_house", "keeper_ledger"): self._blackglass_relay_keeper_ledger,
+            ("blackglass_relay_house", "null_bell_walk"): self._blackglass_relay_null_bell_walk,
+            ("blackglass_relay_house", "counterweight_crown"): self._blackglass_relay_counterweight_crown,
             ("forge_of_spells", "forge_threshold"): self._forge_threshold,
             ("forge_of_spells", "choir_pit"): self._forge_choir_pit,
             ("forge_of_spells", "pact_anvil"): self._forge_pact_anvil,
@@ -2617,7 +2659,15 @@ class MapSystemMixin:
             ("forge_of_spells", "caldra_dais"): self._forge_caldra_dais,
         }
         handler = handlers[(node_id, room.room_id)]
-        handler(dungeon, room)
+        previous_context = getattr(self, "_post_combat_random_encounter_context", None)
+        self._post_combat_random_encounter_context = {"act": 2, "room_role": room.role, "room_id": room.room_id}
+        try:
+            handler(dungeon, room)
+        finally:
+            if previous_context is None:
+                delattr(self, "_post_combat_random_encounter_context")
+            else:
+                self._post_combat_random_encounter_context = previous_context
 
     def _stonehollow_delayed(self) -> bool:
         assert self.state is not None
@@ -2971,7 +3021,7 @@ class MapSystemMixin:
 
     def _glasswater_delayed(self) -> bool:
         assert self.state is not None
-        return bool(self.state.flags.get("phandalin_sabotage_resolved")) and not self.state.flags.get("glasswater_intake_cleared")
+        return bool(self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG)) and not self.state.flags.get("glasswater_intake_cleared")
 
     def _glasswater_active_companion(self, name: str):
         assert self.state is not None
@@ -2998,6 +3048,10 @@ class MapSystemMixin:
                 "Fresh boot marks cut across all of it like insults.",
                 typed=True,
             )
+            if self.state.flags.get("glasswater_permit_fraud_exposed"):
+                self.say("Siltlock's permit chain gives the annex an uglier shape: the false maintenance delay was signed before the water turned foul.")
+            if self.state.flags.get("glasswater_valve_wax_matched"):
+                self.say("The green wax sample from Siltlock matches the grit packed around the first valve locks.")
             if delayed:
                 self.say(
                     "You reached it after sabotage night. A few surfaces have already been wiped cleaner than the annex deserves, and one whole layer of panic has had time to dry into habit."
@@ -3142,10 +3196,14 @@ class MapSystemMixin:
         if delayed or not self.state.flags.get("glasswater_maintenance_route_open"):
             enemies.append(create_enemy("animated_armor"))
         hero_bonus = self.apply_scene_companion_support("glasswater_intake")
+        dc = 13 if self.state.flags.get("glasswater_valve_wax_matched") else 14
         if self.state.flags.get("glasswater_maintenance_route_open"):
             hero_bonus += 1
         if self.state.flags.get("glasswater_blind_approach"):
             hero_bonus += 1
+        if self.state.flags.get("glasswater_valve_wax_matched"):
+            hero_bonus += 1
+            self.say("The Siltlock wax sample points to the valve wheel that was sealed for fraud instead of safety.")
         choice = self.scenario_choice(
             "How do you take control of the Valve Hall?",
             [
@@ -3157,18 +3215,18 @@ class MapSystemMixin:
         )
         if choice == 1:
             self.player_action("Read the pressure map and shut the dangerous line first.")
-            if self.skill_check(self.state.player, "Investigation", 14, context="to stabilize the Glasswater valves"):
+            if self.skill_check(self.state.player, "Investigation", dc, context="to stabilize the Glasswater valves"):
                 self.state.flags["glasswater_valves_stabilized"] = True
                 hero_bonus += 2
                 self.reward_party(xp=12, reason="stabilizing the Glasswater valve order")
         elif choice == 2:
             self.player_action("Force the wheels over before the sentinels can lock the room down.")
-            if self.skill_check(self.state.player, "Athletics", 14, context="to muscle the Glasswater valve line into your control"):
+            if self.skill_check(self.state.player, "Athletics", dc, context="to muscle the Glasswater valve line into your control"):
                 hero_bonus += 1
                 self.apply_status(self.state.player, "emboldened", 2, source="forcing the valve line")
         else:
             self.player_action("Break the wrong valve and make the hall punish its current masters.")
-            if self.skill_check(self.state.player, "Arcana", 14, context="to make the Glasswater valve pattern turn hostile"):
+            if self.skill_check(self.state.player, "Arcana", dc, context="to make the Glasswater valve pattern turn hostile"):
                 hero_bonus += 1
                 self.state.flags["glasswater_vent_line_broken"] = True
                 self.apply_status(enemies[0], "reeling", 1, source="a burst of wrong pressure")
@@ -3278,6 +3336,9 @@ class MapSystemMixin:
         assert self.state is not None
         delayed = self._glasswater_delayed()
         self.say("The Relay Office is too orderly for a ruin. Satchels hang by route mark, manifests are weighted against damp, and one wall is given over entirely to copied names.")
+        dc = 13 if self.state.flags.get("glasswater_permit_fraud_exposed") else 14
+        if self.state.flags.get("glasswater_permit_fraud_exposed"):
+            self.say("Siltlock's forged permits name the manifest shelf that should have been missing from this office.")
         if self._glasswater_active_companion("Bryn Underbough") is not None:
             self.speaker(
                 "Bryn Underbough",
@@ -3295,7 +3356,7 @@ class MapSystemMixin:
         resolved_cleanly = False
         if choice == 1:
             self.player_action("Take the live satchel before the shelves teach you the wrong lesson.")
-            if self.skill_check(self.state.player, "Stealth", 14, context="to steal the Glasswater live satchel without blowing the office"):
+            if self.skill_check(self.state.player, "Stealth", dc, context="to steal the Glasswater live satchel without blowing the office"):
                 resolved_cleanly = True
                 self.state.flags["glasswater_relay_ledgers_taken"] = True
                 self.state.flags["glasswater_relay_route_decoded"] = True
@@ -3303,14 +3364,14 @@ class MapSystemMixin:
                 self.say("You lift the live packet before the shelves can become theater. The room suddenly makes sense in the worst possible way.")
         elif choice == 2:
             self.player_action("Read the claim manifests and name who profits from the intake staying sick.")
-            if self.skill_check(self.state.player, "Investigation", 14, context="to expose the false manifests in Glasswater's relay office"):
+            if self.skill_check(self.state.player, "Investigation", dc, context="to expose the false manifests in Glasswater's relay office"):
                 resolved_cleanly = True
                 self.state.flags["glasswater_claim_fraud_named"] = True
                 self.add_clue("Glasswater manifests were falsified to protect a profitable lie: delays, fouled water, and missing repair allotments were all serving somebody's route politics.")
                 self.say("The papers stop pretending to be maintenance records and turn into motive.")
         else:
             self.player_action("Pressure the clerk or fixer before fear turns them useless.")
-            if self.skill_check(self.state.player, "Intimidation", 14, context="to break Glasswater's relay clerk before the room settles into silence"):
+            if self.skill_check(self.state.player, "Intimidation", dc, context="to break Glasswater's relay clerk before the room settles into silence"):
                 resolved_cleanly = True
                 self.state.flags["glasswater_courier_broken"] = True
                 self.add_clue("A shaken Glasswater fixer admits that 'special transfers' moved through lower rooms on the same nights town water ran foul, tying the annex to a deeper prisoner-routing line.")
@@ -3349,6 +3410,9 @@ class MapSystemMixin:
     def _glasswater_ledger_vault(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         self.say("The vault door is small, ugly, and expensive in the way only practical secrets ever are.")
+        dc = 13 if self.state.flags.get("glasswater_permit_fraud_exposed") or self.state.flags.get("glasswater_valve_wax_matched") else 14
+        if self.state.flags.get("glasswater_permit_fraud_exposed"):
+            self.say("The permit numbers from Siltlock give you three ledger rows before the vault can bury them in routine.")
         choice = self.scenario_choice(
             "Which truth do you take out first?",
             [
@@ -3360,17 +3424,17 @@ class MapSystemMixin:
         )
         if choice == 1:
             self.player_action("The proof that someone profited from the intake staying unstable.")
-            if self.skill_check(self.state.player, "Investigation", 14, context="to isolate Glasswater's claims-fraud proof"):
+            if self.skill_check(self.state.player, "Investigation", dc, context="to isolate Glasswater's claims-fraud proof"):
                 self.state.flags["glasswater_claim_fraud_named"] = True
                 self.add_clue("Glasswater's hidden ledgers prove repair delays and false route reports were profitable, not accidental.")
         elif choice == 2:
             self.player_action("The route ledgers. You need the living pattern before the guilty names.")
-            if self.skill_check(self.state.player, "History", 14, context="to reconstruct Glasswater's live route pattern"):
+            if self.skill_check(self.state.player, "History", dc, context="to reconstruct Glasswater's live route pattern"):
                 self.state.flags["glasswater_relay_route_decoded"] = True
                 self.add_clue("Glasswater's route ledgers mark which traffic was real, which was copied, and which loads only existed to cover stranger movement through the annex.")
         else:
             self.player_action("The prisoner-transfer notations before somebody notices the missing page.")
-            if self.skill_check(self.state.player, "Sleight of Hand", 14, context="to lift the Glasswater transfer notations cleanly"):
+            if self.skill_check(self.state.player, "Sleight of Hand", dc, context="to lift the Glasswater transfer notations cleanly"):
                 self.state.flags["glasswater_transfer_notes_found"] = True
                 self.add_clue("Glasswater transfer slips reference lower-room 'special transfers' that do not fit supply work, foreshadowing the South Adit prisoner line.")
         if not self.state.flags.get("glasswater_reward_thoughtward"):
@@ -3557,6 +3621,11 @@ class MapSystemMixin:
                 "Brother Merik Sorn",
                 "So you found the paper lie before the water lie. Most people need the sickness first.",
             )
+        elif self.state.flags.get("glasswater_permit_fraud_exposed"):
+            self.speaker(
+                "Brother Merik Sorn",
+                "Siltlock kept such tidy forms. I wondered when someone would mistake neat filing for innocence.",
+            )
         elif self.state.flags.get("glasswater_relay_ledgers_taken"):
             self.speaker(
                 "Brother Merik Sorn",
@@ -3593,6 +3662,12 @@ class MapSystemMixin:
             hero_bonus += 1
         if self.state.flags.get("glasswater_headgate_count_heard"):
             hero_bonus += 1
+        if self.state.flags.get("glasswater_permit_fraud_exposed"):
+            hero_bonus += 1
+            self.state.flags["glasswater_claim_fraud_named"] = True
+        if self.state.flags.get("glasswater_valve_wax_matched"):
+            hero_bonus += 1
+            self.apply_status(merik, "reeling", 1, source="the Siltlock wax sample naming the false seal")
         if self.state.flags.get("glasswater_flank_route"):
             hero_bonus += 1
             self.apply_status(merik, "surprised", 1, source="you reached the chamber from the overflow flank")
@@ -3706,6 +3781,347 @@ class MapSystemMixin:
         self.reward_party(xp=65, gold=16, reason="securing Glasswater Intake")
         self._glasswater_award_baseline_rewards()
         self.return_to_act2_hub(result_text)
+
+    def _siltlock_delayed(self) -> bool:
+        assert self.state is not None
+        return bool(self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG)) and not self.state.flags.get("siltlock_counting_house_cleared")
+
+    def _siltlock_public_counter(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        delayed = self._siltlock_delayed()
+        if not self.state.flags.get("siltlock_counting_house_seen"):
+            self.say(
+                "Siltlock Counting House stands behind the Ashlamp Inn with mud on the visitor boards and clean boot scuffs behind the rail. "
+                "A brass counter bell gives one polite tap, then rings again somewhere under the floor.",
+                typed=True,
+            )
+            if delayed:
+                self.say("You reached Siltlock after sabotage night. The public ledgers are still damp, and the waste bin smells of burned receipt corners.")
+            elif self.state.flags.get("glasswater_intake_cleared"):
+                self.say("Glasswater's seized ledgers make the clerks flinch before you say a word. They know which permit numbers you brought with you.")
+            self.state.flags["siltlock_counting_house_seen"] = True
+        choice = self.scenario_choice(
+            "How do you open the Siltlock audit?",
+            [
+                self.skill_tag("INVESTIGATION", self.action_option("Read the counter traffic and mark which books are being closed too quickly.")),
+                self.skill_tag("PERSUASION", self.action_option("Make the junior clerk explain why the cellar bell rings before the street bell.")),
+                self.skill_tag("PERCEPTION", self.action_option("Watch hands and shoes instead of faces until the hidden routine shows itself.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Read the counter traffic and mark which books are being closed too quickly.")
+            if self.skill_check(self.state.player, "Investigation", 13, context="to read Siltlock's public counter traffic"):
+                self.state.flags["siltlock_clerk_script_read"] = True
+                self.add_clue("Siltlock's public counter closes water permits and ration amendments in the same hand, then sends both books below the floor.")
+                self.reward_party(xp=10, reason="reading Siltlock's public counter")
+        elif choice == 2:
+            self.player_action("Make the junior clerk explain why the cellar bell rings before the street bell.")
+            if self.skill_check(self.state.player, "Persuasion", 13, context="to make a Siltlock clerk talk before the office locks down"):
+                self.state.flags["siltlock_junior_clerk_spooked"] = True
+                self.add_clue("A Siltlock junior clerk admits the bell under the counter warns the ration cellar before the town watch hears trouble.")
+                self.reward_party(xp=10, reason="spooking the Siltlock junior clerk")
+        else:
+            self.player_action("Watch hands and shoes instead of faces until the hidden routine shows itself.")
+            if self.skill_check(self.state.player, "Perception", 13, context="to spot Siltlock's hidden office routine"):
+                self.state.flags["siltlock_bell_line_found"] = True
+                self.say("A clerk taps the counter twice with one finger and every clean pair of boots turns toward the cellar door.")
+                self.reward_party(xp=10, reason="spotting Siltlock's bell routine")
+        self.complete_act2_map_room(dungeon, room.room_id)
+
+    def _siltlock_permit_stacks(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        self.say(
+            "The permit stacks breathe wet paper and lamp soot. Blue cord binds water passes, ferry claims, and repair delays into bundles that look official until the ink catches the light."
+        )
+        dc = 13 if self.state.flags.get("siltlock_clerk_script_read") or self.state.flags.get("glasswater_intake_cleared") else 14
+        choice = self.scenario_choice(
+            "How do you break the permit chain?",
+            [
+                self.skill_tag("INVESTIGATION", self.action_option("Match the false water permits by seal pressure and clerk hand.")),
+                self.skill_tag("INSIGHT", self.action_option("Read which corrections were rehearsed before the permits were signed.")),
+                self.skill_tag("PERSUASION", self.action_option("Corner the stack clerk with dates the books cannot make agree.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Match the false water permits by seal pressure and clerk hand.")
+            if self.skill_check(self.state.player, "Investigation", dc, context="to expose Siltlock's false water permits"):
+                self.state.flags["siltlock_false_permit_hand_named"] = True
+                self.add_clue("Siltlock's false water permits were signed before Glasswater reported trouble, giving the lie a civic costume before the sickness spread.")
+                self.reward_party(xp=10, reason="exposing Siltlock's false permit hand")
+        elif choice == 2:
+            self.player_action("Read which corrections were rehearsed before the permits were signed.")
+            if self.skill_check(self.state.player, "Insight", dc, context="to read the rehearsed corrections in Siltlock's stacks"):
+                self.state.flags["siltlock_rehearsed_corrections_read"] = True
+                self.add_clue("Several Siltlock corrections were rehearsed in the margin before the permits were issued, which means the water delay had a script.")
+                self.reward_party(xp=10, reason="reading Siltlock's rehearsed corrections")
+        else:
+            self.player_action("Corner the stack clerk with dates the books cannot make agree.")
+            if self.skill_check(self.state.player, "Persuasion", dc, context="to crack the Siltlock stack clerk with bad dates"):
+                self.state.flags["siltlock_stack_clerk_cracked"] = True
+                self.add_clue("A Siltlock clerk names the permit shelf tied to Glasswater's relay office and the auditor who ordered it copied twice.")
+                self.reward_party(xp=10, reason="cracking Siltlock's stack clerk")
+        self.complete_act2_map_room(dungeon, room.room_id)
+
+    def _siltlock_ration_cellar(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        delayed = self._siltlock_delayed()
+        self.say(
+            "The ration cellar smells of flour, pickled turnip, lantern oil, and wet rope. Charity crates sit under a neat sign while quiet reserve marks hide on the sides facing the wall."
+        )
+        enemies = [create_enemy("cult_lookout"), create_enemy("expedition_reaver")]
+        if delayed:
+            enemies.append(create_enemy("claimbinder_notary"))
+        elif len(self.state.party_members()) >= 4:
+            enemies.append(self.act2_pick_enemy(("gutter_zealot", "false_map_skirmisher", "cult_lookout")))
+        hero_bonus = self.apply_scene_companion_support("siltlock_counting_house")
+        if self.state.flags.get("siltlock_bell_line_found"):
+            hero_bonus += 1
+            self.apply_status(enemies[0], "surprised", 1, source="you found the cellar warning line first")
+        if self.state.flags.get("siltlock_junior_clerk_spooked"):
+            hero_bonus += 1
+        choice = self.scenario_choice(
+            "How do you take the ration cellar?",
+            [
+                self.skill_tag("STEALTH", self.action_option("Cut the bell cord before the cellar crew can call the office down on you.")),
+                self.skill_tag("INTIMIDATION", self.action_option("Name the stolen charity marks loudly enough that the guards lose their script.")),
+                self.skill_tag("ATHLETICS", self.action_option("Topple the oil racks and make the cellar defend itself badly.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Cut the bell cord before the cellar crew can call the office down on you.")
+            if self.skill_check(self.state.player, "Stealth", 14, context="to cut Siltlock's cellar alarm"):
+                hero_bonus += 2
+                self.state.flags["siltlock_cellar_alarm_cut"] = True
+                self.apply_status(enemies[0], "surprised", 1, source="the cellar bell going slack")
+        elif choice == 2:
+            self.player_action("Name the stolen charity marks loudly enough that the guards lose their script.")
+            if self.skill_check(self.state.player, "Intimidation", 14, context="to break Siltlock cellar morale with the ration marks"):
+                hero_bonus += 1
+                self.state.flags["siltlock_ration_mark_named"] = True
+                self.apply_status(enemies[1], "frightened", 1, source="the charity marks being named aloud")
+        else:
+            self.player_action("Topple the oil racks and make the cellar defend itself badly.")
+            if self.skill_check(self.state.player, "Athletics", 14, context="to turn Siltlock's cellar shelves against the defenders"):
+                hero_bonus += 1
+                enemies[0].current_hp = max(1, enemies[0].current_hp - 4)
+        outcome = self.run_encounter(
+            Encounter(
+                title="Siltlock Ration Cellar",
+                description="Bribed guards and Choir watchers defend stolen charity stores before the town can count them.",
+                enemies=enemies,
+                allow_flee=True,
+                allow_parley=True,
+                parley_dc=14,
+                hero_initiative_bonus=hero_bonus,
+                allow_post_combat_random_encounter=False,
+            )
+        )
+        if outcome == "defeat":
+            self.handle_defeat("The ration cellar locks down, and Siltlock's supply books keep their clean cover.")
+            return
+        if outcome == "fled":
+            self.return_to_act2_hub("You withdraw from Siltlock before the cellar crew can trap the whole party below the office.")
+            return
+        self.complete_act2_map_room(dungeon, room.room_id)
+        self.add_clue("Siltlock's ration cellar was holding charity supplies, watch lantern oil, and reserve marks for the night Iron Hollow would be easiest to panic.")
+
+    def _siltlock_back_till(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        sponsor = str(self.state.flags.get("act2_sponsor", "council"))
+        self.say(
+            "The back till cage holds clipped coin, sponsor chits, and green wax wafers wrapped in cheesecloth. The lock is expensive, ugly, and recently oiled."
+        )
+        if sponsor == "exchange":
+            self.say("Exchange chits sit in the shallow drawer, arranged so a fast search would find them first.")
+        elif sponsor == "lionshield":
+            self.say("Lionshield crate seals hang from a nail beside the till, clean enough to look planted and useful enough to hurt.")
+        else:
+            self.say("Council signatures have been scraped thin on three receipts, leaving the paper soft where names should be.")
+        choice = self.scenario_choice(
+            "What do you take from the back till cage?",
+            [
+                self.skill_tag("INVESTIGATION", self.action_option("Sort planted sponsor chits from the payments that actually moved.")),
+                self.skill_tag("SLEIGHT OF HAND", self.action_option("Lift the green wax wafers before the cage's burner slot eats them.")),
+                self.skill_tag("INSIGHT", self.action_option("Read which accusation the room wants you to make too quickly.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Sort planted sponsor chits from the payments that actually moved.")
+            if self.skill_check(self.state.player, "Investigation", 14, context="to sort Siltlock's sponsor chits"):
+                self.state.flags["siltlock_sponsor_chits_sorted"] = True
+                self.add_clue("Siltlock's sponsor chits were arranged for leverage. The useful payments are smaller, uglier, and tied to water permits.")
+                self.reward_party(xp=10, reason="sorting Siltlock's sponsor chits")
+        elif choice == 2:
+            self.player_action("Lift the green wax wafers before the cage's burner slot eats them.")
+            if self.skill_check(self.state.player, "Sleight of Hand", 14, context="to lift Siltlock's green wax wafers"):
+                self.state.flags["siltlock_green_wax_wafers_taken"] = True
+                self.add_clue("Siltlock kept green valve wax in the pay cage, wrapped like medicine and logged like a petty cash expense.")
+                self.reward_party(xp=10, reason="preserving Siltlock's green wax")
+        else:
+            self.player_action("Read which accusation the room wants you to make too quickly.")
+            if self.skill_check(self.state.player, "Insight", 14, context="to read Siltlock's planted accusation"):
+                self.state.flags["siltlock_planted_accusation_seen"] = True
+                self.add_clue("The back till was staged to make one sponsor look solely guilty while the working fraud stayed in permit numbers and wax seals.")
+                self.reward_party(xp=10, reason="catching Siltlock's planted accusation")
+        self.reward_party(gold=8, reason="seizing Siltlock's clipped coin")
+        self.complete_act2_map_room(dungeon, room.room_id)
+
+    def _siltlock_valve_wax_archive(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        self.say(
+            "Thin drawers line the archive wall, each one holding wax impressions for valves, water permits, and route locks. Several seals carry green grit that catches under a fingernail."
+        )
+        dc = 13 if self.state.flags.get("siltlock_green_wax_wafers_taken") or self.state.flags.get("siltlock_permit_chain_read") else 14
+        choice = self.scenario_choice(
+            "How do you preserve the valve-wax proof?",
+            [
+                self.skill_tag("ARCANA", self.action_option("Read the green grit for resonance before the wax goes soft.")),
+                self.skill_tag("INVESTIGATION", self.action_option("Match the drawer marks to Glasswater's valve sequence.")),
+                self.skill_tag("SLEIGHT OF HAND", self.action_option("Take a clean wax sample before the archive burner wakes up.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Read the green grit for resonance before the wax goes soft.")
+            if self.skill_check(self.state.player, "Arcana", dc, context="to read Siltlock's valve wax resonance"):
+                self.state.flags["siltlock_wax_resonance_read"] = True
+                self.add_clue("The green grit in Siltlock's wax carries the same measured resonance used to make Glasswater's valves obey the wrong schedule.")
+                self.reward_party(xp=12, reason="reading Siltlock's valve wax")
+        elif choice == 2:
+            self.player_action("Match the drawer marks to Glasswater's valve sequence.")
+            if self.skill_check(self.state.player, "Investigation", dc, context="to match Siltlock wax to Glasswater's valve sequence"):
+                self.state.flags["siltlock_wax_drawer_matched"] = True
+                self.add_clue("Siltlock's wax archive names the Glasswater valve sequence that was approved on paper before the annex ever reported a fault.")
+                self.reward_party(xp=12, reason="matching Siltlock wax to Glasswater")
+        else:
+            self.player_action("Take a clean wax sample before the archive burner wakes up.")
+            if self.skill_check(self.state.player, "Sleight of Hand", dc, context="to preserve a clean Siltlock wax sample"):
+                self.state.flags["siltlock_clean_wax_sample"] = True
+                self.add_clue("A clean Siltlock wax sample survives the burner slot and can be matched against Glasswater's valve locks.")
+                self.reward_party(xp=12, reason="preserving Siltlock's wax sample")
+        self.complete_act2_map_room(dungeon, room.room_id)
+
+    def _siltlock_sluice_bell_alcove(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        delayed = self._siltlock_delayed()
+        self.say(
+            "A waist-high bell hangs in a stone alcove behind the cellar. The pull cord runs toward the watch post, then loops back into Siltlock through a bitten hole in the mortar."
+        )
+        if delayed:
+            self.say("The cord is frayed from recent use. The bell warned the counting house before the street heard anything.")
+        dc = 13 if self.state.flags.get("siltlock_cellar_alarm_cut") or self.state.flags.get("siltlock_bell_line_found") else 14
+        choice = self.scenario_choice(
+            "How do you turn the sluice bell?",
+            [
+                self.skill_tag("INVESTIGATION", self.action_option("Trace the cord and prove where the town warning was stolen.")),
+                self.skill_tag("SLEIGHT OF HAND", self.action_option("Rewire the bell so the next pull reaches the watch post first.")),
+                self.skill_tag("ATHLETICS", self.action_option("Tear the return line out of the wall and make the bell honest by force.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Trace the cord and prove where the town warning was stolen.")
+            if self.skill_check(self.state.player, "Investigation", dc, context="to trace Siltlock's stolen warning cord"):
+                self.state.flags["siltlock_warning_theft_proven"] = True
+                self.add_clue("Siltlock's sluice bell was routed to warn the office before the watch, which let supplies vanish while the street waited for help.")
+                self.reward_party(xp=12, reason="tracing Siltlock's warning bell")
+        elif choice == 2:
+            self.player_action("Rewire the bell so the next pull reaches the watch post first.")
+            if self.skill_check(self.state.player, "Sleight of Hand", dc, context="to rewire Siltlock's sluice bell"):
+                self.state.flags["siltlock_watch_bell_rewired"] = True
+                self.reward_party(xp=12, reason="rewiring Siltlock's warning bell")
+        else:
+            self.player_action("Tear the return line out of the wall and make the bell honest by force.")
+            if self.skill_check(self.state.player, "Athletics", dc, context="to tear out Siltlock's return line"):
+                self.state.flags["siltlock_return_line_torn_out"] = True
+                self.apply_status(self.state.player, "emboldened", 1, source="ripping Siltlock's bell line open")
+                self.reward_party(xp=12, reason="breaking Siltlock's stolen warning line")
+        self.complete_act2_map_room(dungeon, room.room_id)
+
+    def _siltlock_auditor_stair(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        delayed = self._siltlock_delayed()
+        enemies = [create_enemy("claimbinder_notary", name="Auditor Pella Varr"), create_enemy("cult_lookout")]
+        if not self.state.flags.get("siltlock_ration_tags_recovered"):
+            enemies.append(create_enemy("expedition_reaver"))
+        if delayed or len(self.state.party_members()) >= 4:
+            enemies.append(self.act2_pick_enemy(("false_map_skirmisher", "gutter_zealot", "choir_cartographer")))
+        hero_bonus = self.apply_scene_companion_support("siltlock_counting_house")
+        parley_dc = 14
+        self.say(
+            "The auditor's stair climbs above the public counter in tight turns. Each landing holds a little trash cup full of burned receipt corners."
+        )
+        if self.state.flags.get("glasswater_permit_fraud_exposed"):
+            hero_bonus += 1
+            parley_dc -= 1
+            self.apply_status(enemies[0], "reeling", 1, source="the false water permits already being in your hand")
+        if self.state.flags.get("sabotage_supply_watch_warned"):
+            hero_bonus += 1
+            parley_dc -= 1
+        if self.state.flags.get("act2_sponsor_pressure_named"):
+            hero_bonus += 1
+        if self.state.flags.get("glasswater_valve_wax_matched"):
+            enemies[0].current_hp = max(1, enemies[0].current_hp - 4)
+        self.speaker("Auditor Pella Varr", "Careful on the stairs. People drop things here. Receipts, accusations, friends.")
+        self.speaker("Auditor Pella Varr", "Every town survives by filing some sins under maintenance.")
+        choice = self.scenario_choice(
+            "How do you break the auditor's control?",
+            [
+                self.skill_tag("PERSUASION", self.action_option("Offer public testimony and a narrow way out before Pella burns the last ledger.")),
+                self.skill_tag("INTIMIDATION", self.action_option("Put the ration tags on the stair and make every guard see what they defended.")),
+                self.skill_tag("INVESTIGATION", self.action_option("Read the burn cups and name which ledger corner still matters.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Offer public testimony and a narrow way out before Pella burns the last ledger.")
+            if self.skill_check(self.state.player, "Persuasion", parley_dc, context="to break Pella Varr's control with public testimony"):
+                hero_bonus += 2
+                self.state.flags["siltlock_auditor_testimony_secured"] = True
+                self.apply_status(enemies[0], "frightened", 1, source="public testimony becoming possible")
+        elif choice == 2:
+            self.player_action("Put the ration tags on the stair and make every guard see what they defended.")
+            if self.skill_check(self.state.player, "Intimidation", parley_dc, context="to crack the Siltlock guards with the ration tags"):
+                hero_bonus += 2
+                self.state.flags["siltlock_guards_cracked"] = True
+                if len(enemies) > 1:
+                    self.apply_status(enemies[1], "frightened", 1, source="the charity tags landing on the stair")
+        else:
+            self.player_action("Read the burn cups and name which ledger corner still matters.")
+            if self.skill_check(self.state.player, "Investigation", parley_dc, context="to recover the one burned ledger corner that matters"):
+                hero_bonus += 2
+                self.state.flags["siltlock_burned_corner_recovered"] = True
+                enemies[0].current_hp = max(1, enemies[0].current_hp - 4)
+        outcome = self.run_encounter(
+            Encounter(
+                title="Siltlock Auditor's Stair",
+                description="Auditor Pella Varr tries to turn evidence, guards, and burned receipt corners into a last clean escape.",
+                enemies=enemies,
+                allow_flee=True,
+                allow_parley=True,
+                parley_dc=max(12, parley_dc),
+                hero_initiative_bonus=hero_bonus,
+                allow_post_combat_random_encounter=False,
+            )
+        )
+        if outcome == "defeat":
+            self.handle_defeat("Siltlock's auditor burns the useful corners and leaves the town with ash where names should be.")
+            return
+        if outcome == "fled":
+            self.return_to_act2_hub("You fall back from Siltlock before Pella's guards can pin the whole party on the stair.")
+            return
+        self.complete_act2_map_room(dungeon, room.room_id)
+        self.reward_party(xp=45, gold=12, reason="breaking Siltlock Counting House")
+        if self.state.flags.get("glasswater_permit_fraud_exposed"):
+            self.add_journal("You broke Siltlock's permit chain and carried its water fraud back to the expedition table.")
+        if self.state.flags.get("sabotage_supply_watch_warned"):
+            self.add_journal("You exposed Siltlock's stolen warning bell and ration tags before they could hide inside civic procedure.")
+        self.add_clue("Siltlock Counting House used permits, wax seals, and ration amendments to make sabotage look like routine town work.")
+        self.return_to_act2_hub("Siltlock's ledgers leave in your hands, and the little cellar bell finally rings toward the street.")
 
     def _broken_prospect_delayed(self) -> bool:
         assert self.state is not None
@@ -5144,6 +5560,261 @@ class MapSystemMixin:
         self.add_journal("You crossed the Blackglass causeway and opened the last clean approach to the Meridian Forge.")
         self.return_to_act2_hub("The Blackglass causeway is finally yours, and the Meridian Forge lies open on the far side.")
 
+    def _blackglass_relay_gate(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        if not self.has_quest("sever_quiet_choir"):
+            self.grant_quest("sever_quiet_choir")
+        if not self.state.flags.get("blackglass_relay_house_seen"):
+            self.say(
+                "The relay house perches above the far landing with black water dripping from its cable teeth. A brass bell ticks behind the wall, "
+                "too slow for a warning and too steady for a broken clock.",
+                typed=True,
+            )
+            if self.state.flags.get("black_lake_barracks_orders_taken"):
+                self.say("The barracks orders put one red pencil mark beside this place: RESERVE ANSWERS THROUGH THE LITTLE BELL.")
+            if self.state.flags.get("black_lake_shrine_purified"):
+                self.say("The reclaimed shrine leaves a clean ache in the air, and the relay's bell hates the sound of it.")
+            self.state.flags["blackglass_relay_route_known"] = True
+        choice = self.scenario_choice(
+            "How do you read the relay gate?",
+            [
+                self.skill_tag("INVESTIGATION", self.action_option("Match the cable teeth to the Forge traffic marks before the gate notices you.")),
+                self.skill_tag("ARCANA", self.action_option("Listen for the support pulse riding under the little bell.")),
+                self.skill_tag("ATHLETICS", self.action_option("Brace the wet winch so the first pull cannot throw the party into Blackglass.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Match the cable teeth to the Forge traffic marks before the gate notices you.")
+            if self.skill_check(self.state.player, "Investigation", 14, context="to read the relay gate's cable traffic"):
+                self.state.flags["blackglass_relay_gate_route_marked"] = True
+                self.state.flags["forge_reserve_timing_known"] = True
+                self.add_clue("The relay gate teeth match the Forge reserve traffic marks. Caldra's support pulse still comes through the little bell.")
+                self.reward_party(xp=10, reason="reading the Blackglass relay gate")
+        elif choice == 2:
+            self.player_action("Listen for the support pulse riding under the little bell.")
+            if self.skill_check(self.state.player, "Arcana", 14, context="to catch the relay pulse under the bell tick"):
+                self.state.flags["blackglass_relay_pulse_read"] = True
+                self.apply_status(self.state.player, "focused", 1, source="the relay pulse counted before it can hide")
+                self.reward_party(xp=10, reason="counting the relay pulse")
+        else:
+            self.player_action("Brace the wet winch so the first pull cannot throw the party into Blackglass.")
+            if self.skill_check(self.state.player, "Athletics", 14, context="to brace the relay gate winch"):
+                self.state.flags["blackglass_relay_winch_braced"] = True
+                self.apply_status(self.state.player, "emboldened", 1, source="the wet winch holding under your hands")
+                self.reward_party(xp=10, reason="bracing the relay gate winch")
+        self.complete_act2_map_room(dungeon, room.room_id)
+
+    def _blackglass_relay_cable_sump(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        enemies = [create_enemy("blacklake_pincerling"), create_enemy("cult_lookout")]
+        if self.act2_metric_value("act2_whisper_pressure") >= 4:
+            enemies.append(self.act2_pick_enemy(("blackglass_listener", "obelisk_eye", "starblighted_miner")))
+        elif len(self.state.party_members()) >= 4:
+            enemies.append(self.act2_pick_enemy(("choir_adept", "blacklake_pincerling", "cult_lookout")))
+        hero_bonus = self.apply_scene_companion_support("blackglass_relay_house")
+        if self.state.flags.get("blackglass_relay_gate_route_marked"):
+            hero_bonus += 1
+            self.apply_status(enemies[1], "surprised", 1, source="the gate marks giving away the guard handoff")
+        if self.state.flags.get("blackglass_relay_winch_braced"):
+            hero_bonus += 1
+            self.apply_status(enemies[0], "prone", 1, source="the braced winch jerking the cable under it")
+        choice = self.scenario_choice(
+            "How do you take the cable sump?",
+            [
+                self.skill_tag("SURVIVAL", self.action_option("Keep the party on the shallow lip while the cable tries to drag bodies under.")),
+                self.skill_tag("STEALTH", self.action_option("Cut the guard chain before the sump can send a warning up the wall.")),
+                self.skill_tag("ATHLETICS", self.action_option("Haul the cable sideways and make the sump fight its own machinery.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Keep the party on the shallow lip while the cable tries to drag bodies under.")
+            if self.skill_check(self.state.player, "Survival", 14, context="to read the safe lip through the cable sump"):
+                hero_bonus += 1
+                self.state.flags["blackglass_relay_sump_line_marked"] = True
+                self.apply_status(self.state.player, "focused", 1, source="the safe sump lip marked in mud")
+        elif choice == 2:
+            self.player_action("Cut the guard chain before the sump can send a warning up the wall.")
+            if self.skill_check(self.state.player, "Stealth", 14, context="to cut the relay guard chain quietly"):
+                hero_bonus += 2
+                self.state.flags["blackglass_relay_guard_chain_cut"] = True
+                self.apply_status(enemies[1], "surprised", 1, source="the warning chain falling slack")
+        else:
+            self.player_action("Haul the cable sideways and make the sump fight its own machinery.")
+            if self.skill_check(self.state.player, "Athletics", 14, context="to wrench the relay cable out of rhythm"):
+                hero_bonus += 1
+                self.state.flags["blackglass_relay_cable_dragged"] = True
+                enemies[0].current_hp = max(1, enemies[0].current_hp - 4)
+        outcome = self.run_encounter(
+            Encounter(
+                title="Blackglass Relay Cable Sump",
+                description="Blackglass predators and signal guards defend the wet cable that feeds the Forge support pulse.",
+                enemies=enemies,
+                allow_flee=True,
+                allow_parley=False,
+                hero_initiative_bonus=hero_bonus,
+                allow_post_combat_random_encounter=False,
+            )
+        )
+        if outcome == "defeat":
+            self.handle_defeat("The cable sump drags the party under and the relay keeps feeding the Forge.")
+            return
+        if outcome == "fled":
+            self.return_to_act2_hub("You pull away from the relay sump before the cable can pin the whole company in black water.")
+            return
+        self.complete_act2_map_room(dungeon, room.room_id)
+        self.add_journal("You cleared the Blackglass relay sump and left the Forge support cable coughing mud.")
+
+    def _blackglass_relay_keeper_ledger(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        self.say(
+            "The keeper's office is a damp square of shelves, slate dust, and boot marks. A cracked timing board lists bell pulls by weight, with Caldra's name pressed hard enough to scar the wood."
+        )
+        dc = 13 if self.state.flags.get("black_lake_barracks_orders_taken") or self.state.flags.get("blackglass_relay_gate_route_marked") else 14
+        choice = self.scenario_choice(
+            "How do you strip the keeper's ledger?",
+            [
+                self.skill_tag("INVESTIGATION", self.action_option("Lay the timing slates beside the Blackglass orders and mark Caldra's reserve beat.")),
+                self.skill_tag("INSIGHT", self.action_option("Read the keeper's panic notes and find which bell pull scared them most.")),
+                self.skill_tag("ARCANA", self.action_option("Trace the slate dust where old bell timing has started behaving like spellwork.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Lay the timing slates beside the Blackglass orders and mark Caldra's reserve beat.")
+            if self.skill_check(self.state.player, "Investigation", dc, context="to read the keeper ledger against the Blackglass orders"):
+                self.state.flags["blackglass_relay_reserve_beat_marked"] = True
+                self.add_clue("The relay ledger gives Caldra's reserve beat: three short bell pulls, one counterweight drop, then the Forge answers.")
+                self.reward_party(xp=10, reason="marking the relay reserve beat")
+        elif choice == 2:
+            self.player_action("Read the keeper's panic notes and find which bell pull scared them most.")
+            if self.skill_check(self.state.player, "Insight", dc, context="to find the feared bell pull in the keeper's notes"):
+                self.state.flags["blackglass_relay_keeper_fear_read"] = True
+                self.add_clue("The keeper feared the null bell more than Caldra. Its dead note can make the support pulse fall into its own counterweight.")
+                self.reward_party(xp=10, reason="reading the relay keeper's panic")
+        else:
+            self.player_action("Trace the slate dust where old bell timing has started behaving like spellwork.")
+            if self.skill_check(self.state.player, "Arcana", dc, context="to trace the relay ledger's spell-timing"):
+                self.state.flags["blackglass_relay_spell_timing_traced"] = True
+                self.add_clue("Old bell arithmetic has become spell timing inside the relay house, and the null bell can still spoil the count.")
+                self.reward_party(xp=10, reason="tracing the relay spell timing")
+        self.complete_act2_map_room(dungeon, room.room_id)
+        self.add_journal("You took the Blackglass relay ledger and learned the timing Caldra's Forge support line expects.")
+
+    def _blackglass_relay_null_bell_walk(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        self.say(
+            "The null-bell walk hangs over the sump on chain and old oak. Each bell has a cloth gag, each gag has a thumbprint, and every counterweight waits with patient malice."
+        )
+        dc = 14
+        if self.state.flags.get("blackglass_relay_ledger_read") or self.state.flags.get("forge_reserve_timing_known"):
+            dc -= 1
+        if self.state.flags.get("blackglass_relay_cables_cleared") or self.state.flags.get("blackglass_relay_sump_line_marked"):
+            dc -= 1
+        choice = self.scenario_choice(
+            "How do you tune the null bell?",
+            [
+                self.skill_tag("ARCANA", self.action_option("Set the dead note one beat ahead of the Forge support pulse.")),
+                self.skill_tag("RELIGION", self.action_option("Name the older bell vow before the Choir's gag can teach it obedience.")),
+                self.skill_tag("ATHLETICS", self.action_option("Lock the counterweight chain where the next support pulse has to fall into it.")),
+            ],
+            allow_meta=False,
+        )
+        clean_tune = False
+        if choice == 1:
+            self.player_action("Set the dead note one beat ahead of the Forge support pulse.")
+            clean_tune = self.skill_check(self.state.player, "Arcana", max(12, dc), context="to tune the null bell ahead of the Forge pulse")
+        elif choice == 2:
+            self.player_action("Name the older bell vow before the Choir's gag can teach it obedience.")
+            clean_tune = self.skill_check(self.state.player, "Religion", max(12, dc), context="to wake the null bell's older vow")
+        else:
+            self.player_action("Lock the counterweight chain where the next support pulse has to fall into it.")
+            clean_tune = self.skill_check(self.state.player, "Athletics", max(12, dc), context="to lock the relay counterweight chain")
+        self.complete_act2_map_room(dungeon, room.room_id)
+        if clean_tune:
+            self.state.flags["blackglass_relay_null_tone_clean"] = True
+            self.apply_status(self.state.player, "blessed", 1, source="the relay's dead bell answering cleanly")
+            self.add_clue("The null bell can make the Forge support pulse drop into dead weight before it reaches Caldra's dais.")
+            self.reward_party(xp=15, reason="tuning the relay null bell cleanly")
+        else:
+            self.say("The bell answers with a dead note, but the chain bites and sparks before it settles.")
+            self.act2_shift_metric(
+                "act2_route_control",
+                -1,
+                "the relay's null bell had to be tuned loud enough for the Forge route to feel the drag",
+            )
+
+    def _blackglass_relay_counterweight_crown(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
+        assert self.state is not None
+        high_pressure = self.act2_metric_value("act2_whisper_pressure") >= 4
+        full_party = len(self.state.party_members()) >= 4
+        enemies = [create_enemy("obelisk_chorister"), create_enemy("blackglass_listener")]
+        if full_party or high_pressure:
+            enemies.append(self.act2_pick_enemy(("pact_archive_warden", "blacklake_pincerling", "choir_adept")))
+        if high_pressure and full_party:
+            enemies.append(self.act2_pick_enemy(("obelisk_eye", "blackglass_listener", "starblighted_miner")))
+        hero_bonus = self.apply_scene_companion_support("blackglass_relay_house")
+        if self.state.flags.get("blackglass_relay_cables_cleared"):
+            hero_bonus += 1
+            self.apply_status(enemies[1], "reeling", 1, source="the sump cable coughing out of rhythm")
+        if self.state.flags.get("forge_reserve_timing_known"):
+            hero_bonus += 1
+            self.apply_status(enemies[0], "surprised", 1, source="the keeper ledger exposing the bell count")
+        if self.state.flags.get("blackglass_relay_bell_tuned"):
+            hero_bonus += 1
+            enemies[0].current_hp = max(1, enemies[0].current_hp - 5)
+        choice = self.scenario_choice(
+            "How do you ground the relay crown?",
+            [
+                self.skill_tag("ARCANA", self.action_option("Break the support pulse where the crown tries to pass it into the Forge wall.")),
+                self.skill_tag("ATHLETICS", self.action_option("Drop the counterweight through the crown and make the bell answer gravity.")),
+                self.skill_tag("INVESTIGATION", self.action_option("Use the ledger beat and cut the one cable the crown still trusts.")),
+            ],
+            allow_meta=False,
+        )
+        if choice == 1:
+            self.player_action("Break the support pulse where the crown tries to pass it into the Forge wall.")
+            if self.skill_check(self.state.player, "Arcana", 14, context="to ground the relay support pulse"):
+                hero_bonus += 2
+                self.state.flags["blackglass_relay_grounding_arc"] = True
+                enemies[0].current_hp = max(1, enemies[0].current_hp - 4)
+        elif choice == 2:
+            self.player_action("Drop the counterweight through the crown and make the bell answer gravity.")
+            if self.skill_check(self.state.player, "Athletics", 14, context="to drop the relay counterweight through the crown"):
+                hero_bonus += 2
+                self.state.flags["blackglass_relay_counterweight_dropped"] = True
+                self.apply_status(enemies[1], "prone", 1, source="the counterweight punching through the crown")
+        else:
+            dc = 13 if self.state.flags.get("forge_reserve_timing_known") else 14
+            self.player_action("Use the ledger beat and cut the one cable the crown still trusts.")
+            if self.skill_check(self.state.player, "Investigation", dc, context="to cut the relay crown's trusted cable"):
+                hero_bonus += 2
+                self.state.flags["blackglass_relay_trusted_cable_cut"] = True
+                self.apply_status(enemies[0], "surprised", 1, source="the trusted cable going dead first")
+        outcome = self.run_encounter(
+            Encounter(
+                title="Blackglass Relay Crown",
+                description="Choir signal crews and old counterweight machinery fight to keep the Forge listening.",
+                enemies=enemies,
+                allow_flee=True,
+                allow_parley=False,
+                hero_initiative_bonus=hero_bonus,
+                allow_post_combat_random_encounter=False,
+            )
+        )
+        if outcome == "defeat":
+            self.handle_defeat("The relay crown keeps ticking, and the Forge support pulse keeps its clean route to Caldra.")
+            return
+        if outcome == "fled":
+            self.return_to_act2_hub("You retreat from the relay crown before the counterweights can seal the upper walk.")
+            return
+        self.complete_act2_map_room(dungeon, room.room_id)
+        self.reward_party(xp=55, gold=18, reason="grounding the Blackglass Relay House")
+        self.add_clue("Grounding the Blackglass Relay House cuts one support signal before it can reach the Meridian Forge.")
+        self.add_journal("You grounded the Blackglass Relay House and left Caldra's Forge support line dragging dead weight.")
+        self.return_to_act2_hub("The relay house goes quiet behind you, except for one wet cable ticking against stone with nothing left to tell.")
+
     def _forge_threshold(self, dungeon: DungeonMap, room: DungeonRoom) -> None:
         assert self.state is not None
         if not self.state.flags.get("forge_seen"):
@@ -5160,11 +5831,18 @@ class MapSystemMixin:
                 self.say("Because you stripped the barracks on the crossing, the forge's outer support rhythm is thinner than Caldra expected.")
             if self.state.flags.get("black_lake_causeway_shaken"):
                 self.say("The force you fed into the causeway still travels through the old foundations. The shard channels are venting on a rhythm instead of a mystery.")
+            if self.state.flags.get("forge_signal_grounded"):
+                self.say("The Blackglass relay line reaches the Forge wall and dies there, ticking once against stone before the chamber can answer it.")
+            if self.state.flags.get("forge_reserve_timing_known"):
+                self.say("The keeper's timing slates put Caldra's reserve beat on the table before the first Forge bell moves.")
+            if self.state.flags.get("blackglass_relay_bell_tuned"):
+                self.say("The null bell's dead note follows you into the threshold, a flat little refusal under the Forge hum.")
             self.state.flags["forge_seen"] = True
         if (
             self.act2_metric_value("act2_whisper_pressure") >= 4
             or self.state.flags.get("black_lake_causeway_shaken")
             or self.state.flags.get("black_lake_anchor_weak_point_found")
+            or self.state.flags.get("forge_signal_grounded")
         ):
             self.state.flags["forge_shard_route_exposed"] = True
         nim = self.find_companion("Nim Ardentglass")
@@ -5189,7 +5867,7 @@ class MapSystemMixin:
             allow_meta=False,
         )
         if choice == 1:
-            dc = 13 if self.state.flags.get("black_lake_barracks_orders_taken") else 14
+            dc = 13 if self.state.flags.get("black_lake_barracks_orders_taken") or self.state.flags.get("forge_reserve_timing_known") else 14
             self.player_action("Lay the stolen support routes over the chamber and find the choir's real traffic line.")
             if self.skill_check(self.state.player, "Investigation", dc, context="to read the forge's real support traffic"):
                 self.state.flags["forge_threshold_orders_read"] = True
@@ -5205,7 +5883,13 @@ class MapSystemMixin:
                 self.add_journal("You carried Blackglass's answered sanctity across the Forge threshold and kept one lane of the chamber honest.")
                 self.reward_party(xp=10, reason="sanctifying the forge threshold")
         else:
-            dc = 13 if self.state.flags.get("black_lake_causeway_shaken") or self.state.flags.get("black_lake_anchor_weak_point_found") else 14
+            dc = (
+                13
+                if self.state.flags.get("black_lake_causeway_shaken")
+                or self.state.flags.get("black_lake_anchor_weak_point_found")
+                or self.state.flags.get("blackglass_relay_bell_tuned")
+                else 14
+            )
             self.player_action("Time the shard surges and learn which pulse the chamber cannot hide.")
             if self.skill_check(self.state.player, "Arcana", dc, context="to read the shard surges before they settle"):
                 self.state.flags["forge_threshold_shard_timing"] = True
@@ -5221,7 +5905,7 @@ class MapSystemMixin:
         hard_route = self.act2_metric_value("act2_route_control") <= 2 or self.act2_party_has_strong_route_gear()
         full_party = len(self.state.party_members()) >= 4
         enemies = [create_enemy("choir_adept"), create_enemy("cult_lookout")]
-        if not self.state.flags.get("black_lake_barracks_raided"):
+        if not self.state.flags.get("black_lake_barracks_raided") and not self.state.flags.get("forge_signal_grounded"):
             enemies.append(self.act2_pick_enemy(("cult_lookout", "choir_executioner", "starblighted_miner")))
         if full_party and (hard_route or high_pressure):
             enemies.append(self.act2_pick_enemy(("cult_lookout", "choir_executioner", "starblighted_miner")))
@@ -5230,6 +5914,9 @@ class MapSystemMixin:
         hero_bonus = self.apply_scene_companion_support("forge_of_spells")
         if self.state.flags.get("black_lake_barracks_raided"):
             hero_bonus += 1
+        if self.state.flags.get("forge_signal_grounded"):
+            hero_bonus += 1
+            self.apply_status(enemies[0], "reeling", 1, source="the Blackglass relay line dying before it reaches the pit")
         if self.state.flags.get("black_lake_barracks_orders_taken") or self.state.flags.get("forge_threshold_orders_read"):
             hero_bonus += 1
             self.apply_status(enemies[0], "surprised", 1, source="their reserve line already being read against them")
@@ -5333,6 +6020,9 @@ class MapSystemMixin:
             self.apply_status(enemies[0], "reeling", 1, source="the causeway shock still running through the foundations")
         if self.state.flags.get("black_lake_anchor_weak_point_found") or self.state.flags.get("forge_threshold_shard_timing"):
             hero_bonus += 1
+        if self.state.flags.get("forge_signal_grounded"):
+            hero_bonus += 1
+            enemies[0].current_hp = max(1, enemies[0].current_hp - 4)
         if self.state.flags.get("black_lake_causeway_footing_marked"):
             hero_bonus += 1
         choice = self.scenario_choice(
@@ -5421,6 +6111,8 @@ class MapSystemMixin:
             dc -= 1
         if self.state.flags.get("black_lake_causeway_shaken") or self.state.flags.get("black_lake_anchor_weak_point_found"):
             dc -= 1
+        if self.state.flags.get("forge_signal_grounded") or self.state.flags.get("blackglass_relay_bell_tuned"):
+            dc -= 1
         if self.state.flags.get("forge_anvil_tuned"):
             dc -= 1
         if conyberry_sigil_copied:
@@ -5484,7 +6176,7 @@ class MapSystemMixin:
             enemies.append(self.act2_pick_enemy(("forge_echo_stalker", "memory_taker_adept", "choir_executioner")))
         if self.state.flags.get("black_lake_barracks_raided") and full_party and (hard_route or high_pressure):
             enemies.append(self.act2_pick_enemy(("memory_taker_adept", "forge_echo_stalker")))
-        elif not self.state.flags.get("black_lake_barracks_raided"):
+        elif not self.state.flags.get("black_lake_barracks_raided") and not self.state.flags.get("forge_signal_grounded"):
             enemies.append(self.act2_pick_enemy(("memory_taker_adept", "choir_executioner", "starblighted_miner")))
         if high_pressure:
             enemies.append(self.act2_pick_enemy(("forge_echo_stalker", "obelisk_eye", "covenant_breaker_wight")))
@@ -5499,6 +6191,11 @@ class MapSystemMixin:
             hero_bonus += 1
             if len(enemies) > 1:
                 enemies[1].current_hp = max(1, enemies[1].current_hp - 4)
+        if self.state.flags.get("forge_signal_grounded"):
+            hero_bonus += 1
+            parley_dc -= 1
+            if len(enemies) > 1:
+                self.apply_status(enemies[1], "reeling", 1, source="the grounded relay leaving Caldra's support bell dead")
         if self.state.flags.get("black_lake_causeway_shaken") or self.state.flags.get("forge_shard_channels_disrupted"):
             hero_bonus += 1
             if len(enemies) > 1:

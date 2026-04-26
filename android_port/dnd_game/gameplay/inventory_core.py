@@ -6,8 +6,6 @@ from ..items import (
     format_inventory_line,
     get_item,
     inventory_supply_points,
-    inventory_weight,
-    party_carry_capacity,
     roll_loot_for_enemy,
 )
 
@@ -17,13 +15,6 @@ class InventoryCoreMixin:
         assert self.state is not None
         return self.state.inventory
 
-    def carrying_capacity(self) -> int:
-        assert self.state is not None
-        return party_carry_capacity(self.state.party_members())
-
-    def current_inventory_weight(self) -> float:
-        return inventory_weight(self.inventory_dict())
-
     def current_supply_points(self) -> int:
         return inventory_supply_points(self.inventory_dict())
 
@@ -31,15 +22,10 @@ class InventoryCoreMixin:
         if quantity <= 0:
             return 0
         item = get_item(item_id)
-        added = 0
-        while added < quantity and self.current_inventory_weight() + item.weight <= self.carrying_capacity():
-            self.inventory_dict()[item_id] = self.inventory_dict().get(item_id, 0) + 1
-            added += 1
-        if added and source:
-            self.say(f"You add {item.name} x{added} from {source}.")
-        if added < quantity:
-            self.say(f"You leave {item.name} behind because the party is at carrying capacity.")
-        return added
+        self.inventory_dict()[item_id] = self.inventory_dict().get(item_id, 0) + quantity
+        if source:
+            self.say(f"You add {item.name} x{quantity} from {source}.")
+        return quantity
 
     def remove_inventory_item(self, item_id: str, quantity: int = 1) -> bool:
         current = self.inventory_dict().get(item_id, 0)
@@ -150,7 +136,6 @@ class InventoryCoreMixin:
         assert self.state is not None
         self.banner("Inventory")
         self.say(
-            f"Weight: {self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb | "
             f"Supply points: {self.current_supply_points()} | Gold: {self.state.gold} gp"
         )
         if not self.state.inventory:

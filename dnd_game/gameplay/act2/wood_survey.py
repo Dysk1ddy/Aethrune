@@ -170,7 +170,6 @@ class StoryAct2WoodSurveyMixin:
                 allow_parley=True,
                 parley_dc=13,
                 hero_initiative_bonus=hero_bonus,
-                allow_post_combat_random_encounter=False,
             )
         )
         if outcome == "defeat":

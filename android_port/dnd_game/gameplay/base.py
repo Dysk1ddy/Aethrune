@@ -959,7 +959,7 @@ class GameBase:
                 "menu": "Food, camp staples, and practical inventory items that support travel and resting.",
                 "text": (
                     "Not every important item is combat gear. Supplies represent food, packs, repair bits, fuel, "
-                    "and practical travel resources. In this game they matter for carrying weight, supply value, and "
+                    "and practical travel resources. In this game they matter for supply value and "
                     "camp readiness.\n\n"
                     "Trade goods and mundane items may also matter for merchants, quest rewards, and inventory economy even "
                     "when they do not give direct combat bonuses."

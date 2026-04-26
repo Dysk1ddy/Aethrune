@@ -69,15 +69,17 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "                         {act2_expedition_hub}",
         "          /              /       |       \\              \\",
         "{conyberry_agatha} {neverwinter_wood_survey_camp} {stonehollow_dig} {glasswater_intake}",
-        "                  \\              |              /",
-        "                         {act2_midpoint_convergence}",
+        "                  \\              |              /              |",
+        "                         {act2_midpoint_convergence}     {siltlock_counting_house}",
         "                         /                      \\",
         "             {broken_prospect}          {south_adit}",
         "                         \\                      /",
         "                         {wave_echo_outer_galleries}",
         "                                      |",
         "                         {black_lake_causeway}",
-        "                                      |",
+        "                         /            \\",
+        "          {blackglass_relay_house}     |",
+        "                         \\            |",
         "                         {forge_of_spells}",
         "                                      |",
         "                         {act2_scaffold_complete}",
@@ -89,13 +91,15 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         "neverwinter_wood_survey_camp": (1, 2),
         "stonehollow_dig": (2, 2),
         "glasswater_intake": (3, 2),
+        "siltlock_counting_house": (4, 3),
         "act2_midpoint_convergence": (1, 3),
         "broken_prospect": (0, 4),
         "south_adit": (2, 4),
         "wave_echo_outer_galleries": (1, 5),
         "black_lake_causeway": (1, 6),
-        "forge_of_spells": (1, 7),
-        "act2_scaffold_complete": (1, 8),
+        "blackglass_relay_house": (0, 7),
+        "forge_of_spells": (1, 8),
+        "act2_scaffold_complete": (1, 9),
     },
     nodes={
         "phandalin_claims_council": TravelNode(
@@ -167,13 +171,45 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     FlagCountRequirement(
                         flags=EARLY_LEAD_FLAGS,
                         minimum=1,
-                        notes="Glasswater opens once any one early lead confirms the expedition war is touching infrastructure, not just ruins.",
+                        notes="Glasswater opens once any one early lead confirms the expedition war is touching both infrastructure and ruins.",
                     ),
                 ),
             ),
             enters_dungeon_id="glasswater_intake_annex",
             parent_hub_id="act2_expedition_hub",
             tags=("phase:early_optional", "enemy:quiet_choir", "enemy:claim_war", "pressure:all"),
+        ),
+        "siltlock_counting_house": TravelNode(
+            node_id="siltlock_counting_house",
+            scene_key="siltlock_counting_house",
+            title="Siltlock Counting House",
+            short_label="SILTLOCK",
+            kind="dungeon_entry",
+            summary=(
+                "Optional early claims-office branch beside Glasswater where forged permits, ration tags, "
+                "green valve wax, and bribed clerks expose how the water lie was paid for."
+            ),
+            requirement=Requirement(
+                all_flags=("act2_started",),
+                blocked_flags=("caldra_defeated",),
+                flag_count_requirements=(
+                    FlagCountRequirement(
+                        flags=EARLY_LEAD_FLAGS,
+                        minimum=1,
+                        notes="Siltlock opens after any one early lead because the first hard proof sends town clerks into damage control.",
+                    ),
+                ),
+            ),
+            enters_dungeon_id="siltlock_counting_house",
+            parent_hub_id="act2_expedition_hub",
+            tags=(
+                "phase:early_optional",
+                "enemy:claim_war",
+                "enemy:quiet_choir",
+                "pressure:town_stability",
+                "pressure:route_control",
+                "payoff:glasswater",
+            ),
         ),
         "act2_midpoint_convergence": TravelNode(
             node_id="act2_midpoint_convergence",
@@ -202,7 +238,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             short_label="PROSPECT",
             kind="dungeon_entry",
             summary="Resonant Vaults threshold route controlled by Meridian Compact guardians, dead labor memory, and rival scouts.",
-            requirement=Requirement(all_flags=("phandalin_sabotage_resolved",)),
+            requirement=Requirement(all_flags=("iron_hollow_sabotage_resolved",)),
             enters_dungeon_id="broken_prospect_threshold",
             parent_hub_id="act2_expedition_hub",
             tags=("phase:late_branch", "enemy:pact_haunting", "enemy:quiet_choir", "pressure:route_control"),
@@ -214,7 +250,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             short_label="SOUTH ADIT",
             kind="dungeon_entry",
             summary="Prison-line route run by starblighted wardens and Choir adepts. Irielle can enter here.",
-            requirement=Requirement(all_flags=("phandalin_sabotage_resolved",)),
+            requirement=Requirement(all_flags=("iron_hollow_sabotage_resolved",)),
             enters_dungeon_id="south_adit_prison_line",
             parent_hub_id="act2_expedition_hub",
             tags=("phase:late_branch", "enemy:quiet_choir", "companion:irielle", "pressure:town_stability"),
@@ -242,6 +278,24 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             enters_dungeon_id="black_lake_crossing",
             parent_hub_id="act2_expedition_hub",
             tags=("phase:final_route", "enemy:black_lake", "enemy:quiet_choir", "pressure:whisper_pressure"),
+        ),
+        "blackglass_relay_house": TravelNode(
+            node_id="blackglass_relay_house",
+            scene_key="blackglass_relay_house",
+            title="Blackglass Relay House",
+            short_label="RELAY",
+            kind="dungeon_entry",
+            summary=(
+                "Optional far-side threshold branch where Choir signal crews use chain-thick cables, bell timing, "
+                "and drowned counterweights to feed support pulses into the Meridian Forge."
+            ),
+            requirement=Requirement(
+                all_flags=("black_lake_crossed",),
+                blocked_flags=("caldra_defeated",),
+            ),
+            enters_dungeon_id="blackglass_relay_house",
+            parent_hub_id="act2_expedition_hub",
+            tags=("phase:threshold_branch", "enemy:black_lake", "enemy:quiet_choir", "pressure:whisper_pressure"),
         ),
         "forge_of_spells": TravelNode(
             node_id="forge_of_spells",
@@ -272,6 +326,14 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         TravelEdge("hub_to_wood", "act2_expedition_hub", "neverwinter_wood_survey_camp", "Break the woodland saboteurs"),
         TravelEdge("hub_to_stonehollow", "act2_expedition_hub", "stonehollow_dig", "Enter Stonehollow Dig"),
         TravelEdge("hub_to_glasswater", "act2_expedition_hub", "glasswater_intake", "Investigate Glasswater Intake"),
+        TravelEdge("hub_to_siltlock", "act2_expedition_hub", "siltlock_counting_house", "Audit Siltlock Counting House"),
+        TravelEdge(
+            "siltlock_to_glasswater",
+            "siltlock_counting_house",
+            "glasswater_intake",
+            "Carry permit fraud into Glasswater",
+            requirement=Requirement(all_flags=("glasswater_permit_fraud_exposed",)),
+        ),
         TravelEdge(
             "hub_to_sabotage",
             "act2_expedition_hub",
@@ -291,6 +353,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
         TravelEdge("hub_to_south_adit", "act2_expedition_hub", "south_adit", "Free the South Adit captives"),
         TravelEdge("hub_to_galleries", "act2_expedition_hub", "wave_echo_outer_galleries", "Advance through Resonant Vaults"),
         TravelEdge("hub_to_black_lake", "act2_expedition_hub", "black_lake_causeway", "Cross Blackglass"),
+        TravelEdge("hub_to_blackglass_relay", "act2_expedition_hub", "blackglass_relay_house", "Ground the Blackglass relay"),
         TravelEdge("hub_to_forge", "act2_expedition_hub", "forge_of_spells", "Confront the Quiet Choir"),
         TravelEdge("hub_to_complete", "act2_expedition_hub", "act2_scaffold_complete", "Close Act II"),
     ),
@@ -307,17 +370,37 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                         minimum=2,
                     ),
                 ),
-                blocked_flags=("phandalin_sabotage_resolved",),
+                blocked_flags=("iron_hollow_sabotage_resolved",),
             ),
             grants_flags=("act2_midpoint_prompted",),
             reveals_node_ids=("act2_midpoint_convergence",),
+        ),
+        StoryBeat(
+            beat_id="siltlock_books_stir",
+            title="The Clerks Start Burning Tabs",
+            host_node_id="act2_expedition_hub",
+            summary=(
+                "After one early lead, Siltlock's counting clerks start moving permit books and ration tags before the expedition can subpoena them."
+            ),
+            requirement=Requirement(
+                all_flags=("act2_started",),
+                blocked_flags=("siltlock_counting_house_cleared", "caldra_defeated"),
+                flag_count_requirements=(
+                    FlagCountRequirement(
+                        flags=EARLY_LEAD_FLAGS,
+                        minimum=1,
+                    ),
+                ),
+            ),
+            grants_flags=("siltlock_counting_house_known",),
+            reveals_node_ids=("siltlock_counting_house",),
         ),
         StoryBeat(
             beat_id="late_routes_open",
             title="Two Bad Doors",
             host_node_id="act2_expedition_hub",
             summary="After sabotage night, Broken Prospect and South Adit open together and wound each other by order.",
-            requirement=Requirement(all_flags=("phandalin_sabotage_resolved",)),
+            requirement=Requirement(all_flags=("iron_hollow_sabotage_resolved",)),
             grants_flags=("act2_late_routes_open",),
             reveals_node_ids=("broken_prospect", "south_adit"),
         ),
@@ -329,6 +412,18 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             requirement=Requirement(all_flags=("broken_prospect_cleared", "south_adit_cleared")),
             grants_flags=("wave_echo_deep_route_confirmed",),
             reveals_node_ids=("wave_echo_outer_galleries",),
+        ),
+        StoryBeat(
+            beat_id="blackglass_relay_found",
+            title="The Far-Side Relay Ticks",
+            host_node_id="act2_expedition_hub",
+            summary="Crossing Blackglass exposes an optional relay branch that can ground one of the Forge's support signals.",
+            requirement=Requirement(
+                all_flags=("black_lake_crossed",),
+                blocked_flags=("blackglass_relay_house_cleared", "caldra_defeated"),
+            ),
+            grants_flags=("blackglass_relay_route_known",),
+            reveals_node_ids=("blackglass_relay_house",),
         ),
     ),
     dungeons={
@@ -732,6 +827,153 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                 ),
             },
         ),
+        "siltlock_counting_house": DungeonMap(
+            dungeon_id="siltlock_counting_house",
+            title="Siltlock Counting House",
+            entry_node_id="siltlock_counting_house",
+            entrance_room_id="public_counter",
+            width=5,
+            height=3,
+            completion_flags=(
+                "siltlock_counting_house_cleared",
+                "glasswater_permit_fraud_exposed",
+                "sabotage_supply_watch_warned",
+            ),
+            boss_room_id="auditor_stair",
+            summary=(
+                "Optional early paper-dungeon beside Glasswater. The party follows forged permits, ration tags, "
+                "green valve wax, and panicked bribe ledgers to learn who made the fouled water look procedural."
+            ),
+            rooms={
+                "public_counter": DungeonRoom(
+                    "public_counter",
+                    "Public Counter",
+                    0,
+                    1,
+                    "entrance",
+                    (
+                        "A claims counter with mud on the visitor side, clean boot scuffs behind the rail, "
+                        "and a brass bell wired to ring in the cellar instead of the street."
+                    ),
+                    exits=("permit_stacks", "ration_cellar", "back_till"),
+                    clear_grants_flags=("siltlock_counter_seen", "siltlock_counting_house_known"),
+                ),
+                "permit_stacks": DungeonRoom(
+                    "permit_stacks",
+                    "Permit Stacks",
+                    1,
+                    0,
+                    "event",
+                    (
+                        "Shelves of damp water permits, corrected survey slips, and ferry-stamped tags. "
+                        "The newest ink has been dried with lamp soot rather than time."
+                    ),
+                    exits=("valve_wax_archive", "back_till"),
+                    requirement=Requirement(all_flags=("siltlock_counter_seen",)),
+                    clear_grants_flags=("siltlock_permit_chain_read", "glasswater_permit_fraud_exposed"),
+                    scene_note=(
+                        "Investigation, Insight, or Persuasion can expose whose hand approved false water permits. "
+                        "Before Glasswater, this lowers ledger and relay-office DCs. After Glasswater, it turns evidence into town leverage."
+                    ),
+                ),
+                "ration_cellar": DungeonRoom(
+                    "ration_cellar",
+                    "Ration Cellar",
+                    1,
+                    2,
+                    "combat",
+                    (
+                        "Emergency flour sacks, pickled turnip crocks, and watchman lantern oil sit behind a door "
+                        "marked CHARITY HOLD. Half the crates carry quiet reserve marks."
+                    ),
+                    exits=("sluice_bell_alcove", "back_till"),
+                    requirement=Requirement(all_flags=("siltlock_counter_seen",)),
+                    clear_grants_flags=("siltlock_ration_tags_recovered",),
+                    encounter_key="siltlock_ration_cellar",
+                    scene_note=(
+                        "Suggested enemies: cult_lookout, expedition_reaver, claimbinder_notary, gutter_zealot. "
+                        "Clearing this room can name which sabotage-night front expected stolen supplies."
+                    ),
+                ),
+                "back_till": DungeonRoom(
+                    "back_till",
+                    "Back Till Cage",
+                    2,
+                    1,
+                    "treasure",
+                    (
+                        "A locked pay cage holds clipped coin, sponsor chits, and a little drawer of green wax wafers "
+                        "wrapped in cheesecloth like medicine."
+                    ),
+                    exits=("valve_wax_archive", "sluice_bell_alcove"),
+                    requirement=Requirement(any_flags=("siltlock_permit_chain_read", "siltlock_ration_tags_recovered")),
+                    clear_grants_flags=("siltlock_bribe_float_found", "act2_sponsor_pressure_named"),
+                    scene_note=(
+                        "This is the sponsor-pressure room. It should react to `act2_sponsor`: Exchange pressure looks like ledgers, "
+                        "Lionshield pressure looks like guarded crates, council pressure looks like erased signatures."
+                    ),
+                ),
+                "valve_wax_archive": DungeonRoom(
+                    "valve_wax_archive",
+                    "Valve Wax Archive",
+                    3,
+                    0,
+                    "event",
+                    (
+                        "Thin drawers hold wax seals used on water valves and route permits. Several are colored with the same green grit "
+                        "that stains Glasswater's relay-office ledgers."
+                    ),
+                    exits=("auditor_stair",),
+                    requirement=Requirement(any_flags=("siltlock_permit_chain_read", "siltlock_bribe_float_found")),
+                    clear_grants_flags=("siltlock_valve_wax_sampled", "glasswater_valve_wax_matched"),
+                    scene_note=(
+                        "Arcana can read resonance contamination in the wax; Investigation can match it to Glasswater; Sleight of Hand can preserve a clean sample."
+                    ),
+                ),
+                "sluice_bell_alcove": DungeonRoom(
+                    "sluice_bell_alcove",
+                    "Sluice Bell Alcove",
+                    3,
+                    2,
+                    "event",
+                    (
+                        "A waist-high warning bell hangs inside a stone alcove behind the cellar. Its pull cord runs toward the watch post, "
+                        "then loops back into Siltlock through a hole gnawed in the mortar."
+                    ),
+                    exits=("auditor_stair",),
+                    requirement=Requirement(any_flags=("siltlock_ration_tags_recovered", "siltlock_bribe_float_found")),
+                    clear_grants_flags=("siltlock_sluice_bell_armed", "sabotage_supply_watch_warned"),
+                    scene_note=(
+                        "Tuning or exposing this bell can warn Iron Hollow before sabotage night. If found late, it explains why one watch shift failed."
+                    ),
+                ),
+                "auditor_stair": DungeonRoom(
+                    "auditor_stair",
+                    "Auditor's Stair",
+                    4,
+                    1,
+                    "boss",
+                    (
+                        "A narrow stair climbs to the auditor's room above the public counter. The rail is polished by worried hands, "
+                        "and every landing has a little trash cup full of burned receipt corners."
+                    ),
+                    exits=(),
+                    requirement=Requirement(
+                        any_flags=(
+                            "siltlock_valve_wax_sampled",
+                            "siltlock_sluice_bell_armed",
+                            "act2_sponsor_pressure_named",
+                        )
+                    ),
+                    clear_grants_flags=("siltlock_counting_house_cleared", "siltlock_auditor_broken"),
+                    encounter_key="siltlock_auditor_stair",
+                    scene_note=(
+                        "This can be a combat, coercion, or social boss. The auditor should try to spend evidence like currency: "
+                        "burn a page, blame a sponsor, offer a permit book, or signal the ration cellar."
+                    ),
+                ),
+            },
+        ),
         "phandalin_sabotage_night": DungeonMap(
             dungeon_id="phandalin_sabotage_night",
             title="Iron Hollow Sabotage Night",
@@ -739,7 +981,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
             entrance_room_id="claims_hall",
             width=4,
             height=3,
-            completion_flags=("claims_meet_held", "phandalin_sabotage_resolved"),
+            completion_flags=("claims_meet_held", "iron_hollow_sabotage_resolved"),
             boss_room_id="strike_cell",
             summary="Three-front crisis map. The player cannot protect everything first.",
             rooms={
@@ -826,7 +1068,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                             "act2_infiltrator_caught",
                         )
                     ),
-                    clear_grants_flags=("claims_meet_held", "phandalin_sabotage_resolved"),
+                    clear_grants_flags=("claims_meet_held", "iron_hollow_sabotage_resolved"),
                     encounter_key="act2_sabotage_night",
                 ),
             },
@@ -848,7 +1090,7 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     0,
                     1,
                     "entrance",
-                    "Jagged survey approach above the real cave mouth.",
+                    "Jagged survey approach above the main cave mouth.",
                     exits=("pact_markers", "rival_survey_shelf"),
                     clear_grants_flags=("prospect_shelf_reached",),
                 ),
@@ -1180,6 +1422,79 @@ ACT2_ENEMY_DRIVEN_MAP = HybridMapBlueprint(
                     requirement=Requirement(all_flags=("black_lake_waterline_cleared",)),
                     clear_grants_flags=("black_lake_crossed",),
                     encounter_key="black_lake_causeway",
+                ),
+            },
+        ),
+        "blackglass_relay_house": DungeonMap(
+            dungeon_id="blackglass_relay_house",
+            title="Blackglass Relay House",
+            entry_node_id="blackglass_relay_house",
+            entrance_room_id="relay_gate",
+            width=4,
+            height=3,
+            completion_flags=("blackglass_relay_house_cleared", "forge_signal_grounded"),
+            boss_room_id="counterweight_crown",
+            summary=(
+                "Optional threshold branch between Blackglass and the Meridian Forge. The party can ground a support signal, "
+                "steal timing notes, or tune the old bell before Caldra hears them coming."
+            ),
+            rooms={
+                "relay_gate": DungeonRoom(
+                    "relay_gate",
+                    "Relay Gate",
+                    0,
+                    1,
+                    "entrance",
+                    "A far-side gatehouse where wet cables climb from Blackglass into a forge-wall signal duct.",
+                    exits=("cable_sump", "keeper_ledger"),
+                    clear_grants_flags=("blackglass_relay_house_seen",),
+                ),
+                "cable_sump": DungeonRoom(
+                    "cable_sump",
+                    "Cable Sump",
+                    1,
+                    0,
+                    "combat",
+                    "A knee-deep cable trench where lake predators and Choir guards keep the signal line moving.",
+                    exits=("keeper_ledger", "null_bell_walk"),
+                    requirement=Requirement(all_flags=("blackglass_relay_house_seen",)),
+                    clear_grants_flags=("blackglass_relay_cables_cleared",),
+                    encounter_key="blackglass_relay_cable_sump",
+                ),
+                "keeper_ledger": DungeonRoom(
+                    "keeper_ledger",
+                    "Keeper Ledger",
+                    1,
+                    2,
+                    "treasure",
+                    "A damp office with timing slates, reserve orders, and a tally of which bells still answer Caldra.",
+                    exits=("cable_sump", "null_bell_walk"),
+                    requirement=Requirement(all_flags=("blackglass_relay_house_seen",)),
+                    clear_grants_flags=("blackglass_relay_ledger_read", "forge_reserve_timing_known"),
+                ),
+                "null_bell_walk": DungeonRoom(
+                    "null_bell_walk",
+                    "Null-Bell Walk",
+                    2,
+                    1,
+                    "event",
+                    "A suspended bell run that can turn the relay's pulse into dead weight before it reaches the Forge.",
+                    exits=("counterweight_crown",),
+                    requirement=Requirement(any_flags=("blackglass_relay_cables_cleared", "blackglass_relay_ledger_read")),
+                    clear_grants_flags=("blackglass_relay_bell_tuned",),
+                ),
+                "counterweight_crown": DungeonRoom(
+                    "counterweight_crown",
+                    "Counterweight Crown",
+                    3,
+                    1,
+                    "boss",
+                    "A high wheel-room where Choir signal crews and old Blackglass machinery try to keep the Forge listening.",
+                    exits=(),
+                    requirement=Requirement(any_flags=("blackglass_relay_bell_tuned", "forge_reserve_timing_known")),
+                    clear_grants_flags=("blackglass_relay_house_cleared", "forge_signal_grounded"),
+                    encounter_key="blackglass_relay_counterweight_crown",
+                    scene_note="Suggested enemies: obelisk_chorister, blackglass_listener, pact_archive_warden, or blacklake_pincerling.",
                 ),
             },
         ),

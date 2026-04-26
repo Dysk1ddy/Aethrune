@@ -6,6 +6,7 @@ from .encounter import Encounter
 
 
 POST_COMBAT_RANDOM_ENCOUNTER_CHANCE = 0.65
+MAP_ROOM_RANDOM_ENCOUNTER_ROLES = frozenset({"entrance", "combat", "event", "treasure"})
 ACT_1_POST_COMBAT_RANDOM_ENCOUNTERS: tuple[tuple[str, str, str], ...] = (
     ("locked_chest_under_ferns", "Locked Chest Under the Ferns", "random_encounter_locked_chest_under_ferns"),
     ("abandoned_cottage", "Abandoned Cottage", "random_encounter_abandoned_cottage"),
@@ -98,8 +99,22 @@ class RandomEncounterMixin:
             weighted.extend([encounter] * weight)
         return weighted
 
+    def post_combat_random_encounter_source_allows(self, source_encounter: Encounter) -> bool:
+        if getattr(self, "_post_combat_random_encounter_suppressed", False):
+            return False
+        if getattr(self, "_random_encounter_active", False):
+            return False
+        if getattr(source_encounter, "allow_post_combat_random_encounter", True):
+            return True
+        context = getattr(self, "_post_combat_random_encounter_context", None)
+        if not isinstance(context, dict):
+            return False
+        if context.get("act") not in (1, 2):
+            return False
+        return context.get("room_role") in MAP_ROOM_RANDOM_ENCOUNTER_ROLES
+
     def maybe_run_post_combat_random_encounter(self, source_encounter: Encounter) -> None:
-        if self.state is None or not getattr(source_encounter, "allow_post_combat_random_encounter", True):
+        if self.state is None or not self.post_combat_random_encounter_source_allows(source_encounter):
             return
         if self.rng.random() > POST_COMBAT_RANDOM_ENCOUNTER_CHANCE:
             return

@@ -22,9 +22,21 @@ from ..content import (
     format_racial_bonuses,
 )
 from ..models import ABILITY_ORDER, Character, GameState
+from ..ui.colors import rich_style_name
+from ..ui.rich_render import Group, Panel, Table, box
 
 
 class CharacterCreationMixin:
+    def rich_creation_enabled(self) -> bool:
+        return (
+            callable(getattr(self, "should_use_rich_ui", None))
+            and self.should_use_rich_ui()
+            and Group is not None
+            and Panel is not None
+            and Table is not None
+            and box is not None
+        )
+
     def start_new_game(self) -> None:
         play_music_for_context = getattr(self, "play_music_for_context", None)
         if callable(play_music_for_context):
@@ -82,6 +94,11 @@ class CharacterCreationMixin:
 
     def describe_preset_character(self, class_name: str) -> None:
         preset = PRESET_CHARACTERS[class_name]
+        if self.rich_creation_enabled():
+            renderable = self.build_preset_character_rich_renderable(class_name)
+            if self.emit_rich(renderable):
+                self.output_fn("")
+                return
         race = str(preset["race"])
         self.say(
             f"{class_label(class_name)} preset selected: {preset['name']}, {character_role_line(race, class_name)} ({preset['background']})."
@@ -96,6 +113,72 @@ class CharacterCreationMixin:
         expertise = list(preset.get("expertise_choices", []))
         if expertise:
             self.say(f"Preset deep practice: {', '.join(skill_option_label(skill) for skill in expertise)}")
+
+    def build_preset_character_rich_renderable(self, class_name: str):
+        preset = PRESET_CHARACTERS[class_name]
+        race = str(preset["race"])
+        identity = Table.grid(expand=True, padding=(0, 1))
+        identity.add_column(style=f"bold {rich_style_name('light_yellow')}", width=14)
+        identity.add_column(ratio=1)
+        identity.add_row("Selected", class_label(class_name))
+        identity.add_row("Name", str(preset["name"]))
+        identity.add_row("People / Role", character_role_line(race, class_name))
+        identity.add_row("Background", str(preset["background"]))
+
+        abilities = Table(box=box.SIMPLE_HEAVY, expand=True, pad_edge=False)
+        abilities.add_column("Ability", style=f"bold {rich_style_name('light_yellow')}")
+        abilities.add_column("Score", justify="center")
+        for ability in ABILITY_ORDER:
+            abilities.add_row(
+                ability_label(ability, include_code=True),
+                str(preset["base_ability_scores"][ability]),
+            )
+
+        training_lines = [
+            self.rich_text(
+                "Calling skills: " + ", ".join(skill_option_label(skill) for skill in preset["class_skill_choices"]),
+                "light_green",
+            ),
+            self.rich_text(str(preset["description"]), "white"),
+        ]
+        expertise = list(preset.get("expertise_choices", []))
+        if expertise:
+            training_lines.insert(
+                1,
+                self.rich_text(
+                    "Deep practice: " + ", ".join(skill_option_label(skill) for skill in expertise),
+                    "light_aqua",
+                ),
+            )
+
+        header_panel = Panel(
+            identity,
+            title=self.rich_text(f"{class_label(class_name)} Preset", "light_yellow", bold=True),
+            border_style=rich_style_name("light_yellow"),
+            box=box.ROUNDED,
+            padding=(0, 1),
+        )
+        details_row = self.rich_panel_row_renderable(
+            [
+                Panel(
+                    abilities,
+                    title=self.rich_text("Preset Abilities", "light_red", bold=True),
+                    border_style=rich_style_name("light_red"),
+                    box=box.ROUNDED,
+                    padding=(0, 1),
+                ),
+                Panel(
+                    Group(*training_lines),
+                    title=self.rich_text("Preset Training", "light_green", bold=True),
+                    border_style=rich_style_name("light_green"),
+                    box=box.ROUNDED,
+                    padding=(0, 1),
+                ),
+            ],
+            ratios=[1, 1],
+            padding=(0, 1),
+        )
+        return Group(header_panel, details_row)
 
     def begin_adventure(self, character: Character) -> None:
         self.state = GameState(
@@ -234,6 +317,11 @@ class CharacterCreationMixin:
 
     def preview_character(self, character: Character) -> None:
         self.banner("Character Summary")
+        if self.rich_creation_enabled():
+            renderable = self.build_character_creation_summary_rich_renderable(character)
+            if self.emit_rich(renderable):
+                self.output_fn("")
+                return
         self.say(
             f"{character.name}, {character.public_identity} ({character.background})\n"
             f"HP {character.current_hp}/{character.max_hp}, Defense {character.armor_class}, weapon: {character.weapon.name}"
@@ -250,3 +338,94 @@ class CharacterCreationMixin:
         )
         self.say(f"Kit notes: {' | '.join(character.notes)}")
         self.say(f"Starting point: {background_start_summary(character.background)}")
+
+    def build_character_creation_summary_rich_renderable(self, character: Character):
+        header = Table.grid(expand=True, padding=(0, 1))
+        header.add_column(style=f"bold {rich_style_name('light_yellow')}", width=14)
+        header.add_column(ratio=1)
+        header.add_row("Name", character.name)
+        header.add_row("People / Role", f"Level {character.level} {character.public_identity}")
+        header.add_row("Background", character.background)
+        header.add_row("Health", f"{character.current_hp}/{character.max_hp}")
+        header.add_row("Defense", str(character.armor_class))
+        header.add_row("Weapon", character.weapon.name)
+
+        abilities = Table(box=box.SIMPLE_HEAVY, expand=True, pad_edge=False)
+        abilities.add_column("Ability", style=f"bold {rich_style_name('light_yellow')}")
+        abilities.add_column("Score", justify="center")
+        abilities.add_column("Mod", justify="center")
+        for ability in ABILITY_ORDER:
+            abilities.add_row(
+                ability_label(ability, include_code=True),
+                str(character.ability_scores[ability]),
+                f"{character.ability_mod(ability):+d}",
+            )
+
+        details_lines = [
+            self.rich_text(
+                "Skills: " + ", ".join(skill_option_label(skill) for skill in character.skill_proficiencies),
+                "light_green",
+            ),
+        ]
+        if character.skill_expertise:
+            details_lines.append(
+                self.rich_text(
+                    "Deep practice: " + ", ".join(skill_option_label(skill) for skill in character.skill_expertise),
+                    "light_aqua",
+                )
+            )
+        if character.bonus_proficiencies:
+            details_lines.append(
+                self.rich_text(
+                    "Background training: " + ", ".join(character.bonus_proficiencies),
+                    "light_green",
+                )
+            )
+        details_lines.append(
+            self.rich_text(
+                "Features: "
+                + (
+                    ", ".join(self.format_feature_name(feature) for feature in character.features)
+                    if character.features
+                    else "None"
+                ),
+                "light_yellow",
+            )
+        )
+        if character.notes:
+            details_lines.extend(self.rich_text(f"Kit note: {note}", "white") for note in character.notes)
+        details_lines.append(
+            self.rich_text(
+                f"Starting point: {background_start_summary(character.background)}",
+                "light_red",
+            )
+        )
+
+        header_panel = Panel(
+            header,
+            title=self.rich_text("Character Summary", "light_yellow", bold=True),
+            border_style=rich_style_name("light_yellow"),
+            box=box.ROUNDED,
+            padding=(0, 1),
+        )
+        details_row = self.rich_panel_row_renderable(
+            [
+                Panel(
+                    abilities,
+                    title=self.rich_text("Ability Scores", "light_red", bold=True),
+                    border_style=rich_style_name("light_red"),
+                    box=box.ROUNDED,
+                    padding=(0, 1),
+                ),
+                Panel(
+                    Group(*details_lines),
+                    title=self.rich_text("Loadout & Start", "light_green", bold=True),
+                    border_style=rich_style_name("light_green"),
+                    box=box.ROUNDED,
+                    padding=(0, 1),
+                ),
+            ],
+            ratios=[1, 1],
+            padding=(0, 1),
+        )
+        return Group(header_panel, details_row)

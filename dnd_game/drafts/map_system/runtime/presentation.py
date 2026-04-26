@@ -10,6 +10,7 @@ try:
     from rich import box
     from rich.align import Align
     from rich.console import Console, Group
+    from rich.measure import Measurement
     from rich.panel import Panel
     from rich.table import Table
     from rich.text import Text
@@ -18,6 +19,7 @@ try:
 except ImportError:
     Console = Any  # type: ignore[assignment]
     Group = None
+    Measurement = Any  # type: ignore[assignment]
     Panel = None
     Table = None
     Text = Any  # type: ignore[assignment]
@@ -176,7 +178,7 @@ def _node_is_known(node: TravelNode, state: DraftMapState) -> bool:
 
 
 def _hidden_node_label(node: TravelNode) -> str:
-    return "?" * len(node.short_label)
+    return "???"
 
 
 def _node_inner_width(blueprint: HybridMapBlueprint) -> int:
@@ -229,6 +231,9 @@ _OVERWORLD_X_SPACING = 20
 _OVERWORLD_Y_SPACING = 2
 _OVERWORLD_PADDING = 2
 _OVERWORLD_SIDEBAR_WIDTH = 30
+_OVERWORLD_SIDEBAR_PANEL_WIDTH = _OVERWORLD_SIDEBAR_WIDTH + 4
+_OVERWORLD_PANEL_CHROME_WIDTH = 4
+_OVERWORLD_SIDE_BY_SIDE_GAP = 4
 
 
 def _render_overworld_template_line(blueprint: HybridMapBlueprint, state: DraftMapState, row: str) -> str:
@@ -272,7 +277,11 @@ def _render_overworld_template_line_rich(blueprint: HybridMapBlueprint, state: D
     return rendered
 
 
-def _overworld_position_centers(blueprint: HybridMapBlueprint) -> dict[str, tuple[int, int]]:
+def _overworld_position_centers(
+    blueprint: HybridMapBlueprint,
+    *,
+    x_spacing: int = _OVERWORLD_X_SPACING,
+) -> dict[str, tuple[int, int]]:
     if not blueprint.overworld_positions:
         return {}
     token_width = _node_inner_width(blueprint) + 2
@@ -280,7 +289,7 @@ def _overworld_position_centers(blueprint: HybridMapBlueprint) -> dict[str, tupl
     min_y = min(y for _, y in blueprint.overworld_positions.values())
     return {
         node_id: (
-            _OVERWORLD_PADDING + (x - min_x) * _OVERWORLD_X_SPACING + token_width // 2,
+            _OVERWORLD_PADDING + (x - min_x) * x_spacing + token_width // 2,
             (y - min_y) * _OVERWORLD_Y_SPACING,
         )
         for node_id, (x, y) in blueprint.overworld_positions.items()
@@ -331,46 +340,125 @@ def _draw_overworld_edge(canvas: list[list[str]], source: tuple[int, int], targe
     _draw_overworld_vertical(canvas, target_x, mid_y + 1, target_y - 1)
 
 
-def _coordinate_overworld_card_lines(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[str]:
-    centers = _overworld_position_centers(blueprint)
-    if not centers:
-        return []
+def _overworld_min_x_spacing(blueprint: HybridMapBlueprint) -> int:
     token_width = _node_inner_width(blueprint) + 2
-    half_token = token_width // 2
-    width = max(center_x + half_token + _OVERWORLD_PADDING for center_x, _ in centers.values())
-    height = max(center_y for _, center_y in centers.values()) + 1
-    canvas = [[" "] * width for _ in range(height)]
+    return token_width + 1
 
-    for edge in blueprint.edges:
-        if edge.from_node_id in centers and edge.to_node_id in centers:
-            _draw_overworld_edge(canvas, centers[edge.from_node_id], centers[edge.to_node_id])
 
+def _overworld_node_spans(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    centers: dict[str, tuple[int, int]],
+) -> dict[str, tuple[int, int, int, str]]:
+    spans: dict[str, tuple[int, int, int, str]] = {}
     for node_id, (center_x, center_y) in centers.items():
         node = blueprint.nodes[node_id]
         token = _node_card_token(node, blueprint, state)
         left = center_x - len(token) // 2
+        spans[node_id] = (left, left + len(token), center_y, token)
+    return spans
+
+
+def _overworld_canvas_bounds(
+    centers: dict[str, tuple[int, int]],
+    spans: dict[str, tuple[int, int, int, str]],
+) -> tuple[int, int]:
+    left = min(0, *(span_left for span_left, _, _, _ in spans.values()))
+    right = max(
+        *(span_right for _, span_right, _, _ in spans.values()),
+        *(center_x + 1 for center_x, _ in centers.values()),
+    )
+    return left, right + _OVERWORLD_PADDING
+
+
+def _overworld_layout_width(blueprint: HybridMapBlueprint, state: DraftMapState, *, x_spacing: int) -> int:
+    centers = _overworld_position_centers(blueprint, x_spacing=x_spacing)
+    if not centers:
+        return 0
+    spans = _overworld_node_spans(blueprint, state, centers)
+    left, right = _overworld_canvas_bounds(centers, spans)
+    return right - left
+
+
+def _overworld_x_spacing_for_width(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None,
+) -> int:
+    if max_width is None or max_width <= 0:
+        return _OVERWORLD_X_SPACING
+    min_spacing = min(_OVERWORLD_X_SPACING, _overworld_min_x_spacing(blueprint))
+    for x_spacing in range(_OVERWORLD_X_SPACING, min_spacing - 1, -1):
+        if _overworld_layout_width(blueprint, state, x_spacing=x_spacing) <= max_width:
+            return x_spacing
+    return min_spacing
+
+
+def _coordinate_overworld_card_layout(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None = None,
+) -> tuple[list[str], dict[str, tuple[int, int, int]]]:
+    x_spacing = _overworld_x_spacing_for_width(blueprint, state, max_width=max_width)
+    centers = _overworld_position_centers(blueprint, x_spacing=x_spacing)
+    if not centers:
+        return [], {}
+    spans = _overworld_node_spans(blueprint, state, centers)
+    left_bound, right_bound = _overworld_canvas_bounds(centers, spans)
+    x_shift = -left_bound
+    width = right_bound - left_bound
+    height = max(center_y for _, center_y in centers.values()) + 1
+    canvas = [[" "] * width for _ in range(height)]
+    shifted_centers = {
+        node_id: (center_x + x_shift, center_y) for node_id, (center_x, center_y) in centers.items()
+    }
+    shifted_spans = {
+        node_id: (left + x_shift, right + x_shift, center_y, token)
+        for node_id, (left, right, center_y, token) in spans.items()
+    }
+
+    for edge in blueprint.edges:
+        if edge.from_node_id in centers and edge.to_node_id in centers:
+            _draw_overworld_edge(canvas, shifted_centers[edge.from_node_id], shifted_centers[edge.to_node_id])
+
+    rendered_spans: dict[str, tuple[int, int, int]] = {}
+    for node_id, (left, right, center_y, token) in shifted_spans.items():
         for offset, char in enumerate(token):
             column = left + offset
             if 0 <= column < width:
                 canvas[center_y][column] = char
+        rendered_spans[node_id] = (left, right, center_y)
 
-    return ["".join(row) for row in canvas]
+    return ["".join(row) for row in canvas], rendered_spans
 
 
-def _coordinate_overworld_card_lines_rich(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[Text]:
-    lines = _coordinate_overworld_card_lines(blueprint, state)
+def _coordinate_overworld_card_lines(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None = None,
+) -> list[str]:
+    lines, _ = _coordinate_overworld_card_layout(blueprint, state, max_width=max_width)
+    return lines
+
+
+def _coordinate_overworld_card_lines_rich(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None = None,
+) -> list[Text]:
+    lines, spans = _coordinate_overworld_card_layout(blueprint, state, max_width=max_width)
     if not lines:
         return []
-    centers = _overworld_position_centers(blueprint)
     rich_lines = [
         Text(line, style="dim", no_wrap=True, overflow="crop") for line in lines
     ]
-    for node_id, (center_x, center_y) in centers.items():
+    for node_id, (start, end, center_y) in spans.items():
         if center_y >= len(rich_lines):
             continue
-        token = _node_card_token(blueprint.nodes[node_id], blueprint, state)
-        start = max(0, center_x - len(token) // 2)
-        end = min(len(rich_lines[center_y]), start + len(token))
         rich_lines[center_y].stylize(_node_style(blueprint.nodes[node_id], state), start, end)
     return rich_lines
 
@@ -436,7 +524,7 @@ def _overworld_sidebar_lines(blueprint: HybridMapBlueprint, state: DraftMapState
         "---------",
         "( NAME ) Current",
         "[ NAME ] Explored",
-        "[ ????? ] Hidden",
+        "[ ??? ] Hidden",
         "",
         "Travel",
         "------",
@@ -445,6 +533,44 @@ def _overworld_sidebar_lines(blueprint: HybridMapBlueprint, state: DraftMapState
     lines.extend(["", "Location", "--------"])
     lines.extend(_overworld_location_lines(blueprint, state))
     return lines
+
+
+def _overworld_compact_info_text(blueprint: HybridMapBlueprint, state: DraftMapState) -> Text:
+    current_node = blueprint.nodes.get(state.current_node_id)
+    known_count = sum(1 for node in blueprint.nodes.values() if _node_is_known(node, state))
+    hidden_count = len(blueprint.nodes) - known_count
+    edges = available_travel_edges(blueprint, state)
+    known_edges = [edge for edge in edges if _node_is_known(blueprint.nodes[edge.to_node_id], state)]
+    travel_items = [_overworld_edge_label(edge, blueprint.nodes[edge.to_node_id]) for edge in known_edges]
+    unknown_edge_count = _unknown_travel_count(blueprint, state)
+    if unknown_edge_count:
+        travel_items.append(f"{unknown_edge_count} unexplored route(s)")
+    travel_text = "; ".join(travel_items) if travel_items else "No unlocked travel from here"
+    location_parts = [
+        f"Here: {current_node.title if current_node is not None else 'Unknown'}",
+        f"Known {known_count}/{len(blueprint.nodes)}",
+    ]
+    if hidden_count:
+        location_parts.append(f"Hidden {hidden_count}")
+
+    compact = Text()
+    compact.append("Key: ", style="bold white")
+    compact.append("(NAME)", style="bold black on bright_cyan")
+    compact.append(" Current ", style="white")
+    compact.append("| ", style="dim")
+    compact.append("[NAME]", style="bold green")
+    compact.append(" Explored ", style="white")
+    compact.append("| ", style="dim")
+    compact.append("[???]", style="dim")
+    compact.append(" Hidden\n", style="white")
+    compact.append("Travel: ", style="bold green")
+    compact.append(travel_text, style="green")
+    compact.append("\n")
+    compact.append(location_parts[0], style="white")
+    for part in location_parts[1:]:
+        compact.append(" | ", style="dim")
+        compact.append(part, style="white")
+    return compact
 
 
 def _combine_overworld_map_and_sidebar(map_lines: list[str], sidebar_lines: list[str]) -> list[str]:
@@ -534,14 +660,24 @@ def _render_connection_lines(
     return [make_line(*[(center, "|") for center in current_centers])]
 
 
-def _overworld_card_lines(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[str]:
-    return _coordinate_overworld_card_lines(blueprint, state) or [
+def _overworld_card_lines(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None = None,
+) -> list[str]:
+    return _coordinate_overworld_card_lines(blueprint, state, max_width=max_width) or [
         _render_overworld_template_line(blueprint, state, row) for row in blueprint.overworld_template
     ]
 
 
-def _overworld_card_lines_rich(blueprint: HybridMapBlueprint, state: DraftMapState) -> list[Text]:
-    return _coordinate_overworld_card_lines_rich(blueprint, state) or [
+def _overworld_card_lines_rich(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None = None,
+) -> list[Text]:
+    return _coordinate_overworld_card_lines_rich(blueprint, state, max_width=max_width) or [
         _render_overworld_template_line_rich(blueprint, state, row) for row in blueprint.overworld_template
     ]
 
@@ -613,15 +749,13 @@ def build_overworld_panel_text(blueprint: HybridMapBlueprint, state: DraftMapSta
     return _box_panel("Overworld Route Map", lines, width=96)
 
 
-def build_overworld_panel(blueprint: HybridMapBlueprint, state: DraftMapState) -> Panel:
-    map_content = Align.center(Group(*_overworld_card_lines_rich(blueprint, state)))
-
+def _overworld_sidebar_group(blueprint: HybridMapBlueprint, state: DraftMapState) -> Group:
     route_key = Text.assemble(
         ("( NAME ) ", "bold black on bright_cyan"),
         ("Current\n", "white"),
         ("[ NAME ] ", "bold green"),
         ("Explored\n", "white"),
-        ("[ ????? ] ", "dim"),
+        ("[ ??? ] ", "dim"),
         ("Hidden", "white"),
     )
     travel = Text("\n".join(_overworld_travel_lines(blueprint, state)), style="green")
@@ -631,12 +765,61 @@ def build_overworld_panel(blueprint: HybridMapBlueprint, state: DraftMapState) -
         Panel(travel, title="Travel", border_style="green", box=box.SIMPLE),
         Panel(location, title="Location", border_style="magenta", box=box.SIMPLE),
     )
+    return sidebar
 
-    layout = Table.grid(expand=True, padding=(0, 2))
-    layout.add_column(ratio=5)
-    layout.add_column(width=_OVERWORLD_SIDEBAR_WIDTH + 4)
-    layout.add_row(map_content, sidebar)
-    return Panel(layout, title="Overworld Route Map", border_style="green", box=box.ROUNDED, padding=(0, 1))
+
+def _overworld_panel_content_width(max_width: int | None) -> int | None:
+    if max_width is None:
+        return None
+    return max(1, max_width - _OVERWORLD_PANEL_CHROME_WIDTH)
+
+
+def _build_overworld_panel_for_width(
+    blueprint: HybridMapBlueprint,
+    state: DraftMapState,
+    *,
+    max_width: int | None,
+) -> Panel:
+    content_width = _overworld_panel_content_width(max_width)
+    default_map_lines = _overworld_card_lines(blueprint, state)
+    default_map_width = max((len(line) for line in default_map_lines), default=0)
+    side_by_side_width = default_map_width + _OVERWORLD_SIDEBAR_PANEL_WIDTH + _OVERWORLD_SIDE_BY_SIDE_GAP
+    side_by_side = content_width is None or side_by_side_width <= content_width
+
+    map_lines = _overworld_card_lines_rich(blueprint, state)
+    map_width = max((len(line.plain) for line in map_lines), default=0)
+    map_content = Group(*map_lines)
+    sidebar = _overworld_sidebar_group(blueprint, state)
+
+    if side_by_side:
+        layout = Table.grid(expand=False, padding=(0, 2))
+        layout.add_column(width=map_width)
+        layout.add_column(width=_OVERWORLD_SIDEBAR_PANEL_WIDTH)
+        layout.add_row(map_content, sidebar)
+        body = layout
+    else:
+        body = Group(Align.left(map_content), Text(""), _overworld_compact_info_text(blueprint, state))
+
+    return Panel(body, title="Overworld Route Map", border_style="green", box=box.ROUNDED, padding=(0, 1))
+
+
+class _ResponsiveOverworldPanel:
+    def __init__(self, blueprint: HybridMapBlueprint, state: DraftMapState) -> None:
+        self.blueprint = blueprint
+        self.state = state
+
+    def __rich_measure__(self, console: Console, options: Any) -> Measurement:
+        default_map_width = max((len(line) for line in _overworld_card_lines(self.blueprint, self.state)), default=0)
+        preferred = default_map_width + _OVERWORLD_SIDEBAR_PANEL_WIDTH + _OVERWORLD_SIDE_BY_SIDE_GAP
+        compact = max(default_map_width, _OVERWORLD_SIDEBAR_PANEL_WIDTH) + _OVERWORLD_PANEL_CHROME_WIDTH
+        return Measurement(minimum=min(compact, options.max_width), maximum=min(preferred, options.max_width))
+
+    def __rich_console__(self, console: Console, options: Any):
+        yield _build_overworld_panel_for_width(self.blueprint, self.state, max_width=options.max_width)
+
+
+def build_overworld_panel(blueprint: HybridMapBlueprint, state: DraftMapState) -> Any:
+    return _ResponsiveOverworldPanel(blueprint, state)
 
 
 def _room_symbol(dungeon: DungeonMap, room_id: str, state: DraftMapState) -> str:

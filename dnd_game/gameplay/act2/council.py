@@ -193,7 +193,7 @@ class StoryAct2CouncilMixin:
                     1,
                     "you made the first council sound like a town making policy instead of a feeding frenzy",
                 )
-        self.state.flags["phandelver_claims_council_seen"] = True
+        self.state.flags[self.ACT2_CLAIMS_COUNCIL_SEEN_FLAG] = True
         self.state.current_scene = "act2_expedition_hub"
 
     def scene_act2_expedition_hub(self) -> None:
@@ -213,32 +213,39 @@ class StoryAct2CouncilMixin:
             options: list[tuple[str, str]] = []
             if not self.state.flags.get("agatha_truth_secured"):
                 label = "Follow Elira's Hushfen lead and seek the Pale Witness's truth."
-                if self.state.flags.get("phandalin_sabotage_resolved"):
+                if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG):
                     label = "Recover Hushfen late and see what delaying the Pale Witness's warning cost."
                 options.append(("agatha", self.action_option(label)))
             if not self.state.flags.get("woodland_survey_cleared"):
                 label = "Break the sabotage line at Greywake Survey Camp."
-                if self.state.flags.get("phandalin_sabotage_resolved"):
+                if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG):
                     label = "Recover the Greywake survey line late after the saboteurs already bit into town."
                 options.append(("wood", self.action_option(label)))
             if not self.state.flags.get("stonehollow_dig_cleared"):
                 label = "Enter Stonehollow Dig and recover the missing survey team."
-                if self.state.flags.get("phandalin_sabotage_resolved"):
+                if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG):
                     label = "Return to Stonehollow late and salvage whatever survey truth still survived."
                 options.append(("stonehollow", self.action_option(label)))
             if self.act2_branch_progress() >= 1 and not self.state.flags.get("glasswater_intake_cleared"):
                 label = "Inspect the Glasswater Intake before the fouled water turns into a cleaner lie."
-                if self.state.flags.get("phandalin_sabotage_resolved"):
+                if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG):
                     label = "Recover Glasswater Intake late and see what the fouled water already cost."
                 options.append(("glasswater", self.action_option(label)))
-            if self.act2_branch_progress() >= 2 and not self.state.flags.get("phandalin_sabotage_resolved"):
+            if self.act2_branch_progress() >= 1 and not self.state.flags.get("siltlock_counting_house_cleared") and not self.state.flags.get("caldra_defeated"):
+                label = "Audit Siltlock Counting House before the clerks burn their tabs."
+                if self.state.flags.get("glasswater_intake_cleared"):
+                    label = "Audit Siltlock and turn Glasswater's water lie into public paper."
+                if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG):
+                    label = "Audit Siltlock late and trace which supplies vanished before sabotage night."
+                options.append(("siltlock", self.action_option(label)))
+            if self.act2_branch_progress() >= 2 and not self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG):
                 unresolved = self.act2_unresolved_early_leads()
                 if unresolved:
                     label = f"Advance to sabotage night now and let {self.ACT2_BRANCH_LABELS[unresolved[0]]} go dark for a while."
                 else:
                     label = "Advance to sabotage night with all three early leads secured."
                 options.append(("midpoint", self.action_option(label)))
-            if self.state.flags.get("phandalin_sabotage_resolved") and not self.state.flags.get("broken_prospect_cleared"):
+            if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG) and not self.state.flags.get("broken_prospect_cleared"):
                 if not self.state.flags.get("act2_first_late_route"):
                     label = "Take the Broken Prospect route first and secure the cleaner cave approach."
                 elif self.state.flags.get("act2_first_late_route") == "south_adit":
@@ -246,7 +253,7 @@ class StoryAct2CouncilMixin:
                 else:
                     label = "Return to Broken Prospect."
                 options.append(("broken_prospect", self.action_option(label)))
-            if self.state.flags.get("phandalin_sabotage_resolved") and not self.state.flags.get("south_adit_cleared"):
+            if self.state.flags.get(self.ACT2_SABOTAGE_RESOLVED_FLAG) and not self.state.flags.get("south_adit_cleared"):
                 if not self.state.flags.get("act2_first_late_route"):
                     label = "Take the South Adit first and put the prisoners ahead of the route race."
                 elif self.state.flags.get("act2_first_late_route") == "broken_prospect":
@@ -263,6 +270,8 @@ class StoryAct2CouncilMixin:
             if self.state.flags.get("wave_echo_outer_cleared") and not self.state.flags.get("black_lake_crossed"):
                 options.append(("causeway", self.action_option("Cross the Blackglass causeway.")))
             if self.state.flags.get("black_lake_crossed") and not self.state.flags.get("caldra_defeated"):
+                if not self.state.flags.get("blackglass_relay_house_cleared"):
+                    options.append(("relay", self.action_option("Ground the Blackglass Relay House before the Forge answers it.")))
                 options.append(("forge", self.action_option("Confront the Quiet Choir at the Meridian Forge.")))
             if self.state.flags.get("caldra_defeated"):
                 options.append(("complete", self.action_option("Close out Act II and record what happened beneath the cave.")))
@@ -303,6 +312,10 @@ class StoryAct2CouncilMixin:
                 self.say("The Glasswater report has stopped sounding like rumor. If the annex is still live, it is teaching more than water to flow wrong.")
                 self.travel_to_act2_node("glasswater_intake")
                 return
+            if selection_key == "siltlock":
+                self.say("Siltlock's clerks have started closing ledgers with wet ink, and every closed book smells faintly of green valve wax.")
+                self.travel_to_act2_node("siltlock_counting_house")
+                return
             if selection_key == "midpoint":
                 self.run_dialogue_input("act2_hub_midpoint")
                 self.travel_to_act2_node("act2_midpoint_convergence")
@@ -326,6 +339,10 @@ class StoryAct2CouncilMixin:
             if selection_key == "causeway":
                 self.run_dialogue_input("act2_hub_causeway")
                 self.travel_to_act2_node("black_lake_causeway")
+                return
+            if selection_key == "relay":
+                self.say("Beyond the far landing, wet cable climbs into a small signal house that keeps ticking after every bell should have gone quiet.")
+                self.travel_to_act2_node("blackglass_relay_house")
                 return
             if selection_key == "forge":
                 self.run_dialogue_input("act2_hub_forge")

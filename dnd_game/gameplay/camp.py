@@ -38,10 +38,7 @@ class CampMixin:
         status.add_column(ratio=1)
         status.add_row("Gold", marks_label(self.state.gold))
         status.add_row("Short rests", str(self.state.short_rests_remaining))
-        status.add_row(
-            "Carry",
-            f"{self.current_inventory_weight():.1f}/{self.carrying_capacity()} lb",
-        )
+        status.add_row("Supplies", str(self.current_supply_points()))
         status.add_row("Active party", str(len(self.state.party_members())))
         status.add_row("Camp roster", str(len(self.state.camp_companions)))
 

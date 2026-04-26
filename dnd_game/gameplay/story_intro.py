@@ -9,15 +9,57 @@ from ..content import (
     create_tolan_ironshield,
 )
 from ..data.story.public_terms import marks_label
+from ..items import resolve_item_id
+from ..models import GameState
 from .encounter import Encounter
 
 
 class StoryIntroMixin:
+    OPENING_TUTORIAL_LESSON_ORDER = ("companions", "equipment", "trading", "resting")
+    OPENING_TUTORIAL_ACTIVE_LESSONS = OPENING_TUTORIAL_LESSON_ORDER
+    OPENING_TUTORIAL_LESSON_TITLES = {
+        "companions": "Companions",
+        "equipment": "Equipment",
+        "trading": "Trading",
+        "resting": "Resting",
+    }
+    OPENING_TUTORIAL_LESSON_SUMMARIES = {
+        "companions": "Review the party, send one road hand to camp, and call another into the line.",
+        "equipment": "Fit a shield and a spare blade so the line understands who carries what.",
+        "trading": "Sell one spare shield and buy fresh bread from the quartermaster's counter.",
+        "resting": "Take one short rest, then a long rest, and see what each one actually restores.",
+    }
+    OPENING_TUTORIAL_TRADE_MERCHANT_ID = "opening_tutorial_trade_desk"
+    OPENING_TUTORIAL_TRADE_MERCHANT_NAME = "Hadrik"
+
     def intro_pick_enemy(self, templates, *, name: str | None = None):
         return create_enemy(self.rng.choice(tuple(templates)), name=name)
 
+    def opening_tutorial_lesson_flag(self, lesson_key: str) -> str:
+        return f"opening_tutorial_lesson_{lesson_key}_complete"
+
+    def opening_tutorial_lesson_complete(self, lesson_key: str) -> bool:
+        assert self.state is not None
+        return bool(self.state.flags.get(self.opening_tutorial_lesson_flag(lesson_key)))
+
+    def opening_tutorial_required_lessons_complete(self) -> bool:
+        return all(self.opening_tutorial_lesson_complete(lesson_key) for lesson_key in self.OPENING_TUTORIAL_ACTIVE_LESSONS)
+
+    def clear_opening_tutorial_runtime_flags(self) -> None:
+        assert self.state is not None
+        persistent_flags = {
+            "opening_tutorial_pending",
+            "opening_tutorial_seen",
+            "opening_tutorial_skipped",
+            "opening_tutorial_completed",
+        }
+        for key in list(self.state.flags):
+            if key.startswith("opening_tutorial_") and key not in persistent_flags:
+                self.state.flags.pop(key, None)
+
     def finish_opening_tutorial(self, *, skipped: bool) -> None:
         assert self.state is not None
+        self.clear_opening_tutorial_runtime_flags()
         self.state.flags["opening_tutorial_pending"] = False
         self.state.flags["opening_tutorial_seen"] = True
         self.state.flags["opening_tutorial_skipped"] = skipped
@@ -30,10 +72,473 @@ class StoryIntroMixin:
         if show_commands:
             self.show_global_commands()
         self.scenario_choice(
-            "Continue to the next batch.",
+            "",
             [self.action_option("Continue.")],
             allow_meta=False,
         )
+
+    def opening_tutorial_board_lines(self) -> list[str]:
+        lines: list[str] = []
+        for lesson_key in self.OPENING_TUTORIAL_LESSON_ORDER:
+            if self.opening_tutorial_lesson_complete(lesson_key):
+                status = "Complete"
+            elif lesson_key in self.OPENING_TUTORIAL_ACTIVE_LESSONS:
+                status = "Ready"
+            else:
+                status = "Waiting"
+            lines.append(
+                f"[{status}] {self.OPENING_TUTORIAL_LESSON_TITLES[lesson_key]}: "
+                f"{self.OPENING_TUTORIAL_LESSON_SUMMARIES[lesson_key]}"
+            )
+        return lines
+
+    def show_opening_tutorial_board(self) -> None:
+        self.say("Greywake hangs a chalk board beside the sparring rail and keeps the primer practical.")
+        for line in self.opening_tutorial_board_lines():
+            self.output_fn(f"- {line}")
+
+    def opening_tutorial_item_matches(self, item_id: object, expected_item_id: str) -> bool:
+        actual_text = str(item_id or "")
+        normalized_actual = resolve_item_id(actual_text) or actual_text
+        normalized_expected = resolve_item_id(expected_item_id) or expected_item_id
+        return normalized_actual == normalized_expected
+
+    def record_opening_tutorial_event(self, event_key: str, **details) -> None:
+        assert self.state is not None
+        if self.state.flags.get("opening_tutorial_companions_lesson_active"):
+            companion_name = details.get("companion_name")
+            if event_key == "party_reviewed":
+                self.state.flags["opening_tutorial_companions_reviewed"] = True
+            elif event_key == "moved_to_camp" and companion_name == "Tolan Ironshield":
+                self.state.flags["opening_tutorial_companion_sent_to_camp"] = True
+            elif event_key == "moved_to_party" and companion_name == "Kaelis Starling":
+                self.state.flags["opening_tutorial_companion_called_to_party"] = True
+        if self.state.flags.get("opening_tutorial_equipment_lesson_active"):
+            member_name = str(details.get("member_name", ""))
+            slot = str(details.get("slot", ""))
+            item_id = details.get("item_id")
+            if (
+                event_key == "equipped_item"
+                and member_name == self.state.player.name
+                and slot == "off_hand"
+                and self.opening_tutorial_item_matches(item_id, "shield_common")
+            ):
+                self.state.flags["opening_tutorial_equipment_player_ready"] = True
+            elif (
+                event_key == "equipped_item"
+                and member_name == "Tolan Ironshield"
+                and slot == "off_hand"
+                and self.opening_tutorial_item_matches(item_id, "dagger_common")
+            ):
+                self.state.flags["opening_tutorial_equipment_companion_ready"] = True
+        if self.state.flags.get("opening_tutorial_trading_lesson_active"):
+            item_id = details.get("item_id")
+            if event_key == "sold_item" and self.opening_tutorial_item_matches(item_id, "shield_common"):
+                self.state.flags["opening_tutorial_trading_sold_item"] = True
+            elif event_key == "bought_item" and self.opening_tutorial_item_matches(item_id, "bread_round"):
+                self.state.flags["opening_tutorial_trading_bought_item"] = True
+        if self.state.flags.get("opening_tutorial_resting_lesson_active"):
+            if event_key == "short_rest":
+                self.state.flags["opening_tutorial_resting_short_rest_taken"] = True
+            elif event_key == "long_rest":
+                self.state.flags["opening_tutorial_resting_long_rest_taken"] = True
+
+    def record_opening_tutorial_companion_event(self, event_key: str, *, companion_name: str | None = None) -> None:
+        self.record_opening_tutorial_event(event_key, companion_name=companion_name)
+
+    def run_opening_tutorial_lesson_in_sandbox(
+        self,
+        lesson_key: str,
+        *,
+        setup_lesson,
+        run_lesson,
+        completion_text: str,
+    ) -> bool:
+        assert self.state is not None
+        snapshot = self.state.to_dict()
+        completed = False
+        try:
+            setup_lesson()
+            completed = bool(run_lesson())
+        finally:
+            self.state = GameState.from_dict(snapshot)
+            self.ensure_state_integrity()
+            assert self.state is not None
+            if completed:
+                self.state.flags[self.opening_tutorial_lesson_flag(lesson_key)] = True
+        if completed:
+            self.say(completion_text)
+        return completed
+
+    def run_opening_tutorial_task_lesson(
+        self,
+        *,
+        title: str,
+        intro_text: str,
+        instruction_text: str,
+        task_lines_fn,
+        success_fn,
+        action_prompt: str,
+        action_text: str,
+        action_fn,
+        reminder_text: str,
+    ) -> bool:
+        def show_briefing(*, typed_intro: bool) -> None:
+            self.say(intro_text, typed=typed_intro)
+            self.say(instruction_text)
+
+        self.banner(title)
+        show_briefing(typed_intro=True)
+        while not success_fn():
+            for line in task_lines_fn():
+                self.output_fn(f"- {line}")
+            choice = self.scenario_choice(
+                action_prompt,
+                [
+                    self.action_option(action_text),
+                    self.action_option("Explain the drill again."),
+                    self.action_option("Back to the primer board."),
+                ],
+                allow_meta=False,
+            )
+            if choice == 2:
+                show_briefing(typed_intro=False)
+                continue
+            if choice == 3:
+                break
+            action_fn()
+            if not success_fn():
+                self.say(reminder_text)
+        return bool(success_fn())
+
+    def setup_opening_tutorial_companions_lesson(self) -> None:
+        assert self.state is not None
+        self.state.current_scene = "opening_tutorial"
+        self.state.companions = []
+        self.state.camp_companions = []
+        self.recruit_companion(create_tolan_ironshield())
+        self.recruit_companion(create_kaelis_starling())
+        kaelis = self.find_companion("Kaelis Starling")
+        if kaelis is not None and kaelis in self.state.companions:
+            self.move_companion_to_camp(kaelis)
+        self.state.journal.clear()
+        self.state.flags["opening_tutorial_companions_lesson_active"] = True
+        self.state.flags["opening_tutorial_companions_reviewed"] = False
+        self.state.flags["opening_tutorial_companion_sent_to_camp"] = False
+        self.state.flags["opening_tutorial_companion_called_to_party"] = False
+
+    def opening_tutorial_companion_task_lines(self) -> list[str]:
+        assert self.state is not None
+        tasks = [
+            (
+                "opening_tutorial_companions_reviewed",
+                "Review the active party from camp so you can see who is traveling with you.",
+            ),
+            (
+                "opening_tutorial_companion_sent_to_camp",
+                "Send Tolan Ironshield to camp.",
+            ),
+            (
+                "opening_tutorial_companion_called_to_party",
+                "Call Kaelis Starling into the active party.",
+            ),
+        ]
+        lines: list[str] = []
+        for flag, text in tasks:
+            marker = "[x]" if self.state.flags.get(flag) else "[ ]"
+            lines.append(f"{marker} {text}")
+        return lines
+
+    def opening_tutorial_companions_lesson_succeeded(self) -> bool:
+        assert self.state is not None
+        return bool(
+            self.state.flags.get("opening_tutorial_companions_reviewed")
+            and self.state.flags.get("opening_tutorial_companion_sent_to_camp")
+            and self.state.flags.get("opening_tutorial_companion_called_to_party")
+        )
+
+    def run_opening_tutorial_companions_lesson(self) -> bool:
+        return self.run_opening_tutorial_lesson_in_sandbox(
+            "companions",
+            setup_lesson=self.setup_opening_tutorial_companions_lesson,
+            run_lesson=lambda: self.run_opening_tutorial_task_lesson(
+                title="Frontier Primer: Companions",
+                intro_text=(
+                    "The camp lane smells of banked coals, damp canvas, and oiled leather. "
+                    "Tolan waits by the travel packs while Kaelis has already drifted back toward the quieter bedrolls."
+                ),
+                instruction_text=(
+                    "Task board: open camp, review the party, send Tolan Ironshield to camp, then call Kaelis Starling into the active party."
+                ),
+                task_lines_fn=self.opening_tutorial_companion_task_lines,
+                success_fn=self.opening_tutorial_companions_lesson_succeeded,
+                action_prompt="Step into the camp lane or return to the primer board.",
+                action_text="Open the camp drill.",
+                action_fn=self.open_camp_menu,
+                reminder_text="The lane steward taps the chalk board and leaves the unfinished step there for you.",
+            ),
+            completion_text=(
+                "That is the company rhythm: check who is with you, know who is waiting at camp, and change the lineup before the road hardens around the wrong team."
+            ),
+        )
+
+    def setup_opening_tutorial_equipment_lesson(self) -> None:
+        assert self.state is not None
+        self.state.current_scene = "opening_tutorial"
+        self.state.companions = []
+        self.state.camp_companions = []
+        self.recruit_companion(create_tolan_ironshield())
+        companion = self.find_companion("Tolan Ironshield")
+        assert companion is not None
+        self.state.journal.clear()
+        self.state.inventory.clear()
+        self.state.inventory.update(
+            {
+                "longsword_common": 2,
+                "shield_common": 1,
+                "dagger_common": 1,
+            }
+        )
+        self.state.player.equipment_slots = {slot: None for slot in self.state.player.equipment_slots}
+        self.state.player.equipment_slots["main_hand"] = "longsword_common"
+        companion.equipment_slots = {slot: None for slot in companion.equipment_slots}
+        companion.equipment_slots["main_hand"] = "longsword_common"
+        self.sync_equipment(self.state.player)
+        self.sync_equipment(companion)
+        self.state.flags["opening_tutorial_equipment_lesson_active"] = True
+        self.state.flags["opening_tutorial_equipment_player_ready"] = False
+        self.state.flags["opening_tutorial_equipment_companion_ready"] = False
+
+    def opening_tutorial_equipment_task_lines(self) -> list[str]:
+        assert self.state is not None
+        tasks = [
+            (
+                "opening_tutorial_equipment_player_ready",
+                f"Equip a Shield in {self.state.player.name}'s off hand.",
+            ),
+            (
+                "opening_tutorial_equipment_companion_ready",
+                "Equip a Dagger in Tolan Ironshield's off hand.",
+            ),
+        ]
+        lines: list[str] = []
+        for flag, text in tasks:
+            marker = "[x]" if self.state.flags.get(flag) else "[ ]"
+            lines.append(f"{marker} {text}")
+        return lines
+
+    def opening_tutorial_equipment_lesson_succeeded(self) -> bool:
+        assert self.state is not None
+        return bool(
+            self.state.flags.get("opening_tutorial_equipment_player_ready")
+            and self.state.flags.get("opening_tutorial_equipment_companion_ready")
+        )
+
+    def run_opening_tutorial_equipment_lesson(self) -> bool:
+        return self.run_opening_tutorial_lesson_in_sandbox(
+            "equipment",
+            setup_lesson=self.setup_opening_tutorial_equipment_lesson,
+            run_lesson=lambda: self.run_opening_tutorial_task_lesson(
+                title="Frontier Primer: Equipment",
+                intro_text=(
+                    "Greywake's gear table is all nicked wood, chalk marks, and disciplined clutter. "
+                    "A quartermaster has left one shield and one spare dagger out where fresh hands can practice without guessing."
+                ),
+                instruction_text=(
+                    "Task board: fit the Shield to your off hand, then fit the Dagger to Tolan Ironshield's off hand."
+                ),
+                task_lines_fn=self.opening_tutorial_equipment_task_lines,
+                success_fn=self.opening_tutorial_equipment_lesson_succeeded,
+                action_prompt="Step to the gear table or return to the primer board.",
+                action_text="Open the gear table.",
+                action_fn=self.manage_equipment,
+                reminder_text="The quartermaster taps the empty slot and waits for you to finish the loadout.",
+            ),
+            completion_text=(
+                "Gear lives in the shared inventory, but who wears it changes the whole company. Check the slot, read the comparison, and fit the item where it does the most work."
+            ),
+        )
+
+    def setup_opening_tutorial_trading_lesson(self) -> None:
+        assert self.state is not None
+        self.state.current_scene = "opening_tutorial"
+        self.state.companions = []
+        self.state.camp_companions = []
+        self.state.journal.clear()
+        self.state.gold = 1
+        self.state.inventory.clear()
+        self.state.inventory.update({"shield_common": 2})
+        merchant_stocks = self.state.flags.setdefault("merchant_stocks", {})
+        merchant_stocks[self.OPENING_TUTORIAL_TRADE_MERCHANT_ID] = {"bread_round": 1}
+        merchant_attitudes = self.state.flags.setdefault("merchant_attitudes", {})
+        merchant_attitudes[self.OPENING_TUTORIAL_TRADE_MERCHANT_ID] = 50
+        self.state.flags["opening_tutorial_trading_lesson_active"] = True
+        self.state.flags["opening_tutorial_trading_sold_item"] = False
+        self.state.flags["opening_tutorial_trading_bought_item"] = False
+
+    def opening_tutorial_trading_task_lines(self) -> list[str]:
+        assert self.state is not None
+        tasks = [
+            (
+                "opening_tutorial_trading_sold_item",
+                "Sell the spare Shield at Hadrik's counter.",
+            ),
+            (
+                "opening_tutorial_trading_bought_item",
+                "Buy one Bread Round from Hadrik.",
+            ),
+        ]
+        lines: list[str] = []
+        for flag, text in tasks:
+            marker = "[x]" if self.state.flags.get(flag) else "[ ]"
+            lines.append(f"{marker} {text}")
+        return lines
+
+    def opening_tutorial_trading_lesson_succeeded(self) -> bool:
+        assert self.state is not None
+        return bool(
+            self.state.flags.get("opening_tutorial_trading_sold_item")
+            and self.state.flags.get("opening_tutorial_trading_bought_item")
+        )
+
+    def run_opening_tutorial_trading_lesson(self) -> bool:
+        return self.run_opening_tutorial_lesson_in_sandbox(
+            "trading",
+            setup_lesson=self.setup_opening_tutorial_trading_lesson,
+            run_lesson=lambda: self.run_opening_tutorial_task_lesson(
+                title="Frontier Primer: Trading",
+                intro_text=(
+                    "Greywake's trade counter smells like flour dust, lamp oil, and wet canvas. "
+                    "Hadrik has left one spare shield on the board and one fresh loaf on the shelf so the lesson stays simple."
+                ),
+                instruction_text=(
+                    "Task board: sell the spare Shield first, then use the coin to buy one Bread Round."
+                ),
+                task_lines_fn=self.opening_tutorial_trading_task_lines,
+                success_fn=self.opening_tutorial_trading_lesson_succeeded,
+                action_prompt="Step to the trade desk or return to the primer board.",
+                action_text="Open the trade desk.",
+                action_fn=lambda: self.manage_inventory(
+                    merchant_id=self.OPENING_TUTORIAL_TRADE_MERCHANT_ID,
+                    merchant_name=self.OPENING_TUTORIAL_TRADE_MERCHANT_NAME,
+                ),
+                reminder_text="Hadrik raps a knuckle on the ledger. The lesson only counts once the item changes hands both ways.",
+            ),
+            completion_text=(
+                "Trade runs through the same shared inventory as everything else. Selling turns spare gear into room and coin; buying turns coin back into road time, food, and medicine."
+            ),
+        )
+
+    def setup_opening_tutorial_resting_lesson(self) -> None:
+        assert self.state is not None
+        self.state.current_scene = "opening_tutorial"
+        self.state.companions = []
+        self.state.camp_companions = []
+        self.recruit_companion(create_tolan_ironshield())
+        companion = self.find_companion("Tolan Ironshield")
+        assert companion is not None
+        self.state.journal.clear()
+        self.state.inventory.clear()
+        self.state.inventory.update({"camp_stew_jar": 3})
+        self.state.short_rests_remaining = 1
+        self.state.player.current_hp = max(1, self.state.player.max_hp // 3)
+        companion.current_hp = max(1, companion.max_hp // 3)
+        if self.state.player.max_resources.get("mp", 0):
+            self.state.player.resources["mp"] = 0
+        if companion.max_resources.get("mp", 0):
+            companion.resources["mp"] = 0
+        self.state.flags["opening_tutorial_resting_lesson_active"] = True
+        self.state.flags["opening_tutorial_resting_short_rest_taken"] = False
+        self.state.flags["opening_tutorial_resting_long_rest_taken"] = False
+
+    def opening_tutorial_resting_task_lines(self) -> list[str]:
+        assert self.state is not None
+        tasks = [
+            (
+                "opening_tutorial_resting_short_rest_taken",
+                "Take a short rest so the company gets partial recovery.",
+            ),
+            (
+                "opening_tutorial_resting_long_rest_taken",
+                "Take a long rest so the company fully resets and spends supplies.",
+            ),
+        ]
+        lines: list[str] = []
+        for flag, text in tasks:
+            marker = "[x]" if self.state.flags.get(flag) else "[ ]"
+            lines.append(f"{marker} {text}")
+        return lines
+
+    def opening_tutorial_resting_lesson_succeeded(self) -> bool:
+        assert self.state is not None
+        return bool(
+            self.state.flags.get("opening_tutorial_resting_short_rest_taken")
+            and self.state.flags.get("opening_tutorial_resting_long_rest_taken")
+        )
+
+    def run_opening_tutorial_resting_lesson(self) -> bool:
+        return self.run_opening_tutorial_lesson_in_sandbox(
+            "resting",
+            setup_lesson=self.setup_opening_tutorial_resting_lesson,
+            run_lesson=lambda: self.run_opening_tutorial_task_lesson(
+                title="Frontier Primer: Resting",
+                intro_text=(
+                    "The recovery tents are quiet except for banked coals, low voices, and the sound of people finally letting their shoulders drop. "
+                    "Greywake's medics have left one lesson company half-spent so you can feel the difference between catching your breath and bedding down for the night."
+                ),
+                instruction_text=(
+                    "Task board: take one short rest first, then one long rest. Watch the company and the supply cost each time."
+                ),
+                task_lines_fn=self.opening_tutorial_resting_task_lines,
+                success_fn=self.opening_tutorial_resting_lesson_succeeded,
+                action_prompt="Step to the recovery tents or return to the primer board.",
+                action_text="Open the recovery drill.",
+                action_fn=self.open_camp_recovery_menu,
+                reminder_text="The medics leave the bedrolls open. Finish both kinds of rest so the difference sticks.",
+            ),
+            completion_text=(
+                "Short rests steady a hurt company without ending the day. Long rests fully reset the line and spend supplies at camp. In town, paid beds buy that same full reset with gold instead."
+            ),
+        )
+
+    def run_opening_tutorial_lesson(self, lesson_key: str) -> bool:
+        runners = {
+            "companions": self.run_opening_tutorial_companions_lesson,
+            "equipment": self.run_opening_tutorial_equipment_lesson,
+            "trading": self.run_opening_tutorial_trading_lesson,
+            "resting": self.run_opening_tutorial_resting_lesson,
+        }
+        runner = runners.get(lesson_key)
+        return bool(runner and runner())
+
+    def run_opening_tutorial_hub(self) -> None:
+        assert self.state is not None
+        while self.state.current_scene == "opening_tutorial":
+            self.banner("Frontier Primer")
+            self.show_opening_tutorial_board()
+            options: list[tuple[str, str]] = []
+            for lesson_key in self.OPENING_TUTORIAL_ACTIVE_LESSONS:
+                title = self.OPENING_TUTORIAL_LESSON_TITLES[lesson_key].lower()
+                if self.opening_tutorial_lesson_complete(lesson_key):
+                    options.append((lesson_key, self.action_option(f"Review the {title} drill again.")))
+                else:
+                    options.append((lesson_key, self.action_option(f"Run the {title} drill.")))
+            if self.opening_tutorial_required_lessons_complete():
+                options.append(("finish", self.action_option("Finish the primer and start your prologue.")))
+            else:
+                options.append(("skip", self.action_option("Skip the rest of the primer and start your prologue.")))
+            choice = self.scenario_choice("Which lane do you take?", [text for _, text in options], allow_meta=False)
+            selection_key, _ = options[choice - 1]
+            if selection_key in self.OPENING_TUTORIAL_ACTIVE_LESSONS:
+                self.run_opening_tutorial_lesson(selection_key)
+                continue
+            if selection_key == "finish":
+                self.add_journal("You finished Greywake's frontier primer before the road turned serious.")
+                self.finish_opening_tutorial(skipped=False)
+                return
+            self.say("You step away from the primer lanes and let the road teach the rest when it has to.")
+            self.finish_opening_tutorial(skipped=True)
+            return
 
     def scene_opening_tutorial(self) -> None:
         assert self.state is not None
@@ -41,58 +546,34 @@ class StoryIntroMixin:
             self.state.current_scene = "background_prologue"
             return
 
-        self.banner("Frontier Primer")
-        self.say(
-            "Greywake keeps one muddy rope lane for fresh hands: straw torsos on stakes, split shields on a rail, "
-            "and a spring-loaded drill dummy whose sparring arm has bruised half the road.",
-            typed=True,
-        )
-        choice = self.scenario_choice(
-            "Do you want the opening tutorial before your own prologue starts?",
-            [
-                self.action_option("Take the short tutorial."),
-                self.action_option("Skip ahead to your character's opening."),
-            ],
-        )
-        if choice == 2:
-            self.player_action("Skip ahead to your character's opening.")
-            self.say("You wave the primer off and keep moving. The road can teach the rest in its own hard time.")
-            self.finish_opening_tutorial(skipped=True)
-            return
+        if not self.state.flags.get("opening_tutorial_started"):
+            self.banner("Frontier Primer")
+            self.say(
+                "Greywake keeps one muddy rope lane for fresh hands: straw torsos on stakes, split shields on a rail, "
+                "and a spring-loaded drill dummy whose sparring arm has bruised half the road.",
+                typed=True,
+            )
+            choice = self.scenario_choice(
+                "Do you want the opening tutorial before your own prologue starts?",
+                [
+                    self.action_option("Take the short tutorial."),
+                    self.action_option("Skip ahead to your character's opening."),
+                ],
+            )
+            if choice == 2:
+                self.player_action("Skip ahead to your character's opening.")
+                self.say("You wave the primer off and keep moving. The road can teach the rest in its own hard time.")
+                self.finish_opening_tutorial(skipped=True)
+                return
 
-        self.player_action("Take the short tutorial.")
-        self.opening_tutorial_continue_batch(
-            "Numbered choices drive most scenes. At most prompts, you can also type a command instead of a number.",
-            "If you lose the thread, type `help`.",
-            show_commands=True,
-        )
-        self.opening_tutorial_continue_batch(
-            "Type `help` whenever you want that list again. `party`, `journal`, `inventory`, `equipment`, and `sheet` "
-            "check your company. `map` and `camp` open when the road or current scene supports them. "
-            "`save`, `load`, `saves`, `settings`, and `quit` manage the run. `~` and `helpconsole` are optional console shortcuts.",
-            "You begin alone, but companions start joining once the road opens. `party` shows the active lineup and anyone waiting at camp. "
-            "`sheet` lets you inspect any company member in detail. `equipment` changes who is wearing what. "
-            "`camp` is where you review the wider roster and swap which companions travel with you.",
-        )
-        self.opening_tutorial_continue_batch(
-            "Most non-combat tests are ability checks through a skill. The bracket on a choice shows the skill being tested.",
-            "A check rolls a d20, adds your skill bonus, and compares the total to a Difficulty Class.",
-            "Ability scores, proficiency, gear, and conditions can shift the result. Success changes what you secure; failure changes the angle or the cost.",
-        )
-        self.opening_tutorial_continue_batch(
-            "Combat gives you a menu of actions your character can use right now.",
-            "Hit points track how much punishment you can still take. Defense makes you harder to hit. "
-            "Some classes also carry bonus actions, spells, or once-per-rest features, and the combat menu only shows the ones your character can use.",
-            "Healing potions appear in combat when you have them.",
-        )
-        self.opening_tutorial_continue_batch(
-            "Journal notes, clues, and rewards collect automatically as the run moves.",
-            "After combat, surviving allies who fell to 0 hit points can be dragged back up once danger passes. "
-            "Camp, rests, class features, and consumables keep the company moving between fights.",
-            "That is the core loop: read the scene, choose an angle, roll when the road pushes back, and type `help` whenever you want the command list again.",
-        )
-        self.add_journal("You finished Greywake's frontier primer before the road turned serious.")
-        self.finish_opening_tutorial(skipped=False)
+            self.player_action("Take the short tutorial.")
+            self.state.flags["opening_tutorial_started"] = True
+            self.opening_tutorial_continue_batch(
+                "Greywake runs the primer in short lanes. Each lane gives you one piece of work and lets the actual menu teach the motion.",
+                "Numbered choices drive the drill boards. You can still type a command instead of a number. If you lose the thread, type `help`.",
+                show_commands=True,
+            )
+        self.run_opening_tutorial_hub()
 
     def scene_background_prologue(self) -> None:
         assert self.state is not None
@@ -489,7 +970,6 @@ class StoryIntroMixin:
                 allow_parley=True,
                 parley_dc=12,
                 hero_initiative_bonus=hero_bonus,
-                allow_post_combat_random_encounter=False,
             )
         )
         if outcome == "defeat":
@@ -2309,7 +2789,6 @@ class StoryIntroMixin:
                 allow_parley=True,
                 parley_dc=12,
                 hero_initiative_bonus=hero_bonus,
-                allow_post_combat_random_encounter=False,
             )
         )
         if outcome == "defeat":
@@ -2383,7 +2862,6 @@ class StoryIntroMixin:
                 allow_parley=True,
                 parley_dc=12,
                 hero_initiative_bonus=hero_bonus,
-                allow_post_combat_random_encounter=False,
             )
         )
         if outcome == "defeat":
@@ -3183,7 +3661,6 @@ class StoryIntroMixin:
                     allow_parley=True,
                     parley_dc=13 if party_size <= 2 else 14,
                     hero_initiative_bonus=hero_bonus,
-                    allow_post_combat_random_encounter=False,
                 )
             )
             if outcome == "defeat":

@@ -126,7 +126,7 @@ ACT_2_QUESTS: dict[str, QuestDefinition] = {
         ),
         objective="See the claims meeting through the sabotage night and keep the expedition from splintering.",
         turn_in="Report back to Linene Ironward once the town stops shaking itself apart.",
-        completion_flags=("claims_meet_held", "phandalin_sabotage_resolved"),
+        completion_flags=("claims_meet_held", "iron_hollow_sabotage_resolved"),
         reward=QuestReward(
             xp=120,
             gold=75,

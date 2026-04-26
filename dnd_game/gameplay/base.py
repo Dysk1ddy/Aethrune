@@ -126,11 +126,13 @@ class GameBase:
         "conyberry_agatha": "Conyberry",
         "neverwinter_wood_survey_camp": "Greywake Wood",
         "stonehollow_dig": "Stonehollow Dig",
+        "siltlock_counting_house": "Siltlock Counting House",
         "act2_midpoint_convergence": "Sabotage Night",
         "broken_prospect": "Broken Prospect",
         "south_adit": "South Adit",
         "wave_echo_outer_galleries": "Resonant Vaults",
         "black_lake_causeway": "Blackglass Causeway",
+        "blackglass_relay_house": "Blackglass Relay House",
         "forge_of_spells": "Meridian Forge",
         "act2_scaffold_complete": "Resonant Vaults",
         "act3_ninth_ledger_opens": "Ninth Ledger",
@@ -161,11 +163,13 @@ class GameBase:
         "conyberry_agatha": "Learn what Conyberry's dead still remember.",
         "neverwinter_wood_survey_camp": "Secure the survey route through the woods.",
         "stonehollow_dig": "Stabilize Stonehollow and recover the missing team.",
+        "siltlock_counting_house": "Audit Siltlock's water permits, ration tags, and warning bell.",
         "act2_midpoint_convergence": "Keep Iron Hollow from tearing itself apart overnight.",
         "broken_prospect": "Push deeper toward the Resonant Vaults' broken claim.",
         "south_adit": "Free the prisoners from the South Adit.",
         "wave_echo_outer_galleries": "Break into the deeper galleries safely.",
         "black_lake_causeway": "Cross the Blackglass route and keep the line intact.",
+        "blackglass_relay_house": "Ground the Blackglass relay before the Forge answers it.",
         "forge_of_spells": "Break the Quiet Choir's hold on the Forge.",
         "act2_scaffold_complete": "Bring the truth back out of the Resonant Vaults.",
         "act3_ninth_ledger_opens": "Expose the route that Varyn did not design.",
@@ -222,6 +226,7 @@ class GameBase:
         "Irielle Ashwake": "Irielle Ashwake is a soot-dark escapee from the Quiet Choir, thin from captivity, sharp with caution, and always half-listening for the next wrong note in the air.",
         "Pale Witness": "The Pale Witness is Hushfen's dead memory made visible: a woman-shaped hush in funeral white, carrying grief like weather that learned to speak.",
         "Brother Merik Sorn": "Brother Merik Sorn is a Quiet Choir field priest in damp work robes, calm at the wheel like a man who trusts mechanisms more than the people drinking from them.",
+        "Auditor Pella Varr": "Auditor Pella Varr is a Siltlock claims auditor with ink-slick cuffs, polite stairway manners, and a gaze trained to price every accusation before it lands.",
         "Sister Caldra Voss": "Sister Caldra Voss is a severe Choir sister standing straight inside the Forge's hum, ash-pale and composed as if every wrong sound in the room already belongs to her.",
         "Vaelith Marr": "Vaelith Marr is a soot-handed gravecaller in scavenged ritual cloth, moving with the calm precision of someone who finds other people's dead more useful than the living.",
         "Brughor Skullcleaver": "Brughor Skullcleaver is a broad orc blood-chief in battered scale, grinning like every fight is a feast he intends to survive.",
@@ -394,11 +399,13 @@ class GameBase:
             "conyberry_agatha": self.scene_conyberry_agatha,
             "neverwinter_wood_survey_camp": self.scene_neverwinter_wood_survey_camp,
             "stonehollow_dig": self.scene_stonehollow_dig,
+            "siltlock_counting_house": self.scene_siltlock_counting_house,
             "act2_midpoint_convergence": self.scene_act2_midpoint_convergence,
             "broken_prospect": self.scene_broken_prospect,
             "south_adit": self.scene_south_adit,
             "wave_echo_outer_galleries": self.scene_wave_echo_outer_galleries,
             "black_lake_causeway": self.scene_black_lake_causeway,
+            "blackglass_relay_house": self.scene_blackglass_relay_house,
             "forge_of_spells": self.scene_forge_of_spells,
             "act2_scaffold_complete": self.scene_act2_scaffold_complete,
             "act3_ninth_ledger_opens": self.scene_act3_ninth_ledger_opens,
@@ -2669,7 +2676,7 @@ class GameBase:
             self.say(f"Legacy ID: {item.legacy_id}")
         self.say(f"Category: {item_category_label(item.category)} / {item_type_label(item.item_type)}")
         self.say(f"Rarity: {item.rarity_title}")
-        self.say(f"Value: {marks_label(item.value)} | Weight: {item.weight:.1f} lb")
+        self.say(f"Value: {marks_label(item.value)} | Supplies: {item.supply_label()}")
         self.say(f"Description: {item.description}")
         self.say(f"Rules: {rules}")
         self.say(f"Source: {item.source}")
@@ -3083,7 +3090,7 @@ class GameBase:
                 "menu": "Food, camp staples, and practical inventory items that support travel and resting.",
                 "text": (
                     "Not every important item is combat gear. Supplies represent food, packs, repair bits, fuel, "
-                    "and practical travel resources. In this game they matter for carrying weight, supply value, and "
+                    "and practical travel resources. In this game they matter for supply value and "
                     "camp readiness.\n\n"
                     "Trade goods and mundane items may also matter for merchants, quest rewards, and inventory economy even "
                     "when they do not give direct combat bonuses."

@@ -122,6 +122,9 @@ class CompanionSystemMixin:
             return
         self.state.companions.remove(companion)
         self.state.camp_companions.append(companion)
+        tutorial_tracker = getattr(self, "record_opening_tutorial_companion_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("moved_to_camp", companion_name=companion.name)
         self.say(f"{companion.name} heads back to camp and leaves the active party.")
 
     def move_companion_to_party(self, companion) -> bool:
@@ -134,6 +137,9 @@ class CompanionSystemMixin:
         self.state.camp_companions.remove(companion)
         self.state.companions.append(companion)
         self.sync_companion_to_active_party_level(companion)
+        tutorial_tracker = getattr(self, "record_opening_tutorial_companion_event", None)
+        if callable(tutorial_tracker):
+            tutorial_tracker("moved_to_party", companion_name=companion.name)
         self.say(f"{companion.name} returns from camp and joins the active party.")
         return True
 

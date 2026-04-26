@@ -480,7 +480,7 @@ ABILITY_LORE: dict[str, LoreEntry] = {
     "STR": {
         "label": "Strength",
         "menu": "Raw force, lifting, breaking, climbing, and close-quarters pressure.",
-        "text": "Strength measures the ability to move weight, force doors, grapple, haul gear, and turn physical mass into action.",
+        "text": "Strength measures the ability to force doors, grapple, haul gear, and turn physical mass into action.",
     },
     "DEX": {
         "label": "Agility",
@@ -745,7 +745,7 @@ CLASS_PRIMARY_STATS = {
 
 
 ABILITY_GAMEPLAY_NOTES = {
-    "STR": "Used for melee force, Athletics, carrying capacity, and physical contests.",
+    "STR": "Used for melee force, Athletics, and physical contests.",
     "DEX": "Used for initiative, stealth, finesse or ranged accuracy, and many reflex-based resist checks.",
     "CON": "Adds to hit points and helps endure poison, fatigue, and punishment.",
     "INT": "Used for learned knowledge, investigation, and Wizard channeling.",

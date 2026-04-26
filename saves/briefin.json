@@ -4,7 +4,7 @@
     "race": "Goliath",
     "class_name": "Barbarian",
     "background": "Outlander",
-    "level": 2,
+    "level": 3,
     "ability_scores": {
       "STR": 17,
       "DEX": 13,
@@ -15,6 +15,7 @@
     },
     "skill_proficiencies": [
       "Athletics",
+      "Intimidation",
       "Perception",
       "Survival"
     ],
@@ -23,6 +24,7 @@
       "CON"
     ],
     "features": [
+      "primal_tenacity",
       "rage",
       "reckless_pressure",
       "stone_endurance",
@@ -45,8 +47,8 @@
     },
     "armor": null,
     "hit_die": 12,
-    "current_hp": 23,
-    "max_hp": 23,
+    "current_hp": 24,
+    "max_hp": 32,
     "shield": false,
     "spellcasting_ability": null,
     "skill_expertise": [],
@@ -66,7 +68,8 @@
       "Nature": 1,
       "Survival": 1,
       "damage": 1,
-      "initiative": 1
+      "initiative": 1,
+      "AC": 1
     },
     "gear_bonuses": {},
     "notes": [
@@ -112,7 +115,7 @@
       "race": "Human",
       "class_name": "Cleric",
       "background": "Acolyte",
-      "level": 2,
+      "level": 3,
       "ability_scores": {
         "STR": 11,
         "DEX": 13,
@@ -134,7 +137,8 @@
       ],
       "features": [
         "channel_divinity",
-        "cleric_spellcasting"
+        "cleric_spellcasting",
+        "disciple_of_life"
       ],
       "weapon": {
         "name": "Roadworn Mace",
@@ -157,8 +161,8 @@
         "stealth_disadvantage": true
       },
       "hit_die": 8,
-      "current_hp": 17,
-      "max_hp": 17,
+      "current_hp": 20,
+      "max_hp": 24,
       "shield": true,
       "spellcasting_ability": "WIS",
       "skill_expertise": [],
@@ -167,18 +171,23 @@
         "Celestial"
       ],
       "resources": {
-        "spell_slots_1": 3,
-        "channel_divinity": 1
+        "spell_slots_1": 4,
+        "channel_divinity": 1,
+        "spell_slots_2": 2,
+        "mp": 20
       },
       "max_resources": {
-        "spell_slots_1": 3,
-        "channel_divinity": 1
+        "spell_slots_1": 4,
+        "channel_divinity": 1,
+        "spell_slots_2": 2,
+        "mp": 21
       },
       "inventory": {},
       "conditions": {},
       "equipment_bonuses": {
         "Medicine": 1,
-        "Religion": 1
+        "Religion": 1,
+        "healing": 2
       },
       "gear_bonuses": {
         "AC": 0
@@ -213,7 +222,8 @@
         "Under stress she gets quieter, not colder, as though she is measuring every word for whether it heals or harms."
       ],
       "bond_flags": {
-        "talked_topics": []
+        "talked_topics": [],
+        "story_skill_modifiers": {}
       },
       "relationship_bonuses": {},
       "story_skill_bonuses": {},
@@ -230,7 +240,7 @@
       "race": "Dragonborn",
       "class_name": "Paladin",
       "background": "Soldier",
-      "level": 2,
+      "level": 3,
       "ability_scores": {
         "STR": 17,
         "DEX": 10,
@@ -243,6 +253,7 @@
         "Athletics",
         "Insight",
         "Intimidation",
+        "Medicine",
         "Persuasion"
       ],
       "saving_throw_proficiencies": [
@@ -250,6 +261,7 @@
         "CHA"
       ],
       "features": [
+        "aura_of_resolve",
         "divine_health",
         "divine_smite",
         "draconic_presence",
@@ -278,8 +290,8 @@
         "stealth_disadvantage": true
       },
       "hit_die": 10,
-      "current_hp": 18,
-      "max_hp": 18,
+      "current_hp": 25,
+      "max_hp": 25,
       "shield": true,
       "spellcasting_ability": "CHA",
       "skill_expertise": [],
@@ -288,12 +300,14 @@
         "Gaming Set"
       ],
       "resources": {
-        "lay_on_hands": 10,
-        "spell_slots_1": 2
+        "lay_on_hands": 15,
+        "spell_slots_1": 3,
+        "mp": 12
       },
       "max_resources": {
-        "lay_on_hands": 10,
-        "spell_slots_1": 2
+        "lay_on_hands": 15,
+        "spell_slots_1": 3,
+        "mp": 12
       },
       "inventory": {},
       "conditions": {},
@@ -301,7 +315,8 @@
         "Athletics": 1,
         "Intimidation": 1,
         "CON_save": 1,
-        "WIS_save": 1
+        "WIS_save": 1,
+        "AC": 1
       },
       "gear_bonuses": {
         "AC": 0
@@ -336,7 +351,133 @@
         "His confidence comes easily, but his forgiveness does not; once broken, his trust has to be rebuilt with deeds."
       ],
       "bond_flags": {
-        "talked_topics": []
+        "talked_topics": [],
+        "story_skill_modifiers": {}
+      },
+      "relationship_bonuses": {},
+      "story_skill_bonuses": {},
+      "stable": false,
+      "dead": false,
+      "death_successes": 0,
+      "death_failures": 0,
+      "temp_hp": 0,
+      "xp_value": 0,
+      "gold_value": 0
+    },
+    {
+      "name": "Tolan Ironshield",
+      "race": "Dwarf",
+      "class_name": "Fighter",
+      "background": "Soldier",
+      "level": 3,
+      "ability_scores": {
+        "STR": 15,
+        "DEX": 10,
+        "CON": 16,
+        "INT": 8,
+        "WIS": 12,
+        "CHA": 13
+      },
+      "skill_proficiencies": [
+        "Acrobatics",
+        "Animal Handling",
+        "Athletics",
+        "Intimidation",
+        "Perception",
+        "Survival"
+      ],
+      "saving_throw_proficiencies": [
+        "STR",
+        "CON"
+      ],
+      "features": [
+        "action_surge",
+        "darkvision",
+        "dwarven_resilience",
+        "improved_critical",
+        "second_wind"
+      ],
+      "weapon": {
+        "name": "Roadworn Longsword",
+        "damage": "1d8",
+        "ability": "STR",
+        "weapon_type": "longsword",
+        "to_hit_bonus": 0,
+        "damage_bonus": 0,
+        "finesse": false,
+        "ranged": false,
+        "hands_required": 1,
+        "properties": [
+          "versatile"
+        ]
+      },
+      "armor": {
+        "name": "Roadworn Chain Mail",
+        "base_ac": 16,
+        "armor_type": "heavy",
+        "dex_cap": 0,
+        "heavy": true,
+        "stealth_disadvantage": true
+      },
+      "hit_die": 10,
+      "current_hp": 31,
+      "max_hp": 31,
+      "shield": true,
+      "spellcasting_ability": null,
+      "skill_expertise": [],
+      "bonus_proficiencies": [
+        "Land Vehicles",
+        "Gaming Set"
+      ],
+      "resources": {
+        "second_wind": 1,
+        "action_surge": 0
+      },
+      "max_resources": {
+        "second_wind": 1,
+        "action_surge": 1
+      },
+      "inventory": {},
+      "conditions": {},
+      "equipment_bonuses": {
+        "Athletics": 1,
+        "Intimidation": 1
+      },
+      "gear_bonuses": {
+        "AC": 0
+      },
+      "notes": [
+        "Veteran's kit: +1 to Athletics and Intimidation checks.",
+        "A caravan guard from Neverwinter with a shield wall mindset.",
+        "A dwarven shield veteran who measures people by whether they hold the line when it matters."
+      ],
+      "tags": [
+        "hero",
+        "companion"
+      ],
+      "equipment_slots": {
+        "head": null,
+        "ring_1": null,
+        "ring_2": null,
+        "neck": null,
+        "chest": "chain_mail_common",
+        "gloves": null,
+        "boots": null,
+        "main_hand": "longsword_common",
+        "off_hand": "shield_common",
+        "cape": null
+      },
+      "archetype": "fighter",
+      "companion_id": "tolan_ironshield",
+      "disposition": 0,
+      "lore": [
+        "Tolan served on caravan routes out of Neverwinter for two decades, long enough to see three trade leagues fail and two rise in their place.",
+        "He still carries a notched tower-shield rivet from the ambush that killed his older brother near the Mere of Dead Men.",
+        "He trusts steady action more than speeches, but remembers every promise anyone makes in his hearing."
+      ],
+      "bond_flags": {
+        "talked_topics": [],
+        "story_skill_modifiers": {}
       },
       "relationship_bonuses": {},
       "story_skill_bonuses": {},
@@ -355,10 +496,16 @@
   "flags": {
     "act1_started": true,
     "map_state": {
-      "current_node_id": "wayside_luck_shrine",
+      "current_node_id": "neverwinter_briefing",
       "current_dungeon_id": null,
       "current_room_id": null,
-      "visited_nodes": [],
+      "visited_nodes": [
+        "high_road_ambush",
+        "wayside_luck_shrine",
+        "greywake_triage_yard",
+        "greywake_road_breakout",
+        "neverwinter_briefing"
+      ],
       "cleared_rooms": [],
       "seen_story_beats": [],
       "node_history": [],
@@ -372,10 +519,12 @@
     "neverwinter_elira_met": true,
     "elira_first_read": "steady_hands",
     "introduced_characters": [
+      "Ashen Brand Enforcer",
       "Elira Dawnmantle",
       "Mira Thann",
       "Oren Vale",
-      "Rhogar Valeguard"
+      "Rhogar Valeguard",
+      "Tolan Ironshield"
     ],
     "wayside_aid_route": "wounded",
     "elira_initial_trust_reason": "warm_trust",
@@ -403,7 +552,22 @@
     "neverwinter_high_road_milehouse_seen": true,
     "neverwinter_false_writs_spotted": true,
     "blackwake_millers_ford_lead": true,
-    "road_patrol_writ": true
+    "road_patrol_writ": true,
+    "neverwinter_milehouse_secured": true,
+    "neverwinter_signal_cairn_seen": true,
+    "road_reinforcement_signal_cut": true,
+    "road_second_wave_trail_read": true,
+    "neverwinter_signal_cairn_cleared": true,
+    "road_approach_chosen": true,
+    "road_ambush_wave_one_cleared": true,
+    "road_ambush_wave_two_cleared": true,
+    "road_ambush_cleared": true,
+    "liars_circle_branch_discovered": true,
+    "liars_circle_branch_available": true,
+    "high_road_tollstones_branch_discovered": true,
+    "high_road_tollstones_branch_available": true,
+    "high_road_false_checkpoint_discovered": true,
+    "high_road_false_checkpoint_available": true
   },
   "clues": [
     "The raiders are probing camps north of Phandalin, not just hitting wagons once they reach the frontier town itself.",
@@ -411,7 +575,13 @@
     "Greywake's intake board sorted travelers into outcomes before their wagons reached the yard.",
     "Greywake witnesses heard clerks read outcome marks for travelers who had not arrived yet.",
     "Mira accepts the Greywake witnesses as evidence that someone is pre-sorting road outcomes.",
-    "False roadwarden writs near Neverwinter point toward forged authority before Phandalin."
+    "False roadwarden writs near Neverwinter point toward forged authority before Phandalin.",
+    "A signal cairn south of Neverwinter was meant to call a harder Ashen Brand wave onto the High Road.",
+    "A scorched badge on the first High Road raiders marks the Ashen Brand.",
+    "The harder Emberway reserve was working under a hobgoblin sergeant tied to Ashfall Watch.",
+    "A side trail near the Emberway ambush leads to a circle of four talking statues.",
+    "A broken Emberway milemarker still carries fresh false-roadwarden paint.",
+    "Fake roadwardens have set an Emberway checkpoint demanding papers from southbound travelers."
   ],
   "journal": [
     "Your outlander's opening starts with the frontier itself sounding the warning before city officials ever get around to naming the threat.",
@@ -443,31 +613,62 @@
     "Looted Frontier Ale x1 from High Road Milehouse Intercept.",
     "Looted Roadworn Leather Armor x1 from High Road Milehouse Intercept.",
     "Looted Moonmint Drops x1 from High Road Milehouse Intercept.",
-    "Looted Roasted Nut Mix x1 from High Road Milehouse Intercept."
+    "Looted Roasted Nut Mix x1 from High Road Milehouse Intercept.",
+    "Reward from securing the High Road milehouse: 20 XP, 5 gp.",
+    "You secured a Neverwinter-side milehouse and chose how the road south would open.",
+    "Clue: A signal cairn south of Neverwinter was meant to call a harder Ashen Brand wave onto the High Road.",
+    "Reward from Neverwinter Wood Signal Cairn: 175 XP, 20 gp.",
+    "Looted Bread Round x1 from Neverwinter Wood Signal Cairn.",
+    "Looted Moonmint Drops x1 from Neverwinter Wood Signal Cairn.",
+    "Looted Potion of Healing x1 from Neverwinter Wood Signal Cairn.",
+    "Reward from silencing the Neverwinter Wood signal cairn: 15 XP, 4 gp.",
+    "You found and broke a signal cairn meant to harden the High Road ambush.",
+    "Mira Thann sent you south with a writ for Phandalin's steward.",
+    "Reward from Roadside Ambush: First Wave: 212 XP, 8 gp.",
+    "Looted Bread Round x1 from Roadside Ambush: First Wave.",
+    "Looted Roadworn Leather Armor x1 from Roadside Ambush: First Wave.",
+    "Looted Potion of Healing x1 from Roadside Ambush: First Wave.",
+    "Clue: A scorched badge on the first High Road raiders marks the Ashen Brand.",
+    "Reward from breaking the first High Road wave: 15 XP, 8 gp.",
+    "Tolan Ironshield joined the active party.",
+    "Reward from High Road Second Wave: 225 XP, 31 gp.",
+    "Looted Roasted Nut Mix x1 from High Road Second Wave.",
+    "Reward from High Road Second Wave: 250 XP, 33 gp.",
+    "Looted Moonmint Drops x1 from High Road Second Wave.",
+    "Reward from Emberway Second Wave: 300 XP, 38 gold.",
+    "Looted Roasted Nut Mix x1 from Emberway Second Wave.",
+    "Clue: The harder Emberway reserve was working under a hobgoblin sergeant tied to Ashfall Watch.",
+    "Reward from breaking the Emberway reserve wave: 20 XP, 7 gold.",
+    "Clue: A side trail near the Emberway ambush leads to a circle of four talking statues.",
+    "A wilderness side trail from the Emberway leads to a statue puzzle called Liar's Circle.",
+    "Clue: A broken Emberway milemarker still carries fresh false-roadwarden paint.",
+    "A broken milemarker near the Emberway ambush points to another false toll operation.",
+    "Clue: Fake roadwardens have set an Emberway checkpoint demanding papers from southbound travelers.",
+    "A false roadwarden checkpoint waits on the Emberway south of the ambush site."
   ],
   "quests": {},
   "completed_acts": [],
-  "xp": 445,
-  "gold": 80,
+  "xp": 1927,
+  "gold": 267,
   "inventory": {
-    "potion_healing": 5,
-    "bread_round": 4,
-    "travel_biscuits": 4,
-    "dried_fish": 3,
-    "goat_cheese": 2,
-    "frontier_ale": 4,
-    "root_vegetables": 2,
-    "antitoxin_vial": 2,
-    "greatsword_common": 1,
-    "scale_mail_common": 1,
-    "mace_common": 1,
-    "shield_common": 2,
-    "moonmint_drops": 2,
-    "nut_mix": 2,
-    "shortbow_common": 1,
-    "chain_mail_common": 1,
-    "longsword_common": 1,
-    "leather_armor_common": 1
+    "C0011": 7,
+    "S0002": 6,
+    "S0021": 4,
+    "S0005": 3,
+    "S0007": 2,
+    "S0006": 4,
+    "S0016": 2,
+    "C0000": 2,
+    "E0089": 1,
+    "E0012": 1,
+    "E0102": 1,
+    "E0060": 3,
+    "C0009": 4,
+    "S0013": 4,
+    "E0109": 1,
+    "E0004": 2,
+    "E0097": 2,
+    "E0009": 2
   },
   "short_rests_remaining": 2
 }

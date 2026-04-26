@@ -169,11 +169,14 @@ class CombatFlowMixin:
         continue_on: tuple[str, ...] = ("victory",),
     ) -> str:
         previous_deferred_outcomes = getattr(self, "_defer_scene_music_refresh_on_outcomes", frozenset())
+        previous_random_suppressed = getattr(self, "_post_combat_random_encounter_suppressed", False)
         self._defer_scene_music_refresh_on_outcomes = frozenset(continue_on)
+        self._post_combat_random_encounter_suppressed = True
         try:
             return self.run_encounter(encounter)
         finally:
             self._defer_scene_music_refresh_on_outcomes = previous_deferred_outcomes
+            self._post_combat_random_encounter_suppressed = previous_random_suppressed
 
     def prepare_encounter_for_party(self, encounter: Encounter, *, heroes: list[Character] | None = None) -> None:
         assert self.state is not None
@@ -325,7 +328,7 @@ class CombatFlowMixin:
         self.say("The encounter is yours.")
         self.pause_for_combat_transition()
         maybe_run_post_combat_random_encounter = getattr(self, "maybe_run_post_combat_random_encounter", None)
-        if callable(maybe_run_post_combat_random_encounter):
+        if callable(maybe_run_post_combat_random_encounter) and not getattr(self, "_post_combat_random_encounter_suppressed", False):
             maybe_run_post_combat_random_encounter(encounter)
         create_autosave = getattr(self, "create_autosave", None)
         if callable(create_autosave):
